@@ -74,6 +74,37 @@ namespace QuazalWV.Helpers
             {
                 instance = Convert.ChangeType(Helper.ReadU16(str), currentType);
             }
+            else if (currentType == typeof(byte[]))
+            {
+                // byte arrays are special
+                uint arrayLen = Helper.ReadU32(str);
+                var array = new byte[arrayLen];
+                str.Read(array, 0, array.Length);
+
+                instance = array;
+            }
+            else if (typeof(IDictionary).IsAssignableFrom(currentType))
+            {
+                var dictTypes = currentType.GetType().GetGenericArguments();
+                var dictGenericType = typeof(Dictionary<,>).MakeGenericType(dictTypes);
+
+                // make creation lambda and use default constructor
+                var newObjectFunc = Expression.Lambda<Func<object>>(
+                    Expression.New(dictGenericType.GetConstructor(Type.EmptyTypes))
+                ).Compile();
+
+                var dictionary = (IDictionary)newObjectFunc();
+                var size = Helper.ReadU32(str);
+
+                for (int i = 0; i < size; i++)
+                {
+                    var key = ReadObject(dictTypes[0], str);
+                    var value = ReadObject(dictTypes[1], str);
+
+                    dictionary.Add(key, value);
+                }
+                instance = dictionary;
+            }
             else if (typeof(IEnumerable).IsAssignableFrom(currentType))
             {
                 var arrayItemType = currentType.GetGenericArguments().SingleOrDefault();
@@ -178,9 +209,35 @@ namespace QuazalWV.Helpers
             {
                 Helper.WriteU16(str, (ushort)Convert.ChangeType(obj, currentType));
             }
+            else if (currentType == typeof(byte[]))
+			{
+                var array = (byte[])obj;
+
+                // byte arrays are special
+                Helper.WriteU32(str, (uint)array.Length);
+                str.Write(array, 0, array.Length);
+            }
+            else if (typeof(IDictionary).IsAssignableFrom(currentType))
+			{
+                var dictionary = (IDictionary)obj;
+                var size = dictionary.Keys.Count;
+
+                var dictTypes = dictionary.GetType().GetGenericArguments();
+
+                Helper.WriteU32(str, (uint)size);
+
+                foreach (DictionaryEntry entry in dictionary)
+				{
+                    // write key
+                    WriteObject(dictTypes[0], entry.Key, str);
+
+                    // write value
+                    WriteObject(dictTypes[1], entry.Value, str);
+                }
+            }
             else if (typeof(IEnumerable).IsAssignableFrom(currentType))
             {
-                IEnumerable<object> arrayValues = (IEnumerable<object>)obj;
+                var arrayValues = (IEnumerable<object>)obj;
 
                 var arrayItemType = currentType.GetGenericArguments().SingleOrDefault();
 

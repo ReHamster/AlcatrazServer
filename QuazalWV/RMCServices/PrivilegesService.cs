@@ -1,5 +1,6 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Interfaces;
+using System.Collections.Generic;
 
 namespace QuazalWV.RMCServices
 {
@@ -10,13 +11,15 @@ namespace QuazalWV.RMCServices
 	public class PrivilegesService : RMCServiceBase
 	{
 		[RMCMethod(1)] 	
-		public void GetPrivileges(string localeCode)
+		public RMCResult GetPrivileges(string localeCode)
 		{
-			var response = new RMCPacketResponseGetPrivileges();
+			var result = new Dictionary<uint, Privilege>();
 
 			// TODO: populate
+			//var response = new RMCPacketResponseGetPrivileges();
+			//SendResponseWithACK(response);
 
-			SendResponseWithACK(response);
+			return Result(result);
 		}
 
 		[RMCMethod(2)] 	

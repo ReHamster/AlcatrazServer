@@ -29,9 +29,9 @@ namespace QuazalWV.RMCServices
 		}
 
 		[RMCMethod(4)]
-		public void GetItem(uint group, string strTag)
+		public RMCResult GetItem(uint group, string strTag)
 		{
-			var reply = new RMCPacketResponseGetItem();
+			var reply = new StorageFile();
 
 			var path = Path.Combine(Global.ServerFilesPath, strTag);
 
@@ -41,7 +41,7 @@ namespace QuazalWV.RMCServices
 				reply.result = true;
 			}
 
-			SendResponseWithACK(reply);
+			return Result(reply);
 		}
 
 		[RMCMethod(5)]
