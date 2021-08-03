@@ -11,7 +11,8 @@ namespace QuazalWV
     public static class Global
     {
         public static readonly string keyDATA = "CD&ML";
-        public static readonly string keyCheckSum = "8dtRv2oj";
+        public static readonly string keyCheckSum = "8dtRv2oj"; // TODO: generate key check sum from keyDATA
+
         public static string serverBindAddress = "127.0.0.1";
         public static uint idCounter = 0x12345678;
         public static uint pidCounter = 0x1234;
