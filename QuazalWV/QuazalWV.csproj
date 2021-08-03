@@ -225,8 +225,8 @@
     <Compile Include="Attributes\RMCServiceAttribute.cs" />
     <Compile Include="RMC\AuthenticationService\Request\RMCPacketRequestLogin.cs" />
     <Compile Include="RMC\FriendsService\RelationshipData.cs" />
-    <Compile Include="RMC\GameInfoService\Response\RMCPacketResponseGetFileList.cs" />
-    <Compile Include="RMC\PersistentStoreService\Response\RMCPacketResponseGetItem.cs" />
+    <Compile Include="RMC\GameInfoService\PersistentInfo.cs" />
+    <Compile Include="RMC\PersistentStoreService\Response\StorageFile.cs" />
     <Compile Include="RMC\PlayerProfileService\Request\RMCPacketRequestPlayerProfileService_SetAvatarDecorator.cs" />
     <Compile Include="RMC\PlayerProfileService\Request\RMCPacketRequestPlayerProfileService_SetAvatarPortrait.cs" />
     <Compile Include="RMC\PlayerProfileService\Response\RMCPacketResponsePlayerProfileService_SetAvatarDecorator.cs" />

@@ -1,5 +1,6 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Interfaces;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -17,9 +18,9 @@ namespace QuazalWV.RMCServices
 		};
 
 		[RMCMethod(5)]
-		public void GetFileInfoList(int indexStart, int numElements, string stringSearch)
+		public RMCResult GetFileInfoList(int indexStart, int numElements, string stringSearch)
 		{
-			var reply = new RMCPacketResponseGetFileList();
+			var fileList = new List<PersistentInfo>();
 
 			foreach(var name in FileList.Skip(indexStart).Take(numElements))
 			{
@@ -30,14 +31,14 @@ namespace QuazalWV.RMCServices
 
 				var fi = new FileInfo(path);
 
-				reply.fileList.Add(new PersistentInfo
+				fileList.Add(new PersistentInfo
 				{
 					m_name = name,
 					m_size = (uint)fi.Length
 				});
 			}
 
-			SendResponseWithACK(reply);
+			return Result(fileList);
 		}
 	}
 }
