@@ -31,6 +31,10 @@ namespace QuazalWV.Factory
 			foreach(var protoClass in classList)
 			{
 				var protocolAttribute = protoClass.GetCustomAttribute<RMCServiceAttribute>();
+
+				if (protocolAttribute == null)
+					continue;
+
 				if(protocolAttribute.ProtocolId == protocolId)
 				{
 					var createFunc = Expression.Lambda<Func<RMCServiceBase>>(
