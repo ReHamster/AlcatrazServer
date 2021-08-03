@@ -37,7 +37,7 @@ namespace GROBackendWV
                 if ((s.Length % 2) != 0)
                     return;
                 byte[] data = ToBuff(s);
-                data = Helper.Decrypt("CD&ML", data);
+                data = Helper.Decrypt(Global.keyDATA, data);
                 MemoryStream m = new MemoryStream();
                 m.Write(data, 1, data.Length - 1);
                 data = Helper.Decompress(m.ToArray());
@@ -67,7 +67,7 @@ namespace GROBackendWV
                 MemoryStream m = new MemoryStream();
                 m.WriteByte(count);
                 m.Write(buff, 0, buff.Length);
-                data = Helper.Encrypt("CD&ML", m.ToArray());
+                data = Helper.Encrypt(Global.keyDATA, m.ToArray());
                 StringBuilder sb = new StringBuilder();
                 foreach (byte b in data)
                     sb.Append(b.ToString("X2"));
@@ -86,7 +86,7 @@ namespace GROBackendWV
                 if ((s.Length % 2) != 0)
                     return;
                 byte[] data = ToBuff(s);
-                data = Helper.Decrypt("CD&ML", data);
+                data = Helper.Decrypt(Global.keyDATA, data);
                 StringBuilder sb = new StringBuilder();
                 foreach (byte b in data)
                     sb.Append(b.ToString("X2"));
@@ -105,7 +105,7 @@ namespace GROBackendWV
                 if ((s.Length % 2) != 0)
                     return;
                 byte[] data = ToBuff(s);
-                data = Helper.Encrypt("CD&ML", data);
+                data = Helper.Encrypt(Global.keyDATA, data);
                 StringBuilder sb = new StringBuilder();
                 foreach (byte b in data)
                     sb.Append(b.ToString("X2"));

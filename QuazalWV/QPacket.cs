@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace QuazalWV
 {
@@ -90,33 +91,43 @@ namespace QuazalWV
         public QPacket(byte[] data)
         {
             MemoryStream m = new MemoryStream(data);
+
             m_oSourceVPort = new VPort(Helper.ReadU8(m));
             m_oDestinationVPort = new VPort(Helper.ReadU8(m));
             m_byPacketTypeFlags = Helper.ReadU8(m);
             type = (PACKETTYPE)(m_byPacketTypeFlags & 0x7);
             flags = new List<PACKETFLAG>();
+
             ExtractFlags();
+
             m_bySessionID = Helper.ReadU8(m);
             m_uiSignature = Helper.ReadU32(m);
             uiSeqId = Helper.ReadU16(m);
+
             if (type == PACKETTYPE.SYN || type == PACKETTYPE.CONNECT)
                 m_uiConnectionSignature = Helper.ReadU32(m);
+
             if (type == PACKETTYPE.DATA)
                 m_byPartNumber = Helper.ReadU8(m);
+
             if (flags.Contains(PACKETFLAG.FLAG_HAS_SIZE))
                 payloadSize = Helper.ReadU16(m);
             else
                 payloadSize = (ushort)(m.Length - m.Position - 1);
+
             MemoryStream pl = new MemoryStream();
             if (payloadSize != 0)
                 for (int i = 0; i < payloadSize; i++)
                     pl.WriteByte(Helper.ReadU8(m));
             payload = pl.ToArray();
+
             if (payload != null && payload.Length > 0 && type != PACKETTYPE.SYN && m_oSourceVPort.type != STREAMTYPE.NAT)
             {
                 if (m_oSourceVPort.type == STREAMTYPE.OldRVSec)
                     payload = Helper.Decrypt(Global.keyDATA, payload);
+
                 usesCompression = payload[0] != 0;
+
                 if (usesCompression)
                 {
                     MemoryStream m2 = new MemoryStream();
@@ -131,27 +142,15 @@ namespace QuazalWV
                 }
                 payloadSize = (ushort)payload.Length;
             }
+
             checkSum = Helper.ReadU8(m);
             realSize = (uint)m.Position;
         }
 
         public byte[] toBuffer()
         {
-            MemoryStream m = new MemoryStream();
-            Helper.WriteU8(m, m_oSourceVPort.toByte());
-            Helper.WriteU8(m, m_oDestinationVPort.toByte());
-            byte typeFlag = (byte)type;
-            foreach (PACKETFLAG flag in flags)
-                typeFlag |= (byte)((byte)flag << 3);
-            Helper.WriteU8(m, typeFlag);
-            Helper.WriteU8(m, m_bySessionID);
-            Helper.WriteU32(m, m_uiSignature);
-            Helper.WriteU16(m, uiSeqId);
-            if (type == PACKETTYPE.SYN || type == PACKETTYPE.CONNECT)
-                Helper.WriteU32(m, m_uiConnectionSignature);
-            if(type == PACKETTYPE.DATA)
-                Helper.WriteU8(m, m_byPartNumber);
             byte[] tmpPayload = payload;
+
             if (tmpPayload != null && tmpPayload.Length > 0 && type != PACKETTYPE.SYN && m_oSourceVPort.type != STREAMTYPE.NAT)
             {
                 if (usesCompression)
@@ -177,18 +176,45 @@ namespace QuazalWV
                 if (m_oSourceVPort.type == STREAMTYPE.OldRVSec)
                     tmpPayload = Helper.Encrypt(Global.keyDATA, tmpPayload);
             }
+
+            // process type flags
+            byte typeFlag = (byte)type;
+
+            foreach (PACKETFLAG flag in flags)
+                typeFlag |= (byte)((byte)flag << 3);
+
+            // write
+            MemoryStream m = new MemoryStream();
+            Helper.WriteU8(m, m_oSourceVPort.toByte());
+            Helper.WriteU8(m, m_oDestinationVPort.toByte());
+            Helper.WriteU8(m, typeFlag);
+            Helper.WriteU8(m, m_bySessionID);
+            Helper.WriteU32(m, m_uiSignature);
+            Helper.WriteU16(m, uiSeqId);
+
+            if (type == PACKETTYPE.SYN || type == PACKETTYPE.CONNECT)
+                Helper.WriteU32(m, m_uiConnectionSignature);
+
+            if (type == PACKETTYPE.DATA)
+                Helper.WriteU8(m, m_byPartNumber);
+
             if (flags.Contains(PACKETFLAG.FLAG_HAS_SIZE))
                 Helper.WriteU16(m, (ushort)tmpPayload.Length);
+
             m.Write(tmpPayload, 0, tmpPayload.Length);
+
             return AddCheckSum(m.ToArray());
         }
 
         private byte[] AddCheckSum(byte[] buff)
         {
             byte[] result = new byte[buff.Length + 1];
+
             for (int i = 0; i < buff.Length; i++)
                 result[i] = buff[i];
+
             result[buff.Length] = checkSum = MakeChecksum(buff);
+
             return result;
         }
 
@@ -197,26 +223,30 @@ namespace QuazalWV
             switch (proto)
             {
                 case 3:
-                    return 0xE3;
+                    return (byte)Encoding.ASCII.GetBytes(Global.accessKey).Sum(b => b);
                 case 1:
                 case 5:
                 default:
-                    return 0x00;
+                    return 0;
             }
         }
 
         public static byte MakeChecksum(byte[] data, byte setting = 0xFF)
         {
             byte result = 0;
+
             if (setting == 0xFF)
                 setting = GetProtocolSetting((byte)(data[0] >> 4));
+
             uint tmp = 0;
             for (int i = 0; i < data.Length / 4; i++)
                 tmp += BitConverter.ToUInt32(data, i * 4);
+
             uint leftOver = (uint)data.Length & 3;
             uint processed = 0;
             byte tmp2 = 0, tmp3 = 0, tmp4 = 0;
             uint pos = (uint)data.Length - leftOver;
+
             if (leftOver >= 2)
             {
                 processed = 2;
@@ -224,14 +254,17 @@ namespace QuazalWV
                 tmp3 = data[pos + 1];
                 pos += 2;
             }
+
             if (processed >= leftOver)
                 tmp4 = setting;
             else
                 tmp4 = (byte)(setting + data[pos]);
+
             result = (byte)((byte)(tmp >> 24) +
                      (byte)(tmp >> 16) +
                      (byte)(tmp >> 8) +
                      (byte)tmp + tmp2 + tmp3 + tmp4);
+
             return result;
         }
 
