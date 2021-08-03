@@ -1,6 +1,7 @@
-﻿################################################################################
-# Ten plik .gitignore został utworzony automatycznie przez Microsoft(R) Visual Studio.
-################################################################################
-
+﻿.idea
+.vscode
+.vs
 /.vs/GRPBackendWV/v16/Browse.VC.opendb
 *.ipch
+*/obj/*
+*.pdb
