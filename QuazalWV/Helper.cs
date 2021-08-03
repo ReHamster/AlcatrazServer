@@ -178,6 +178,20 @@ namespace QuazalWV
             }
         }
 
+        public static void WriteDateTime(Stream s, DateTime v)
+		{
+            ulong value;
+
+            value = (ulong)v.Year << 26;
+            value |= ((ulong)v.Month << 22 & 15);
+            value |= ((ulong)v.Day << 17 & 31);
+            value |= ((ulong)v.Hour << 12 & 31);
+            value |= ((ulong)v.Minute << 6 & 63);
+            value |= ((ulong)v.Second & 63);
+
+            WriteU64(s, value);
+        }
+
         public static void WriteStringList(Stream s, List<string> v)
         {
             WriteU32(s, (uint)v.Count());
