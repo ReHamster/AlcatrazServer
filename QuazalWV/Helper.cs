@@ -90,6 +90,19 @@ namespace QuazalWV
             return list;
         }
 
+        public static DateTime ReadDateTime(Stream s)
+        {
+            ulong v = ReadU64(s);
+
+            return new DateTime(
+                (int)(v >> 26 & 2047),
+                (int)(v >> 22 & 15),
+                (int)(v >> 17 & 31),
+                (int)(v << 12 & 31),
+                (int)(v >> 6 & 63),
+                (int)(v & 63));
+        }
+
         public static void WriteU8(Stream s, byte v)
         {
             s.WriteByte(v);
@@ -178,8 +191,14 @@ namespace QuazalWV
             }
         }
 
+        public static void WriteStringList(Stream s, List<string> v)
+        {
+            WriteU32(s, (uint)v.Count());
+            foreach(var entry in v)
+                WriteString(s, entry);
+        }
         public static void WriteDateTime(Stream s, DateTime v)
-		{
+        {
             ulong value;
 
             value = (ulong)v.Year << 26;
@@ -190,13 +209,6 @@ namespace QuazalWV
             value |= ((ulong)v.Second & 63);
 
             WriteU64(s, value);
-        }
-
-        public static void WriteStringList(Stream s, List<string> v)
-        {
-            WriteU32(s, (uint)v.Count());
-            foreach(var entry in v)
-                WriteString(s, entry);
         }
 
         public static byte[] Decompress(byte[] data)

@@ -53,7 +53,10 @@ namespace GROBackendWV
                     Log.WriteLine(1, "[TCP] Client connected");
                     new Thread(tClientHandler).Start(client);
                 }
-                catch { }
+                catch (Exception ex) 
+                {
+                    Log.WriteLine(1, "[TCP] error - exception occured! " + ex.Message );
+                }
             }
             Log.WriteLine(1, "[TCP Webserver] Server stopped");
         }
