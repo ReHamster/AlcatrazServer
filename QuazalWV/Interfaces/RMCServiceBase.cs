@@ -28,6 +28,16 @@ namespace QuazalWV.Interfaces
 			RMC.SendResponseWithACK(_context.Client.udp, _context.Packet, _context.RMC, _context.Client, reply, useCompression, error);
 		}
 
+		protected RMCResult Result<T>(T reply) where T: class
+		{
+			return new RMCResult(new RMCPResponseDDL<T>(reply));
+		}
+
+		protected RMCResult Error(uint code)
+		{
+			return new RMCResult(new RMCPResponseEmpty(), true, code);
+		}
+
 		protected void UNIMPLEMENTED()
 		{
 			var stackTrace = new StackTrace();

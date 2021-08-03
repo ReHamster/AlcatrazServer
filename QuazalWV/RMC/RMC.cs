@@ -113,7 +113,27 @@ namespace QuazalWV
                 if (bestMethod != null)
                 {
                     var parameters = HandleMethodParameters(bestMethod, m);
-                    bestMethod.Invoke(serviceInstance, parameters);
+                    var returnValue = bestMethod.Invoke(serviceInstance, parameters);
+
+                    if(returnValue != null)
+					{
+                        if(typeof(RMCResult).IsAssignableFrom(returnValue.GetType()))
+						{
+                            var rmcResult = (RMCResult)returnValue;
+
+                            SendResponseWithACK(
+                                rmcContext.Client.udp,
+                                rmcContext.Packet,
+                                rmcContext.RMC,
+                                rmcContext.Client,
+                                rmcResult.Response,
+                                rmcResult.Compression, rmcResult.Error);
+                        }
+                        else
+						{
+                            // TODO: try to cast and create RMCPResponseDDL???
+						}
+					}
 
                     return;
                 }
