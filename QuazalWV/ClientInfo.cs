@@ -22,6 +22,7 @@ namespace QuazalWV
         public ushort callCounterDO_RMC;
         public uint callCounterRMC;
         public uint stationID;
+        public string accountId;
         public string name;
         public string pass;
         public IPEndPoint ep;
