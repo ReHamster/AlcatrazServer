@@ -1,15 +1,17 @@
-﻿using System;
-using System.IO;
+﻿using QuazalWV.Attributes;
+using QuazalWV.Factory;
+using QuazalWV.Interfaces;
+using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Net;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
-using System.Threading;
 
 namespace QuazalWV
 {
-    public static class RMC
+	public static class RMC
     {
         public static void HandlePacket(UdpClient udp, QPacket p)
         {
@@ -54,15 +56,143 @@ namespace QuazalWV
             WriteLog(1, "Got response for Protocol " + rmc.proto + " = " + (rmc.success ? "Success" : "Fail"));
         }
 
+        // Function to get property values
+        private static object[] HandlePropertyValues(Type[] typeList, Stream m)
+		{
+            var paramsInstances = new List<object>();
+
+            foreach (var type in typeList)
+            {
+                // ead parameters subsequently, deserialize models etc
+                object paramInstance;
+
+                // handle parameters
+                if (type == typeof(string))
+                {
+                    paramInstance = Helper.ReadString(m);
+                }
+                else if (type == typeof(bool))
+                {
+                    paramInstance = Helper.ReadBool(m);
+                }
+                else if (type == typeof(float))
+                {
+                    paramInstance = Helper.ReadFloat(m);
+                }
+                else if (type == typeof(double))
+                {
+                    paramInstance = Helper.ReadDouble(m);
+                }
+                else if (type == typeof(byte))
+                {
+                    paramInstance = Helper.ReadU8(m);
+                }
+                else if (type == typeof(uint) ||
+                        type == typeof(int))
+                {
+                    paramInstance = Convert.ChangeType(Helper.ReadU32(m), type);
+                }
+                else if (type == typeof(ushort) ||
+                         type == typeof(short))
+                {
+                    paramInstance = Convert.ChangeType(Helper.ReadU16(m), type);
+                }
+                else if (type.IsAssignableFrom(typeof(Stream)))
+                {
+                    paramInstance = m;
+                }
+                else
+                {
+                    // TODO: do not use Activator!
+                    paramInstance = Activator.CreateInstance(type, new object[] { m });
+                }
+
+                paramsInstances.Add(paramInstance);
+            }
+
+            return paramsInstances.ToArray();
+        }
+
+        private static object[] HandleMethodParameters(MethodInfo method, Stream m)
+		{
+            // TODO: extended info
+            var typeList = method.GetParameters().Select(x => x.ParameterType);
+
+            return HandlePropertyValues(typeList.ToArray(), m);
+        }
+
         public static void HandleRequest(ClientInfo client, QPacket p, RMCP rmc)
         {
-            ProcessRequest(client, p, rmc);
+            MemoryStream m = new MemoryStream(p.payload);
+
+            m.Seek(rmc._afterProtocolOffset, 0);
+            rmc.callID = Helper.ReadU32(m);
+            rmc.methodID = Helper.ReadU32(m);
+
             if (rmc.callID > client.callCounterRMC)
                 client.callCounterRMC = rmc.callID;
-            WriteLog(1, "Received Request : " + rmc.ToString());
+
+            WriteLog(2, "Request to handle : " + rmc.ToString());
+
             string payload = rmc.PayLoadToString();
+
             if (payload != "")
                 WriteLog(5, payload);
+
+            var rmcContext = new RMCContext(rmc, client, p);
+
+            // create service instance
+            var serviceInstance = RMCServiceFactory.GetServiceInstance(rmc.proto);
+            if (serviceInstance != null)
+            {
+                // set the execution context
+                serviceInstance.Context = rmcContext;
+
+                MethodInfo bestMethod = null;
+
+                // find suitable method
+                var allMethods = serviceInstance.GetType().GetMethods();
+                foreach (var method in allMethods)
+                {
+                    var rmcMethodAttr = (RMCMethodAttribute)method.GetCustomAttributes(typeof(RMCMethodAttribute), true).SingleOrDefault();
+                    if (rmcMethodAttr != null)
+                    {
+                        if (rmcMethodAttr.MethodId == rmc.methodID)
+                        {
+                            bestMethod = method;
+                            break;
+                        }
+                    }
+                }
+
+                // call method
+                if (bestMethod != null)
+                {
+                    var parameters = HandleMethodParameters(bestMethod, m);
+                    bestMethod.Invoke(serviceInstance, parameters);
+
+                    return;
+                }
+                else
+                {
+                    WriteLog(1, $"Error: No method '{ rmc.methodID }' registered for protocol '{ rmc.proto }'");
+                }
+
+                // serviceInstance.HandleProtocolMessage(p, rmc, client);
+            }
+            else
+            {
+                WriteLog(1, $"Error: No service registered for packet protocol '{ rmc.proto }' (protocolId = { (int)rmc.proto })");
+            }
+#if false
+            ProcessRequest(client, p, rmc);
+            // if (rmc.callID > client.callCounterRMC)
+            //     client.callCounterRMC = rmc.callID;
+            // WriteLog(1, "Received Request : " + rmc.ToString());
+            // string payload = rmc.PayLoadToString();
+            // if (payload != "")
+            //     WriteLog(5, payload);
+
             switch (rmc.proto)
             {
                 case RMCP.PROTOCOL.AuthenticationService:
@@ -216,14 +346,16 @@ namespace QuazalWV
                     WriteLog(1, "Error: No handler implemented for packet protocol " + rmc.proto);
                     break;
             }
+#endif
         }
-
+#if false
         public static void ProcessRequest(ClientInfo client, QPacket p, RMCP rmc)
         {
             MemoryStream m = new MemoryStream(p.payload);
             m.Seek(rmc._afterProtocolOffset, 0);
             rmc.callID = Helper.ReadU32(m);
             rmc.methodID = Helper.ReadU32(m);
+
             switch (rmc.proto)
             {
                 case RMCP.PROTOCOL.AuthenticationService:
@@ -279,8 +411,7 @@ namespace QuazalWV
                     break;
             }
         }
-
-
+#endif
         public static void SendResponseWithACK(UdpClient udp, QPacket p, RMCP rmc, ClientInfo client, RMCPResponse reply, bool useCompression = true, uint error = 0)
         {
             WriteLog(2, "Response : " + reply.ToString());
@@ -460,7 +591,7 @@ namespace QuazalWV
             q.uiSeqId = (ushort)(++client.seqCounter);
             q.m_bySessionID = client.sessionID;
             RMCP rmc = new RMCP();
-            rmc.proto = RMCP.PROTOCOL.GlobalNotificationEventProtocol;
+            rmc.proto = RMCP.PROTOCOL.NotificationEventManager;
             rmc.methodID = 1;
             rmc.callID = ++client.callCounterRMC;
             RMCPCustom reply = new RMCPCustom();
