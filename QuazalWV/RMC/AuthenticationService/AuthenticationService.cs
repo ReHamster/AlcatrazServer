@@ -13,6 +13,9 @@ namespace QuazalWV
         {
             switch (rmc.methodID)
             {
+                case 1:
+                    rmc.request = new RMCPacketRequestLogin(s);
+                    break;
                 case 2:
                     rmc.request = new RMCPacketRequestLoginCustomData(s);
                     break;
@@ -31,6 +34,20 @@ namespace QuazalWV
             RMCPResponse reply;
             switch (rmc.methodID)
             {
+                case 1:
+					{
+                        RMCPacketRequestLogin login = (RMCPacketRequestLogin)rmc.request;
+
+                        if(login.userName == "Tracking")
+						{
+                            // TODO: appropriate response
+                        }
+
+                        reply = new RMCPacketResponseLoginCustomData(client.PID, client.sPID, client.sPort);
+                        RMC.SendResponseWithACK(client.udp, p, rmc, client, reply);
+                    }
+
+                    break;
                 case 2:
                     RMCPacketRequestLoginCustomData h = (RMCPacketRequestLoginCustomData)rmc.request;
                     switch (h.className)
