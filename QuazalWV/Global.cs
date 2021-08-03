@@ -10,14 +10,15 @@ namespace QuazalWV
 {
     public static class Global
     {
-        public static readonly string keyDATA = "CD&ML";
-        public static readonly string keyCheckSum = "8dtRv2oj"; // TODO: generate key check sum from keyDATA
+        public static readonly string keyDATA = "CD&ML";        // default ancient Quazal encryption key (RC4)
+        public static string accessKey = "w6kAtr3T";            // Server access key. Affects packet checksum; TODO: make configurable
 
         public static string serverBindAddress = "127.0.0.1";
         public static uint idCounter = 0x12345678;
         public static uint pidCounter = 0x1234;
         public static uint dummyFriendPidCounter = 0x1235;
         public static string sessionURL = "prudp:/address=127.0.0.1;port=21032;RVCID=4660";
+
         public static List<ClientInfo> clients = new List<ClientInfo>();
         public static Stopwatch uptime = new Stopwatch();
 
