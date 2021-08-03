@@ -1,10 +1,6 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace QuazalWV.RMCServices
 {
@@ -37,9 +33,11 @@ namespace QuazalWV.RMCServices
 		{
 			var reply = new RMCPacketResponseGetItem();
 
-			if (strTag == "OnlineConfig.ini")
+			var path = Path.Combine(Global.ServerFilesPath, strTag);
+
+			if (File.Exists(path))
 			{
-				// TODO: read online config and put it into byte stream
+				reply.buffer = File.ReadAllBytes(path);
 				reply.result = true;
 			}
 

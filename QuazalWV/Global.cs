@@ -10,6 +10,8 @@ namespace QuazalWV
 {
     public static class Global
     {
+        public static readonly string ServerFilesPath = "ServerFiles/";
+
         public static readonly string keyDATA = "CD&ML";        // default ancient Quazal encryption key (RC4)
         public static string accessKey = "w6kAtr3T";            // Server access key. Affects packet checksum; TODO: make configurable
 
