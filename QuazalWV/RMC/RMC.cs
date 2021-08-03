@@ -62,7 +62,7 @@ namespace QuazalWV
             // TODO: extended info
             var typeList = method.GetParameters().Select(x => x.ParameterType);
 
-            return DDLHelper.HandlePropertyValues(typeList.ToArray(), m);
+            return DDLHelper.ReadPropertyValues(typeList.ToArray(), m);
         }
 
         public static void HandleRequest(ClientInfo client, QPacket p, RMCP rmc)

@@ -13,14 +13,17 @@ namespace QuazalWV.Helpers
 	class DDLHelper
 	{
         // Function to get property values
-        public static object[] HandlePropertyValues(Type[] typeList, Stream str)
+        public static object[] ReadPropertyValues(Type[] typeList, Stream str)
         {
             var paramsInstances = new List<object>();
 
             foreach (var type in typeList)
             {
                 if (type == null)
+				{
+                    paramsInstances.Add(null);
                     continue;
+                }
 
                 paramsInstances.Add(ReadObject(type, str));
             }
@@ -40,7 +43,7 @@ namespace QuazalWV.Helpers
 		{
             object instance;
 
-            // handle parameters
+            // handle types
             if (currentType == typeof(string))
             {
                 instance = Helper.ReadString(str);
@@ -105,7 +108,7 @@ namespace QuazalWV.Helpers
                 do
                 {
                     // FIXME: prepend or append?
-                    allProperties.AddRange(currentType.GetProperties());
+                    allProperties.AddRange(nType.GetProperties());
                     nType = nType.BaseType;
                 } while (nType != null);
 
@@ -118,7 +121,7 @@ namespace QuazalWV.Helpers
                 var allPropertyTypes = allProperties.Select(x => x.CanWrite ? x.PropertyType : null);
 
                 // this will recurse
-                var allPropertyValues = HandlePropertyValues(allPropertyTypes.ToArray(), str);
+                var allPropertyValues = ReadPropertyValues(allPropertyTypes.ToArray(), str);
 
                 // create instance
                 instance = newObjectFunc();
@@ -133,10 +136,89 @@ namespace QuazalWV.Helpers
             return instance;
 		}
 
-        // writes object to buffer
-		public static void WriteObject<T>(Stream s, T obj) where T : class
-		{
+        //------------------------------------------------------------------------
 
-		}
-	}
+        // writes object to buffer
+		public static void WriteObject<T>(T obj, Stream s) where T : class
+		{
+            WriteObject(typeof(T), obj, s);
+        }
+
+        public static void WriteObject(Type currentType, object obj, Stream str)
+        {
+            // handle types
+            if (currentType == typeof(string))
+            {
+                Helper.WriteString(str, (string)Convert.ChangeType(obj, currentType));
+            }
+            else if (currentType == typeof(bool))
+            {
+                Helper.WriteBool(str, (bool)Convert.ChangeType(obj, currentType));
+            }
+            else if (currentType == typeof(float))
+            {
+                Helper.WriteFloat(str, (float)Convert.ChangeType(obj, currentType));
+            }
+            else if (currentType == typeof(double))
+            {
+                Helper.WriteDouble(str, (double)Convert.ChangeType(obj, currentType));
+            }
+            else if (currentType == typeof(byte) ||
+                     currentType == typeof(sbyte))
+            {
+                Helper.WriteU8(str, (byte)Convert.ChangeType(obj, currentType));
+            }
+            else if (currentType == typeof(uint) ||
+                    currentType == typeof(int))
+            {
+                Helper.WriteU32(str, (uint)Convert.ChangeType(obj, currentType));
+            }
+            else if (currentType == typeof(ushort) ||
+                     currentType == typeof(short))
+            {
+                Helper.WriteU16(str, (ushort)Convert.ChangeType(obj, currentType));
+            }
+            else if (typeof(IEnumerable).IsAssignableFrom(currentType))
+            {
+                IEnumerable<object> arrayValues = (IEnumerable<object>)obj;
+
+                var arrayItemType = currentType.GetGenericArguments().SingleOrDefault();
+
+                var size = arrayValues.Count();
+
+                // store array size
+                Helper.WriteU32(str, (uint)size);
+
+                // write items
+                for (int i = 0; i < size; i++)
+                {
+                    WriteObject(arrayItemType, arrayValues.ElementAt(i), str);
+                }
+            }
+			else
+			{
+                // assume it's a nested complex type
+                // collect all properties even from base types
+                var allProperties = new List<PropertyInfo>();
+
+                var nType = currentType;
+                do
+                {
+                    // FIXME: prepend or append?
+                    allProperties.AddRange(nType.GetProperties());
+                    nType = nType.BaseType;
+                } while (nType != null);
+
+                // get types and skip read-only
+                var allPropertyTypes = allProperties.Select(x => x.CanRead ? x.PropertyType : null);
+
+                // assign all values to new instance
+                for (int i = 0; i < allProperties.Count; i++)
+                {
+                    var value = allProperties[i].GetValue(obj);
+                    WriteObject(allProperties[i].PropertyType, value, str);
+                }
+            }
+        }
+    }
 }

@@ -10,7 +10,7 @@ namespace QuazalWV.RMCServices
 	public class PrivilegesService : RMCServiceBase
 	{
 		[RMCMethod(1)] 	
-		public void GetPrivileges(RMCPacketGetPrivileges request)
+		public void GetPrivileges(string localeCode)
 		{
 			var response = new RMCPacketResponseGetPrivileges();
 

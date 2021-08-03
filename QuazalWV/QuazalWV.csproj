@@ -177,6 +177,7 @@
     <Compile Include="Classes\StationInfo.cs" />
     <Compile Include="Classes\StdMaps.cs" />
     <Compile Include="ClientInfo.cs" />
+    <Compile Include="Helpers\DDLHelper.cs" />
     <Compile Include="RMCServices\GameInfoService.cs" />
     <Compile Include="RMCServices\PersistentStoreService.cs" />
     <Compile Include="RMCServices\UbiAccountManagementService.cs" />
@@ -315,7 +316,6 @@
     <Compile Include="RMC\PlayerProfileService\Response\RMCPacketResponsePlayerProfileService_GetAllFaceSkinTones.cs" />
     <Compile Include="RMC\PlayerProfileService\Response\RMCPacketResponsePlayerProfileService_LoadCharacterProfiles.cs" />
     <Compile Include="RMC\PlayerProfileService\Response\RMCPacketResponsePlayerProfileService_RetrieveOfflineNotifications.cs" />
-    <Compile Include="RMC\PrivilegesService\Request\RMCPacketRequestGetPrivileges.cs" />
     <Compile Include="RMC\PrivilegesService\Response\RMCPacketResponseGetPrivileges.cs" />
     <Compile Include="RMC\ProfanityFilterService\ProfanityFilterService.cs" />
     <Compile Include="RMC\ProfanityFilterService\Response\RMCPacketResponseProfanityFilterService_GetAllProfaneWords.cs" />
@@ -333,6 +333,7 @@
     <Compile Include="RMC\RMCPRequest.cs" />
     <Compile Include="RMC\RMCPResponse.cs" />
     <Compile Include="RMC\RMCPResponseEmpty.cs" />
+    <Compile Include="RMC\RMCPResponseDDL.cs" />
     <Compile Include="RMC\SecureService\Request\RMCPacketRequestRegisterEx.cs" />
     <Compile Include="RMC\SecureService\Response\RMCPacketResponseRegisterEx.cs" />
     <Compile Include="RMC\SecureService\SecureService.cs" />
