@@ -9,16 +9,16 @@ namespace QuazalWV.RMCServices
 	[RMCService(RMCP.PROTOCOL.FriendsService)]
     public class FriendsService : RMCServiceBase
 	{
-        [RMCMethod(1)] 	public void AddFriend()
+        [RMCMethod(1)] 	
+        public void AddFriend()
         {
             UNIMPLEMENTED();
         }
 
         [RMCMethod(2)]
-        public void AddFriendByName(RMCPacketRequestFriendsService_AddFriendByName request)
+        public void AddFriendByName()
         {
-            var reply = new RMCPacketResponseFriendsService_AddFriendByName(Context.Client, request.name);
-            SendResponseWithACK(reply);
+            UNIMPLEMENTED();
         }
 
         [RMCMethod(3)]
@@ -72,9 +72,7 @@ namespace QuazalWV.RMCServices
         [RMCMethod(11)]
         public void GetList()
         {
-            // originally 5 in code
-            var reply = new RMCPacketResponseFriendsService_GetFriendsList(Context.Client);
-            SendResponseWithACK(reply);
+            UNIMPLEMENTED();
         }
 
         [RMCMethod(12)]
@@ -84,9 +82,11 @@ namespace QuazalWV.RMCServices
         }
 
         [RMCMethod(13)]
-        public void GetRelationships(int offset, int size)
+        public RMCResult GetRelationships(int offset, int size)
         {
-            UNIMPLEMENTED();
+            var result = new GetRelationshipsResult();
+
+            return Result(result);
         }
     }
 }

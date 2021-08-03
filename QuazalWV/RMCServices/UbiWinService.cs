@@ -5,29 +5,6 @@ using System.IO;
 
 namespace QuazalWV.RMCServices
 {
-	public class UplayActionPlatform
-	{
-		public string m_platformCode { get; set; }
-		public bool m_completed { get; set; }
-		public string m_specificKey { get; set; }
-	}
-
-	public class UplayAction
-	{
-		public UplayAction()
-		{
-			m_platforms = new List<UplayActionPlatform>();
-		}
-
-		public string m_code { get; set; }
-		public string m_name { get; set; }
-		public string m_description { get; set; }
-		public ushort m_value { get; set; }
-		public string m_gameCode { get; set; }
-
-		public IEnumerable<UplayActionPlatform> m_platforms { get; set; }
-	}
-
 	/// <summary>
 	/// User friends service
 	/// </summary>
@@ -71,12 +48,11 @@ namespace QuazalWV.RMCServices
 		}
 
 		[RMCMethod(7)]
-        public void UplayWelcome(string culture, string platformCode)
+        public RMCResult UplayWelcome(string culture, string platformCode)
 		{
 			var result = new List<UplayAction>();
 
-			var reply = new RMCPResponseDDL<List<UplayAction>>(result);
-			SendResponseWithACK(reply);
+			return Result(result);
 		}
 
 		[RMCMethod(8 )]
