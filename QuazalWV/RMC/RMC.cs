@@ -1,5 +1,6 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Factory;
+using QuazalWV.Helpers;
 using QuazalWV.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -56,69 +57,12 @@ namespace QuazalWV
             WriteLog(1, "Got response for Protocol " + rmc.proto + " = " + (rmc.success ? "Success" : "Fail"));
         }
 
-        // Function to get property values
-        private static object[] HandlePropertyValues(Type[] typeList, Stream m)
-		{
-            var paramsInstances = new List<object>();
-
-            foreach (var type in typeList)
-            {
-                // ead parameters subsequently, deserialize models etc
-                object paramInstance;
-
-                // handle parameters
-                if (type == typeof(string))
-                {
-                    paramInstance = Helper.ReadString(m);
-                }
-                else if (type == typeof(bool))
-                {
-                    paramInstance = Helper.ReadBool(m);
-                }
-                else if (type == typeof(float))
-                {
-                    paramInstance = Helper.ReadFloat(m);
-                }
-                else if (type == typeof(double))
-                {
-                    paramInstance = Helper.ReadDouble(m);
-                }
-                else if (type == typeof(byte))
-                {
-                    paramInstance = Helper.ReadU8(m);
-                }
-                else if (type == typeof(uint) ||
-                        type == typeof(int))
-                {
-                    paramInstance = Convert.ChangeType(Helper.ReadU32(m), type);
-                }
-                else if (type == typeof(ushort) ||
-                         type == typeof(short))
-                {
-                    paramInstance = Convert.ChangeType(Helper.ReadU16(m), type);
-                }
-                else if (type.IsAssignableFrom(typeof(Stream)))
-                {
-                    paramInstance = m;
-                }
-                else
-                {
-                    // TODO: do not use Activator!
-                    paramInstance = Activator.CreateInstance(type, new object[] { m });
-                }
-
-                paramsInstances.Add(paramInstance);
-            }
-
-            return paramsInstances.ToArray();
-        }
-
         private static object[] HandleMethodParameters(MethodInfo method, Stream m)
 		{
             // TODO: extended info
             var typeList = method.GetParameters().Select(x => x.ParameterType);
 
-            return HandlePropertyValues(typeList.ToArray(), m);
+            return DDLHelper.HandlePropertyValues(typeList.ToArray(), m);
         }
 
         public static void HandleRequest(ClientInfo client, QPacket p, RMCP rmc)
