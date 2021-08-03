@@ -60,19 +60,41 @@ namespace QuazalWV.Helpers
             {
                 instance = Helper.ReadDouble(str);
             }
+            else if (currentType == typeof(DateTime))
+            {
+                instance = Helper.ReadDateTime(str);
+            }
+            else if (currentType == typeof(long))
+            {
+                instance = (long)Helper.ReadU64(str);
+            }
+            else if (currentType == typeof(ulong))
+            {
+                instance = Helper.ReadU64(str);
+            }
+            else if (currentType == typeof(sbyte))
+            {
+                instance = (sbyte)Helper.ReadU8(str);
+            }
             else if (currentType == typeof(byte))
             {
                 instance = Helper.ReadU8(str);
             }
-            else if (currentType == typeof(uint) ||
-                    currentType == typeof(int))
+            else if (currentType == typeof(int))
             {
-                instance = Convert.ChangeType(Helper.ReadU32(str), currentType);
+                instance = (int)Helper.ReadU32(str);
             }
-            else if (currentType == typeof(ushort) ||
-                     currentType == typeof(short))
+            else if (currentType == typeof(uint))
             {
-                instance = Convert.ChangeType(Helper.ReadU16(str), currentType);
+                instance = Helper.ReadU32(str);
+            }
+            else if (currentType == typeof(short))
+            {
+                instance = (short)Helper.ReadU16(str);
+            }
+            else if (currentType == typeof(ushort))
+            {
+                instance = Helper.ReadU16(str);
             }
             else if (currentType == typeof(byte[]))
             {
@@ -89,11 +111,11 @@ namespace QuazalWV.Helpers
                 var dictGenericType = typeof(Dictionary<,>).MakeGenericType(dictTypes);
 
                 // make creation lambda and use default constructor
-                var newObjectFunc = Expression.Lambda<Func<object>>(
+                var newObjectFunc = Expression.Lambda<Func<IDictionary>>(
                     Expression.New(dictGenericType.GetConstructor(Type.EmptyTypes))
                 ).Compile();
 
-                var dictionary = (IDictionary)newObjectFunc();
+                var dictionary = newObjectFunc();
                 var size = Helper.ReadU32(str);
 
                 for (int i = 0; i < size; i++)
@@ -108,11 +130,16 @@ namespace QuazalWV.Helpers
             else if (typeof(IEnumerable).IsAssignableFrom(currentType))
             {
                 var arrayItemType = currentType.GetGenericArguments().SingleOrDefault();
+                var listType = typeof(List<>).MakeGenericType(arrayItemType);
 
                 // get array size
                 uint size = Helper.ReadU32(str);
 
-                var arrayValues = new List<object>();
+                var newObjectFunc = Expression.Lambda<Func<IList>>(
+                    Expression.New(listType.GetConstructor(Type.EmptyTypes))
+                ).Compile();
+
+                var arrayValues = newObjectFunc();
 
                 // new array of objects 
                 for (int i = 0; i < size; i++)
@@ -193,6 +220,15 @@ namespace QuazalWV.Helpers
             else if (currentType == typeof(double))
             {
                 Helper.WriteDouble(str, (double)Convert.ChangeType(obj, currentType));
+            }
+            else if (currentType == typeof(DateTime))
+            {
+                Helper.WriteDateTime(str, (DateTime)Convert.ChangeType(obj, currentType));
+            }
+            else if (currentType == typeof(ulong) ||
+                     currentType == typeof(long))
+            {
+                Helper.WriteU64(str, (ulong)Convert.ChangeType(obj, currentType));
             }
             else if (currentType == typeof(byte) ||
                      currentType == typeof(sbyte))

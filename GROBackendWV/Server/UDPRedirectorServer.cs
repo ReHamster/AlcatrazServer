@@ -51,7 +51,10 @@ namespace GROBackendWV
                     byte[] bytes = listener.Receive(ref ep);
                     ProcessPacket(bytes, ep);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    WriteLog(1, "error - exception occured! " + ex.Message);
+                }
             }
             WriteLog(1, "Server stopped");
         }

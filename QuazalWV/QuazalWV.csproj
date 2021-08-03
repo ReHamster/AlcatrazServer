@@ -180,7 +180,11 @@
     <Compile Include="Helpers\DDLHelper.cs" />
     <Compile Include="Interfaces\RMCResult.cs" />
     <Compile Include="RMCServices\GameInfoService.cs" />
+    <Compile Include="RMCServices\OverlordFriendsService.cs" />
     <Compile Include="RMCServices\PersistentStoreService.cs" />
+    <Compile Include="RMCServices\PlayerStatisticsService.cs" />
+    <Compile Include="RMCServices\RichPresenceService.cs" />
+    <Compile Include="RMCServices\SocialNetworksService.cs" />
     <Compile Include="RMCServices\UbiAccountManagementService.cs" />
     <Compile Include="RMCServices\TicketGrantingService.cs" />
     <Compile Include="Attributes\RMCMethodAttribute.cs" />
@@ -329,6 +333,7 @@
     <Compile Include="RMC\RewardService\Response\RMCPacketResponseRewardService_GetUserReward.cs" />
     <Compile Include="RMC\RewardService\Response\RMCPacketResponseRewardService_Method3.cs" />
     <Compile Include="RMC\RewardService\RewardService.cs" />
+    <Compile Include="RMC\RickPresenceService\PresenceElement.cs" />
     <Compile Include="RMC\RMC.cs" />
     <Compile Include="RMC\RMCP.cs" />
     <Compile Include="RMC\RMCPCustom.cs" />
@@ -354,6 +359,7 @@
     <Compile Include="RMC\StatisticsService\Response\RMCPacketResponseStatisticsService_GetPlayerLifetimeStatistics.cs" />
     <Compile Include="RMC\StatisticsService\Response\RMCPacketResponseStatisticsService_GetPlayerInstancedStatistics.cs" />
     <Compile Include="RMC\StatisticsService\Response\RMCPacketResponseStatisticsService_Method4.cs" />
+    <Compile Include="RMC\StatisticsService\StatisticData.cs" />
     <Compile Include="RMC\StatisticsService\StatisticsService.cs" />
     <Compile Include="RMC\StoreService\Response\RMCPacketResponseStoreService_EnterCoupons.cs" />
     <Compile Include="RMC\StoreService\Response\RMCPacketResponseStoreService_GetShoppingDetails.cs" />
