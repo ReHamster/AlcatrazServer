@@ -13,7 +13,9 @@ namespace QuazalWV
         public static readonly string ServerFilesPath = "ServerFiles/";
 
         public static readonly string keyDATA = "CD&ML";        // default ancient Quazal encryption key (RC4)
-        public static string accessKey = "w6kAtr3T";            // Server access key. Affects packet checksum; TODO: make configurable
+        public static string accessKey = "8dtRv2oj";            // Server access key. Affects packet checksum; TODO: make configurable
+
+        public static readonly int packetFragmentSize = 963;
 
         public static string serverBindAddress = "127.0.0.1";
         public static uint idCounter = 0x12345678;

@@ -9,13 +9,12 @@ namespace QuazalWV
 {
 	public class StorageFile
 	{
-		public byte[] buffer { get; set; }
-		public bool result { get; set; }
-
+		public byte[] m_buffer { get; set; }
+		public uint retcode { get; set; }
 		public StorageFile()
 		{
-			buffer = new byte []{ };
-			result = true;
+			m_buffer = new byte []{ };
+			retcode = 0;
 		}
 	}
 }
