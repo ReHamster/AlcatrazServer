@@ -31,7 +31,7 @@ namespace QuazalWV
             foreach (ClientInfo c in clients)
                 if (c.ep.Address.ToString() == ep.Address.ToString() && c.ep.Port == ep.Port)
                     return c;
-            WriteLog(1, "Error : Cant find client for end point : " + ep.ToString());
+            
             return null;
         }
 

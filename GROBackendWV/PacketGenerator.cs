@@ -67,7 +67,7 @@ namespace GROBackendWV
                 q.type = QPacket.PACKETTYPE.DATA;
                 q.flags = new List<QPacket.PACKETFLAG>();
                 q.payload = new byte[0];
-                q.uiSeqId = (ushort)(++client.seqCounterIn);
+                q.uiSeqId = (ushort)(++client.seqCounter);
                 q.m_bySessionID = client.sessionID;
                 RMCP rmc = new RMCP();
                 rmc.proto = (RMCP.PROTOCOL)protoIDs[toolStripComboBox1.SelectedIndex];

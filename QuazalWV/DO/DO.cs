@@ -38,8 +38,8 @@ namespace QuazalWV
             if (client == null)
                 return;
             client.sessionID = p.m_bySessionID;
-            if (p.uiSeqId > client.seqCounterIn)
-                client.seqCounterIn = p.uiSeqId;
+            if (p.uiSeqId > client.seqCounter)
+                client.seqCounter = p.uiSeqId;
             client.udp = udp;
             if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
                 return;

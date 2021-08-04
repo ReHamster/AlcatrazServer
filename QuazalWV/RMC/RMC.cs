@@ -17,20 +17,35 @@ namespace QuazalWV
         public static void HandlePacket(UdpClient udp, QPacket p)
         {
             ClientInfo client = Global.GetClientByIDrecv(p.m_uiSignature);
-            if (client == null)
-                return;
-            client.sessionID = p.m_bySessionID;
 
-            if (p.uiSeqId > client.seqCounterIn)
-                client.seqCounterIn = p.uiSeqId;
+            if (client == null)
+			{
+                WriteLog(1, "Error : Cant find client!\n");
+                return;
+            }
 
             client.udp = udp;
+            client.sessionID = p.m_bySessionID;
+
+            if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
+                WriteLog(1, $"Recieved packet ACK seq: { p.uiSeqId }");
+            else
+                WriteLog(1, $"Recieved packet { p.type } seq: { p.uiSeqId }");
+
+            // immediately send acknowledge
+            if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_NEED_ACK))
+                SendACK(udp, p, client);
+
+            if (p.uiSeqId > client.seqCounter)
+                client.seqCounter = p.uiSeqId;
+
             if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
                 return;
 
             WriteLog(10, "Handling packet...");
 
-            RMCP rmc = new RMCP(p);
+            var rmc = new RMCP(p);
+
             if (rmc.isRequest)
                 HandleRequest(client, p, rmc);
             else
@@ -160,22 +175,14 @@ namespace QuazalWV
             if (payload != "")
                 WriteLog(5, "Response Data Content : \n" + payload);
 
-            bool ackWithSize = false;
-
-            if (reply.ToBuffer().Length > Global.packetFragmentSize)
-                ackWithSize = true;
-
-            SendACK(udp, p, client, ackWithSize);
+            //SendACK(udp, p, client);
             SendResponsePacket(udp, p, rmc, client, reply, useCompression, error);
         }
 
-        private static void SendACK(UdpClient udp, QPacket p, ClientInfo client, bool ackWithSize = false)
+        private static void SendACK(UdpClient udp, QPacket p, ClientInfo client)
         {
             QPacket np = new QPacket(p.toBuffer());
-            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK };
-
-            if (ackWithSize)
-                np.flags.Add(QPacket.PACKETFLAG.FLAG_HAS_SIZE);
+            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
 
             np.m_oSourceVPort = p.m_oDestinationVPort;
             np.m_oDestinationVPort = p.m_oSourceVPort;
@@ -183,6 +190,7 @@ namespace QuazalWV
             np.payload = new byte[0];
             np.payloadSize = 0;
             WriteLog(10, "send ACK packet");
+            WriteLog(1, $"Sent ACK packet seq: { p.uiSeqId }");
             Send(udp, np, client);
         }
 
@@ -229,8 +237,7 @@ namespace QuazalWV
             packetData.Write(buff, 0, buff.Length);
 
             QPacket np = new QPacket(p.toBuffer());
-            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_NEED_ACK/*, QPacket.PACKETFLAG.FLAG_RELIABLE*/ };
-            //np.uiSeqId = p.uiSeqId;
+            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_NEED_ACK, QPacket.PACKETFLAG.FLAG_RELIABLE };
             np.m_oSourceVPort = p.m_oDestinationVPort;
             np.m_oDestinationVPort = p.m_oSourceVPort;
             np.m_uiSignature = client.IDsend;
@@ -290,8 +297,9 @@ namespace QuazalWV
             if (stream.Length > Global.packetFragmentSize)
                 np.flags.AddRange(new[] { QPacket.PACKETFLAG.FLAG_HAS_SIZE });
 
-           // var fragmentBytes = new MemoryStream();
+            var fragmentBytes = new MemoryStream();
 
+            np.uiSeqId = client.seqCounterOut;
             np.m_byPartNumber = 1;
             while(stream.Position < stream.Length)
 			{
@@ -307,12 +315,14 @@ namespace QuazalWV
                 byte[] buff = new byte[payloadSize];
                 stream.Read(buff, 0, payloadSize);
 
-                np.uiSeqId = (++client.seqCounterOut);
+                np.uiSeqId++;
                 np.payload = buff;
                 np.payloadSize = (ushort)np.payload.Length;
 
+                WriteLog(1, $"Sent data packet seq: { np.uiSeqId } part { np.m_byPartNumber }");
+
                 // send a fragment
-                /*{
+                {
                     var packetBuf = np.toBuffer();
 
                     // print debug stuff
@@ -333,16 +343,18 @@ namespace QuazalWV
                         client.udp.Send(fragmentBytes.GetBuffer(), (int)fragmentBytes.Length, client.ep);
                         fragmentBytes = new MemoryStream();
                     }
-                }*/
-                Send(client.udp, np, client);
+                }
+                //Send(client.udp, np, client);
 
                 np.m_byPartNumber++;
                 numFragments++;
             }
 
+            client.seqCounterOut = np.uiSeqId;
+
             // send last packets
-            //if(fragmentBytes.Length > 0)
-            //    client.udp.Send(fragmentBytes.GetBuffer(), (int)fragmentBytes.Length, client.ep);
+            if(fragmentBytes.Length > 0)
+                client.udp.Send(fragmentBytes.GetBuffer(), (int)fragmentBytes.Length, client.ep);
 
             WriteLog(10, $"sent { numFragments } packets");
         }
@@ -391,7 +403,7 @@ namespace QuazalWV
             q.type = QPacket.PACKETTYPE.DATA;
             q.flags = new List<QPacket.PACKETFLAG>();
             q.payload = new byte[0];
-            q.uiSeqId = (ushort)(++client.seqCounterOut);
+            q.uiSeqId++;
             q.m_bySessionID = client.sessionID;
             RMCP rmc = new RMCP();
             rmc.proto = RMCP.PROTOCOL.NotificationEventManager;
