@@ -31,7 +31,7 @@ namespace QuazalWV
 
 		public override string ToString()
 		{
-			return $"[RMCPResponseDDL<{typeof(T).Name}>";
+			return $"[RMCPResponseDDL<{typeof(T).Name}>]";
 		}
 	}
 }

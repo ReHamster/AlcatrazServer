@@ -136,16 +136,22 @@ namespace QuazalWV
                             break;
                     }
                 }
+
+                // sometimes happens that there are more packets in single UDP payload...
+
                 int size2 = qp.toBuffer().Length;
                 if (size2 == data.Length || isSinglePacket)
                     break;
-                MemoryStream m2 = new MemoryStream(data);
+
+                var m2 = new MemoryStream(data);
                 m2.Seek(size2, 0);
                 size2 = (int)(m2.Length - m2.Position);
+
                 if (size2 <= 8)
                     break;
+
                 data = new byte[size2];
-                m2.Write(data, 0, size2);
+                m2.Read(data, 0, size2);
             }
             return sb.ToString();
         }
