@@ -1,5 +1,6 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Interfaces;
+using System.Collections.Generic;
 
 namespace QuazalWV.RMCServices
 {
@@ -10,17 +11,32 @@ namespace QuazalWV.RMCServices
     public class TicketGrantingService : RMCServiceBase
     {
         [RMCMethod(1)]
-        public void Login(RMCPacketRequestLogin login)
+        public RMCResult Login(RMCPacketRequestLogin login)
 		{
             if (login.userName == "Tracking")
             {
                 // TODO: appropriate response
-                UNIMPLEMENTED();
+                var reply = new Login()
+                {
+                    strUserName = login.userName,
+                    retVal = 0x10001,
+                    pidPrincipal = 0,
+                    strReturnMsg = "Tracking_1.0:master",
+                    pConnectionData = new RVConnectionData()
+                    {
+                        m_urlRegularProtocols = "",
+                        m_urlSpecialProtocols = "",
+                        m_lstSpecialProtocols = new byte[] { }
+                    },
+                    pbufResponse = new byte[]{ }
+                };
+
+                return Result(reply);
             }
+            else
+                UNIMPLEMENTED();
 
-            var reply = new RMCPacketResponseLoginCustomData(Context.Client.PID, Context.Client.sPID, Context.Client.sPort);
-
-            SendResponseWithACK(reply);
+            return Error(0x1000);
         }
 
         /// <summary>
