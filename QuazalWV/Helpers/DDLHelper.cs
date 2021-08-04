@@ -96,7 +96,7 @@ namespace QuazalWV.Helpers
             {
                 instance = Helper.ReadU16(str);
             }
-            else if (currentType == typeof(byte[]))
+            else if (currentType == typeof(byte[])) // This is Quazal.Buffer with 32 bit size
             {
                 // byte arrays are special
                 uint arrayLen = Helper.ReadU32(str);
@@ -245,8 +245,8 @@ namespace QuazalWV.Helpers
             {
                 Helper.WriteU16(str, (ushort)Convert.ChangeType(obj, currentType));
             }
-            else if (currentType == typeof(byte[]))
-			{
+            else if (currentType == typeof(byte[])) // This is Quazal.Buffer with 32 bit size
+            {
                 var array = (byte[])obj;
 
                 // byte arrays are special
