@@ -17,7 +17,8 @@ namespace QuazalWV
         public uint IDsend;
         public byte sessionID;
         public byte[] sessionKey;
-        public ushort seqCounter;
+        public ushort seqCounterIn;
+        public ushort seqCounterOut;
         public ushort seqCounterDO;
         public ushort callCounterDO_RMC;
         public uint callCounterRMC;

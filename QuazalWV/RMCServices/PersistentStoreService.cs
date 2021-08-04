@@ -37,8 +37,8 @@ namespace QuazalWV.RMCServices
 
 			if (File.Exists(path))
 			{
-				reply.buffer = File.ReadAllBytes(path);
-				reply.result = true;
+				reply.m_buffer = File.ReadAllBytes(path);
+				reply.retcode = 1;
 			}
 
 			return Result(reply);

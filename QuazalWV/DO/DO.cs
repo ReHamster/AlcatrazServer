@@ -38,8 +38,8 @@ namespace QuazalWV
             if (client == null)
                 return;
             client.sessionID = p.m_bySessionID;
-            if (p.uiSeqId > client.seqCounter)
-                client.seqCounter = p.uiSeqId;
+            if (p.uiSeqId > client.seqCounterIn)
+                client.seqCounterIn = p.uiSeqId;
             client.udp = udp;
             if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
                 return;
@@ -176,7 +176,7 @@ namespace QuazalWV
         public static void MakeAndSend(ClientInfo client, QPacket np, byte[] data)
         {
             MemoryStream m = new MemoryStream(data);
-            if (data.Length < 0x3C3)
+            if (data.Length < Global.packetFragmentSize)
             {
                 np.uiSeqId = client.seqCounterDO++;
                 np.payload = data;
@@ -193,7 +193,7 @@ namespace QuazalWV
                 {
                     np.uiSeqId = client.seqCounterDO++;
                     bool isLast = false;
-                    int len = 0x3C3;
+                    int len = Global.packetFragmentSize;
                     if (len + pos >= data.Length)
                     {
                         len = data.Length - pos;
