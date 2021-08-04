@@ -16,7 +16,7 @@ namespace QuazalWV
             DO,
             RV,
             OldRVSec,
-            SBMGMT,
+            SBMGMT,         // sandbox management
             NAT,
             SessionDiscovery,
             NATEcho,
@@ -32,7 +32,7 @@ namespace QuazalWV
             FLAG_RELIABLE = 2,
             FLAG_NEED_ACK = 4,
             FLAG_HAS_SIZE = 8,
-            FLAG_UNKNOWN = 16
+            FLAG_FLOODED = 16
         }
 
         public enum PACKETTYPE
@@ -116,9 +116,11 @@ namespace QuazalWV
                 payloadSize = (ushort)(m.Length - m.Position - 1);
 
             MemoryStream pl = new MemoryStream();
+
             if (payloadSize != 0)
                 for (int i = 0; i < payloadSize; i++)
                     pl.WriteByte(Helper.ReadU8(m));
+
             payload = pl.ToArray();
 
             if (payload != null && payload.Length > 0 && type != PACKETTYPE.SYN && m_oSourceVPort.type != STREAMTYPE.NAT)
@@ -147,8 +149,8 @@ namespace QuazalWV
             realSize = (uint)m.Position;
         }
 
-        public byte[] toBuffer()
-        {
+        public byte[] getProcessedPayload()
+		{
             byte[] tmpPayload = payload;
 
             if (tmpPayload != null && tmpPayload.Length > 0 && type != PACKETTYPE.SYN && m_oSourceVPort.type != STREAMTYPE.NAT)
@@ -158,8 +160,10 @@ namespace QuazalWV
                     uint sizeBefore = (uint)tmpPayload.Length;
                     byte[] buff = Helper.Compress(tmpPayload);
                     byte count = (byte)(sizeBefore / buff.Length);
+
                     if ((sizeBefore % buff.Length) != 0)
                         count++;
+
                     MemoryStream m2 = new MemoryStream();
                     m2.WriteByte(count);
                     m2.Write(buff, 0, buff.Length);
@@ -173,10 +177,16 @@ namespace QuazalWV
                     m2.Write(tmpPayload, 0, tmpPayload.Length);
                     tmpPayload = m2.ToArray();
                 }
+
                 if (m_oSourceVPort.type == STREAMTYPE.OldRVSec)
                     tmpPayload = Helper.Encrypt(Global.keyDATA, tmpPayload);
             }
 
+            return tmpPayload;
+        }
+
+        public byte[] toBuffer()
+        {
             // process type flags
             byte typeFlag = (byte)type;
 
@@ -198,10 +208,13 @@ namespace QuazalWV
             if (type == PACKETTYPE.DATA)
                 Helper.WriteU8(m, m_byPartNumber);
 
-            if (flags.Contains(PACKETFLAG.FLAG_HAS_SIZE))
-                Helper.WriteU16(m, (ushort)tmpPayload.Length);
+            // compress
+            var processedPayload = getProcessedPayload();
 
-            m.Write(tmpPayload, 0, tmpPayload.Length);
+            if (flags.Contains(PACKETFLAG.FLAG_HAS_SIZE))
+                Helper.WriteU16(m, (ushort)processedPayload.Length);
+
+            m.Write(processedPayload, 0, processedPayload.Length);
 
             return AddCheckSum(m.ToArray());
         }
