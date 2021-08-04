@@ -7,6 +7,23 @@ using System.Threading.Tasks;
 
 namespace QuazalWV
 {
+    public class RVConnectionData
+	{
+        public string m_urlRegularProtocols { get; set; }
+        public byte[] m_lstSpecialProtocols { get; set; }
+        public string m_urlSpecialProtocols { get; set; }
+    }
+
+    public class Login
+	{
+        public string strUserName { get; set; }
+        public uint pidPrincipal { get; set; }
+        public byte[] pbufResponse { get; set; }
+        public RVConnectionData pConnectionData { get; set; }
+        public string strReturnMsg { get; set; }
+        public uint retVal { get; set; }
+    }
+
     public class RMCPacketResponseLoginCustomData : RMCPResponse
     {
         public uint resultCode = 0x10001;

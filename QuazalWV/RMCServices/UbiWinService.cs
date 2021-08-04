@@ -6,7 +6,7 @@ using System.IO;
 namespace QuazalWV.RMCServices
 {
 	/// <summary>
-	/// User friends service
+	/// Uplay achievements service
 	/// </summary>
 	[RMCService(RMCP.PROTOCOL.UplayWinService)]
 	class UbiWinService : RMCServiceBase

@@ -22,11 +22,14 @@ namespace QuazalWV.RMCServices
 		[RMCMethod(2)]
 		public void WritePlayerStats( IEnumerable<StatisticWriteWithBoard> playerStats)
 		{
+			UNIMPLEMENTED();
+			//SendResponseWithACK(new RMCPResponseEmpty());
 		}
 
 		[RMCMethod(3)]
 		public void WritePlayerStatsWithFriendsComparison(IEnumerable<StatisticWriteWithBoard> playerStats, List<uint> playerPIDs)
 		{
+			UNIMPLEMENTED();
 		}
 
 		[RMCMethod(4)]
