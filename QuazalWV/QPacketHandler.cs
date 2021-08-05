@@ -155,7 +155,7 @@ namespace QuazalWV
                         break;
                     case QPacket.PACKETTYPE.DATA:
 						{
-							if (QPacketReliable.Defrag(p) == false)
+							if (QPacketReliable.Defrag(client, p) == false)
 								break;
 
 							if (p.m_oSourceVPort.type == QPacket.STREAMTYPE.OldRVSec)
