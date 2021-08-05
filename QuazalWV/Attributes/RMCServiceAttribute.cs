@@ -8,8 +8,8 @@ namespace QuazalWV.Attributes
 	[AttributeUsage(AttributeTargets.Class)]
 	public class RMCServiceAttribute : Attribute
 	{
-		public readonly RMCP.PROTOCOL ProtocolId;
-		public RMCServiceAttribute(RMCP.PROTOCOL protocolId)
+		public readonly RMCProtocol ProtocolId;
+		public RMCServiceAttribute(RMCProtocol protocolId)
 		{
 			ProtocolId = protocolId;
 		}

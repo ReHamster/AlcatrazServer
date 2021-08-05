@@ -36,7 +36,7 @@ namespace QuazalWV
 	public class QFragmentedPacket
 	{
 		public List<QPacket> Fragmets;
-}
+	}
 
 	//-----------------------------------------------------
 
@@ -120,13 +120,13 @@ namespace QuazalWV
 					// 	return false;
 					// }
 
-					if(fragments.Length == nfrag && fragPacket.m_byPartNumber != 0)
+					if (fragments.Length == nfrag && fragPacket.m_byPartNumber != 0)
 					{
 						Log.WriteLine(1, "ERROR : packet sequence does not end with 0 - call a programmer!");
 						return false;
 					}
 
-					if(!(fragPacket.m_byPartNumber == 0 && fragments.Length == nfrag))
+					if (!(fragPacket.m_byPartNumber == 0 && fragments.Length == nfrag))
 					{
 						if (fragPacket.m_byPartNumber != nfrag)
 						{
@@ -155,80 +155,80 @@ namespace QuazalWV
 				packet.payloadSize = (ushort)fullPacketData.Length;
 
 				Log.WriteLine(10, $"Defragmented sequence of {numPackets} packets !\n");
-			}				
+			}
 
 			return true;
 		}
 
-        // acknowledges packet
-        public static void OnGotAck(QPacket ackPacket)
-        {
-            var (cr, ack) = GetCachedResponseByAckPacket(ackPacket);
-            if (cr == null)
-                return;
+		// acknowledges packet
+		public static void OnGotAck(QPacket ackPacket)
+		{
+			var (cr, ack) = GetCachedResponseByAckPacket(ackPacket);
+			if (cr == null)
+				return;
 
-            ack.GotAck = true;
+			ack.GotAck = true;
 
-            // can safely remove cache?
-            if (cr.ResponseList.All(x => x.GotAck))
+			// can safely remove cache?
+			if (cr.ResponseList.All(x => x.GotAck))
 			{
-                Log.WriteLine(10, "[QPacketReliable] sequence completed!");
-                CachedResponses.Remove(cr);
-            }
-        }
+				Log.WriteLine(10, "[QPacketReliable] sequence completed!");
+				CachedResponses.Remove(cr);
+			}
+		}
 
-        // returns response cache list by request packet
-        public static (QReliableResponse, QPacketState) GetCachedResponseByAckPacket(QPacket packet)
-        {
-            foreach (var cr in CachedResponses)
-            {
-                var st = cr.ResponseList.FirstOrDefault(x =>
-                     x.Packet.m_bySessionID == packet.m_bySessionID &&
-                     x.Packet.uiSeqId == packet.uiSeqId);
+		// returns response cache list by request packet
+		public static (QReliableResponse, QPacketState) GetCachedResponseByAckPacket(QPacket packet)
+		{
+			foreach (var cr in CachedResponses)
+			{
+				var st = cr.ResponseList.FirstOrDefault(x =>
+					 x.Packet.m_bySessionID == packet.m_bySessionID &&
+					 x.Packet.uiSeqId == packet.uiSeqId);
 
-                if (st != null)
-                    return (cr, st);
-            }
-            return (null, null);
-        }
+				if (st != null)
+					return (cr, st);
+			}
+			return (null, null);
+		}
 
-        // returns response cache list by request packet
-        public static QReliableResponse GetCachedResponseByRequestPacket(QPacket packet)
-        {
-            // FIXME: check packet type?
-            return CachedResponses.FirstOrDefault(cr =>
+		// returns response cache list by request packet
+		public static QReliableResponse GetCachedResponseByRequestPacket(QPacket packet)
+		{
+			// FIXME: check packet type?
+			return CachedResponses.FirstOrDefault(cr =>
 					cr.SrcPacket.type == packet.type &&
 					cr.SrcPacket.m_uiSignature == packet.m_uiSignature &&
-                    cr.SrcPacket.m_oSourceVPort.type == packet.m_oSourceVPort.type &&
+					cr.SrcPacket.m_oSourceVPort.type == packet.m_oSourceVPort.type &&
 					cr.SrcPacket.m_oSourceVPort.port == packet.m_oSourceVPort.port &&
 					cr.SrcPacket.m_oDestinationVPort.type == packet.m_oDestinationVPort.type &&
 					cr.SrcPacket.m_oDestinationVPort.port == packet.m_oDestinationVPort.port &&
 					cr.SrcPacket.uiSeqId == packet.uiSeqId &&
-                    cr.SrcPacket.checkSum == packet.checkSum);
-        }
+					cr.SrcPacket.checkSum == packet.checkSum);
+		}
 
-        // Caches the response which is going to be sent
-        public static void CacheResponse(QPacket requestPacket, QPacket responsePacket)
-        {
-            // don't cache non-reliable packets
-            if (!responsePacket.flags.Contains(QPacket.PACKETFLAG.FLAG_RELIABLE))
-                return;
+		// Caches the response which is going to be sent
+		public static void CacheResponse(QPacket requestPacket, QPacket responsePacket)
+		{
+			// don't cache non-reliable packets
+			if (!responsePacket.flags.Contains(QPacket.PACKETFLAG.FLAG_RELIABLE))
+				return;
 
-            if (responsePacket.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
-                return;
+			if (responsePacket.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
+				return;
 
-            var cache = GetCachedResponseByRequestPacket(requestPacket);
-            if (cache == null)
-            {
-                cache = new QReliableResponse(requestPacket);
-                CachedResponses.Add(cache);
-            }
-            else
+			var cache = GetCachedResponseByRequestPacket(requestPacket);
+			if (cache == null)
 			{
-                Log.WriteLine(10, "[QPacketReliable] Found cached request");
+				cache = new QReliableResponse(requestPacket);
+				CachedResponses.Add(cache);
+			}
+			else
+			{
+				Log.WriteLine(10, "[QPacketReliable] Found cached request");
 			}
 
-            cache.ResponseList.Add(new QPacketState(responsePacket));
-        }
-    }
+			cache.ResponseList.Add(new QPacketState(responsePacket));
+		}
+	}
 }

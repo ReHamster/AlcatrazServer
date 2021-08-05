@@ -12,9 +12,9 @@ namespace QuazalWV.Factory
 {
 	static class RMCServiceFactory
 	{
-		static Dictionary<RMCP.PROTOCOL, Func<RMCServiceBase>> s_FactoryFuncs = new Dictionary<RMCP.PROTOCOL, Func<RMCServiceBase>>();
+		static Dictionary<RMCProtocol, Func<RMCServiceBase>> s_FactoryFuncs = new Dictionary<RMCProtocol, Func<RMCServiceBase>>();
 
-		public static RMCServiceBase GetServiceInstance(RMCP.PROTOCOL protocolId)
+		public static RMCServiceBase GetServiceInstance(RMCProtocol protocolId)
 		{
 			Func<RMCServiceBase> existingFactory;
 			if (s_FactoryFuncs.TryGetValue(protocolId, out existingFactory))
@@ -24,7 +24,7 @@ namespace QuazalWV.Factory
 
 			Assembly asm = Assembly.GetExecutingAssembly();
 			var classList = asm.GetTypes()
-								  .Where(t => string.Equals(t.Namespace, "QuazalWV.RMCServices", StringComparison.Ordinal))
+								  .Where(t => string.Equals(t.Namespace, "QuazalWV.Services", StringComparison.Ordinal))
 								  .ToArray();
 
 			// search for new controller
