@@ -17,56 +17,45 @@ namespace QuazalWV
             if (client == null)
             {
                 Log.WriteLine(2, "[QUAZAL] Creating new client data...");
-
                 client = new ClientInfo();
                 client.ep = ep;
                 client.IDrecv = Global.idCounter++;
                 client.PID = Global.pidCounter++;
-                client.seqCounterOut = 0;
-
                 Global.clients.Add(client);
             }
 
-            client.seqCounter = 0;
             client.seqCounterOut = 0;
-            client.seqCounterDO = 0;
 
-            var synAck = new QPacket();
-
-            synAck.m_oSourceVPort = p.m_oDestinationVPort;
-            synAck.m_oDestinationVPort = p.m_oSourceVPort;
-            synAck.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
-            synAck.type = QPacket.PACKETTYPE.SYN;
-            synAck.m_bySessionID = p.m_bySessionID;
-            synAck.m_uiSignature = p.m_uiSignature;
-            synAck.uiSeqId = p.uiSeqId;
-            synAck.m_uiConnectionSignature = client.IDrecv;
-            synAck.payload = new byte[0];
-
-            return synAck;
+            QPacket reply = new QPacket();
+            reply.m_oSourceVPort = p.m_oDestinationVPort;
+            reply.m_oDestinationVPort = p.m_oSourceVPort;
+            reply.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK };
+            reply.type = QPacket.PACKETTYPE.SYN;
+            reply.m_bySessionID = p.m_bySessionID;
+            reply.m_uiSignature = p.m_uiSignature;
+            reply.uiSeqId = p.uiSeqId;
+            reply.m_uiConnectionSignature = client.IDrecv;
+            reply.payload = new byte[0];
+            return reply;
         }
 
         public static QPacket ProcessCONNECT(ClientInfo client, QPacket p)
         {
             client.IDsend = p.m_uiConnectionSignature;
-
-            var connAck = new QPacket();
-
-            connAck.m_oSourceVPort = p.m_oDestinationVPort;
-            connAck.m_oDestinationVPort = p.m_oSourceVPort;
-            connAck.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
-            connAck.type = QPacket.PACKETTYPE.CONNECT;
-            connAck.m_bySessionID = p.m_bySessionID;
-            connAck.m_uiSignature = client.IDsend;
-            connAck.uiSeqId = p.uiSeqId;
-            connAck.m_uiConnectionSignature = client.IDrecv;
-
+            QPacket reply = new QPacket();
+            reply.m_oSourceVPort = p.m_oDestinationVPort;
+            reply.m_oDestinationVPort = p.m_oSourceVPort;
+            reply.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK };
+            reply.type = QPacket.PACKETTYPE.CONNECT;
+            reply.m_bySessionID = p.m_bySessionID;
+            reply.m_uiSignature = client.IDsend;
+            reply.uiSeqId = p.uiSeqId;
+            reply.m_uiConnectionSignature = client.IDrecv;
             if (p.payload != null && p.payload.Length > 0)
-                connAck.payload = MakeConnectPayload(client,p);
+                reply.payload = MakeConnectPayload(client,p);
             else
-                connAck.payload = new byte[0];
-
-            return connAck;
+                reply.payload = new byte[0];
+            return reply;
         }
 
         private static byte[] MakeConnectPayload(ClientInfo client, QPacket p)
@@ -95,7 +84,7 @@ namespace QuazalWV
             QPacket reply = new QPacket();
             reply.m_oSourceVPort = p.m_oDestinationVPort;
             reply.m_oDestinationVPort = p.m_oSourceVPort;
-            reply.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
+            reply.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK };
             reply.type = QPacket.PACKETTYPE.DISCONNECT;
             reply.m_bySessionID = p.m_bySessionID;
             reply.m_uiSignature = client.IDsend - 0x10000;
@@ -109,7 +98,7 @@ namespace QuazalWV
             QPacket reply = new QPacket();
             reply.m_oSourceVPort = p.m_oDestinationVPort;
             reply.m_oDestinationVPort = p.m_oSourceVPort;
-            reply.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
+            reply.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK };
             reply.type = QPacket.PACKETTYPE.PING;
             reply.m_bySessionID = p.m_bySessionID;
             reply.m_uiSignature = client.IDsend;
