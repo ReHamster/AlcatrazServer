@@ -30,7 +30,7 @@ namespace QuazalWV
 		public static ClientInfo GetClientByEndPoint(IPEndPoint ep)
 		{
 			foreach (ClientInfo c in clients)
-				if (c.ep.Address.ToString() == ep.Address.ToString() && c.ep.Port == ep.Port)
+				if (c.endpoint.Address.ToString() == ep.Address.ToString() && c.endpoint.Port == ep.Port)
 					return c;
 
 			return null;

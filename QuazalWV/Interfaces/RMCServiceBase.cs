@@ -25,7 +25,7 @@ namespace QuazalWV.Interfaces
 
 		protected void SendResponseWithACK(RMCPResponse reply, bool useCompression = true, uint error = 0)
 		{
-			RMC.SendResponseWithACK(_context.Client.udp, _context.Packet, _context.RMC, _context.Client, reply, useCompression, error);
+			RMC.SendResponseWithACK(_context.Handler, _context.Packet, _context.RMC, _context.Client, reply, useCompression, error);
 		}
 
 		protected RMCResult Result<T>(T reply) where T: class

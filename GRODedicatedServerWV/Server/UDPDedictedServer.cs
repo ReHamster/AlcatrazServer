@@ -62,7 +62,7 @@ namespace GRODedicatedServerWV
 
         public static void ProcessPacket(byte[] data, IPEndPoint ep)
         {
-            QPacketHandler.ProcessPacket("UDP Dedicated Server", data, ep, listener, 0,0, true);
+            QPacketHandlerPRUDP.ProcessPacket("UDP Dedicated Server", data, ep, listener, 0,0, true);
         }
 
         private static void WriteLog(int priority, string s)

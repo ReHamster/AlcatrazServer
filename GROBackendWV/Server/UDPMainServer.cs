@@ -18,8 +18,10 @@ namespace GROBackendWV
         public static ushort listenPort = 21031;
         public static UdpClient listener;
         public static ushort _skipNextNAT = 0xFFFF;
+		static QPacketHandlerPRUDP packetHandler;
 
-        public static void Start()
+
+		public static void Start()
         {
             _exit = false;
             new Thread(tMainThread).Start();
@@ -39,6 +41,8 @@ namespace GROBackendWV
         {
             listener = new UdpClient(listenPort);
             IPEndPoint ep = new IPEndPoint(IPAddress.Any, 0);
+
+			packetHandler = new QPacketHandlerPRUDP(listener, serverPID, listenPort, "UDP Backend");
 
 			WriteLog(1, $"Server started at port { listenPort }");
 
@@ -64,7 +68,7 @@ namespace GROBackendWV
 
         public static void ProcessPacket(byte[] data, IPEndPoint ep)
         {
-            QPacketHandler.ProcessPacket("UDP Backend", data, ep, listener, UDPMainServer.serverPID, UDPMainServer.listenPort);
+			packetHandler.ProcessPacket(data, ep);
         }
 
         private static void WriteLog(int priority, string s)

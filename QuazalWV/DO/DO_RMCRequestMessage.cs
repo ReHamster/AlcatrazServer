@@ -74,7 +74,7 @@ namespace QuazalWV
                     p.payload = m2.ToArray();
                     p.payloadSize = (ushort)p.payload.Length;
                     p.m_uiSignature = client.IDsend;
-                    DO.Send(p, client);
+                    //DO.Send(p, client);
                     return null;
                 case DOC_METHOD.RequestIDRangeFromMaster:
                     Log.WriteLine(1, "[DO] Handling RequestIDRangeFromMaster...");

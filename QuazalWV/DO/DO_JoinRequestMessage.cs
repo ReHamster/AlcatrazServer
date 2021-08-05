@@ -42,7 +42,7 @@ namespace QuazalWV
             qp.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
             qp.m_uiConnectionSignature = client.IDsend;
             qp.payload = new byte[0];
-            DO.Send(qp, client);
+            //DO.Send(qp, client);
             qp = new QPacket();
             qp.m_bySessionID = sessionID;
             qp.m_oSourceVPort = new QPacket.VPort(0x11);
@@ -55,7 +55,7 @@ namespace QuazalWV
             Helper.WriteU32(m, 8);
             Helper.WriteU32(m, new DupObj(DupObjClass.Station, 1));
             Helper.WriteU32(m, new DupObj(DupObjClass.Station, 2));
-            DO.MakeAndSend(client, qp, m.ToArray());
+            //DO.MakeAndSend(client, qp, m.ToArray());
         }
     }
 }

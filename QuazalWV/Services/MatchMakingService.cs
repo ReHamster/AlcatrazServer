@@ -33,9 +33,9 @@ namespace QuazalWV.Services
 		}
 
 		[RMCMethod(4)]
-		public void UpdateGathering()
+		public RMCResult UpdateGathering(/*Data<Gathering> anyGathering*/)
 		{
-			UNIMPLEMENTED();
+			return Error(0);
 		}
 
 		[RMCMethod(5)]
@@ -237,21 +237,21 @@ namespace QuazalWV.Services
 		}
 
 		[RMCMethod(38)]
-		public void RegisterLocalURL()
+		public RMCResult RegisterLocalURL(uint gid, string url)
 		{
-			UNIMPLEMENTED();
+			return Error(0);
 		}
 
 		[RMCMethod(39)]
-		public void RegisterLocalURLs()
+		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<string> urls)
 		{
-			UNIMPLEMENTED();
+			return Error(0);
 		}
 
 		[RMCMethod(40)]
-		public void UpdateSessionHostV1(uint gid)
+		public RMCResult UpdateSessionHostV1(uint gid)
 		{
-
+			return Error(0);
 		}
 
 		[RMCMethod(41)]

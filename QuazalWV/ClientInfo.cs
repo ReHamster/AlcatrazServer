@@ -13,8 +13,12 @@ namespace QuazalWV
 		public uint PID;
 		public uint sPID;
 		public ushort sPort;
+
 		public uint IDrecv;
 		public uint IDsend;
+
+		public IPEndPoint endpoint;
+
 		public byte sessionID;
 		public byte[] sessionKey;
 
@@ -29,8 +33,8 @@ namespace QuazalWV
 		public string accountId;
 		public string name;
 		public string pass;
-		public IPEndPoint ep;
-		public UdpClient udp;
+
+
 		public bool bootStrapDone = false;
 		public bool matchStartSent = false;
 		public bool playerCreateStuffSent1 = false;

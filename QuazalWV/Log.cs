@@ -80,7 +80,7 @@ namespace QuazalWV
 				{
 					switch (qp.m_oSourceVPort.type)
 					{
-						case QPacket.STREAMTYPE.OldRVSec:
+						case QPacket.STREAMTYPE.RVSecure:
 							if (qp.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 								break;
 							sb.AppendLine("Trying to process RMC packet...");

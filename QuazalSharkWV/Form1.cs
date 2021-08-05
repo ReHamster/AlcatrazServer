@@ -81,7 +81,7 @@ namespace QuazalSharkWV
                         sb.Append("(" + FindDOMethods(e.packet.payload) + ")");
                     if (e.sent &&
                         e.packet.type == QPacket.PACKETTYPE.DATA &&
-                        e.packet.m_oSourceVPort.type == QPacket.STREAMTYPE.OldRVSec &&
+                        e.packet.m_oSourceVPort.type == QPacket.STREAMTYPE.RVSecure &&
                         !e.packet.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
                         sb.Append("(" + GetRMCDetails(e.packet) + ")");
                     listBox1.Items.Add(sb.ToString());

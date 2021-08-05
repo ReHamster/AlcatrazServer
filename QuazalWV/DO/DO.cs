@@ -32,7 +32,7 @@ namespace QuazalWV
             EOS = 0xFF
         }
 
-        public static void HandlePacket(UdpClient udp, QPacket p)
+        public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p)
         {
             ClientInfo client = Global.GetClientByIDrecv(p.m_uiSignature);
             if (client == null)
@@ -40,9 +40,10 @@ namespace QuazalWV
             client.sessionID = p.m_bySessionID;
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
-            client.udp = udp;
+
             if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
                 return;
+
             Log.WriteLine(10, "[DO] Handling packet...");
             MemoryStream m = new MemoryStream(p.payload);
             uint packetSize = Helper.ReadU32(m);
@@ -53,11 +54,13 @@ namespace QuazalWV
             Log.WriteLine(10, "[DO] Unpacking request...\n" + sb.ToString());
             byte[] replyPayload = ProcessMessage(client, p, data);
             p.m_uiSignature = client.IDsend;
+
             if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_NEED_ACK))
-                SendACK(p, client);
+                handler.SendACK(p, client);
+
             if (replyPayload != null)
             {
-                SendMessage(client, p, replyPayload);
+                SendMessage(handler, client, p, replyPayload);
                 sb = new StringBuilder();
                 UnpackMessage(replyPayload, 0, sb);
                 Log.WriteLine(10, "[DO] Unpacking response...\n" + sb.ToString());
@@ -149,82 +152,19 @@ namespace QuazalWV
             return null;
         }
 
-
-        private static void SendACK(QPacket p, ClientInfo client)
+        private static void SendMessage(QPacketHandlerPRUDP handler, ClientInfo client, QPacket p, byte[] data)
         {
-            QPacket np = new QPacket(p.toBuffer());
-            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK };
-            np.m_oSourceVPort = p.m_oDestinationVPort;
-            np.m_oDestinationVPort = p.m_oSourceVPort;
-            np.payload = new byte[0];
-            np.payloadSize = 0;
-            Log.WriteLine(10, "[DO] send ACK packet");
-            Send(np, client);
-        }
+			var np = new QPacket(p.toBuffer());
 
-        private static void SendMessage(ClientInfo client, QPacket p, byte[] data)
-        {
-            p.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_NEED_ACK , QPacket.PACKETFLAG.FLAG_RELIABLE, QPacket.PACKETFLAG.FLAG_HAS_SIZE};
+			np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_NEED_ACK , QPacket.PACKETFLAG.FLAG_RELIABLE, QPacket.PACKETFLAG.FLAG_HAS_SIZE};
+
             MemoryStream m = new MemoryStream();
             Helper.WriteU32(m, (uint)data.Length);
             m.Write(data, 0, data.Length);
             m.WriteByte((byte)QPacket.MakeChecksum(m.ToArray(), 0));
             Log.WriteLine(10, "sending DO message packet");
-            MakeAndSend(client, p, m.ToArray());
-        }
 
-        public static void MakeAndSend(ClientInfo client, QPacket np, byte[] data)
-        {
-            MemoryStream m = new MemoryStream(data);
-            if (data.Length < Global.packetFragmentSize)
-            {
-                np.uiSeqId = client.seqCounterDO++;
-                np.payload = data;
-                np.payloadSize = (ushort)np.payload.Length;
-                Log.WriteLine(10, "[DO] sent packet");
-                Send(np, client);
-            }
-            else
-            {
-                int pos = 0;
-                m.Seek(0, 0);
-                np.m_byPartNumber = 0;
-                while (pos < data.Length)
-                {
-                    np.uiSeqId = client.seqCounterDO++;
-                    bool isLast = false;
-                    int len = Global.packetFragmentSize;
-                    if (len + pos >= data.Length)
-                    {
-                        len = data.Length - pos;
-                        isLast = true;
-                    }
-                    if (!isLast)
-                        np.m_byPartNumber++;
-                    else
-                        np.m_byPartNumber = 0;
-                    byte[] buff = new byte[len];
-                    m.Read(buff, 0, len);
-                    np.payload = buff;
-                    np.payloadSize = (ushort)np.payload.Length;
-                    Send(np, client);
-                    pos += len;
-                }
-                Log.WriteLine(10, "[DO] sent packets");
-            }
-        }
-
-        public static void Send(QPacket p, ClientInfo client)
-        {
-            byte[] data = p.toBuffer();
-            StringBuilder sb = new StringBuilder();
-            foreach (byte b in data)
-                sb.Append(b.ToString("X2") + " ");
-            Log.WriteLine(5,  "[DO] send : " + p.ToStringShort());
-            Log.WriteLine(10, "[DO] send : " + sb.ToString());
-            Log.WriteLine(10, "[DO] send : " + p.ToStringDetailed());
-            client.udp.Send(data, data.Length, client.ep);
-            Log.LogPacket(true, data);
+			handler.MakeAndSend(client, p, np, m.ToArray());
         }
 
 

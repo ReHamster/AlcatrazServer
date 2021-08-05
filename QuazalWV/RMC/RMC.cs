@@ -14,7 +14,7 @@ namespace QuazalWV
 {
 	public static class RMC
     {
-        public static void HandlePacket(UdpClient udp, QPacket p)
+        public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p)
         {
             ClientInfo client = Global.GetClientByIDrecv(p.m_uiSignature);
 
@@ -27,24 +27,17 @@ namespace QuazalWV
             client.sessionID = p.m_bySessionID;
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
-            client.udp = udp;
-
-            if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
-			{
-                QPacketReliable.OnGotAck(p);
-                return;
-            }
 
             WriteLog(10, "Handling packet...");
 
             RMCPacket rmc = new RMCPacket(p);
             if (rmc.isRequest)
-                HandleRequest(client, p, rmc);
+                HandleRequest(handler, client, p, rmc);
             else
-                HandleResponse(client, p, rmc);
+                HandleResponse(handler, client, p, rmc);
         }
 
-        public static void HandleResponse(ClientInfo client, QPacket p, RMCPacket rmc)
+        public static void HandleResponse(QPacketHandlerPRUDP handler, ClientInfo client, QPacket p, RMCPacket rmc)
         {
             ProcessResponse(client, p, rmc);
             WriteLog(1, "Received Response : " + rmc.ToString());
@@ -76,7 +69,7 @@ namespace QuazalWV
             return DDLSerializer.ReadPropertyValues(typeList.ToArray(), m);
         }
 
-        public static void HandleRequest(ClientInfo client, QPacket p, RMCPacket rmc)
+        public static void HandleRequest(QPacketHandlerPRUDP handler, ClientInfo client, QPacket p, RMCPacket rmc)
         {
             MemoryStream m = new MemoryStream(p.payload);
 
@@ -94,16 +87,7 @@ namespace QuazalWV
             if (payload != "")
                 WriteLog(5, payload);
 
-			// resend?
-			var cache = QPacketReliable.GetCachedResponseByRequestPacket(p);
-			if (cache != null)
-			{
-				SendACK(client.udp, p, client);
-				RetrySend(client.udp, cache, client);
-				return;
-			}
-
-			var rmcContext = new RMCContext(rmc, client, p);
+			var rmcContext = new RMCContext(rmc, handler, client, p);
 
             // create service instance
             var serviceInstance = RMCServiceFactory.GetServiceInstance(rmc.proto);
@@ -142,7 +126,7 @@ namespace QuazalWV
                             var rmcResult = (RMCResult)returnValue;
 
                             SendResponseWithACK(
-                                rmcContext.Client.udp,
+								handler,
                                 rmcContext.Packet,
                                 rmcContext.RMC,
                                 rmcContext.Client,
@@ -168,7 +152,7 @@ namespace QuazalWV
             }
         }
 
-        public static void SendResponseWithACK(UdpClient udp, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse reply, bool useCompression = true, uint error = 0)
+        public static void SendResponseWithACK(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse reply, bool useCompression = true, uint error = 0)
         {
             WriteLog(2, "Response : " + reply.ToString());
             string payload = reply.PayloadToString();
@@ -176,26 +160,11 @@ namespace QuazalWV
             if (payload != "")
                 WriteLog(5, "Response Data Content : \n" + payload);
 
-            SendACK(udp, p, client);
-            SendResponsePacket(udp, p, rmc, client, reply, useCompression, error);
+			handler.SendACK(p, client);
+            SendResponsePacket(handler, p, rmc, client, reply, useCompression, error);
         }
 
-        private static void SendACK(UdpClient udp, QPacket p, ClientInfo client)
-        {
-            QPacket np = new QPacket(p.toBuffer());
-            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
-
-            np.m_oSourceVPort = p.m_oDestinationVPort;
-            np.m_oDestinationVPort = p.m_oSourceVPort;
-            np.m_uiSignature = client.IDsend;
-            np.payload = new byte[0];
-            np.payloadSize = 0;
-            WriteLog(10, "send ACK packet");
-
-            Send(udp, p, np, client);
-        }
-
-        private static void SendResponsePacket(UdpClient udp, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse reply, bool useCompression, uint error)
+        private static void SendResponsePacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse reply, bool useCompression, uint error)
         {
             var packetData = new MemoryStream();
 
@@ -244,10 +213,10 @@ namespace QuazalWV
             np.m_uiSignature = client.IDsend;
             np.usesCompression = useCompression;
 
-            MakeAndSend(client, p, np, packetData.ToArray());
+			handler.MakeAndSend(client, p, np, packetData.ToArray());
         }
         
-        public static void SendRequestPacket(UdpClient udp, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse packet, bool useCompression, uint error)
+        public static void SendRequestPacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse packet, bool useCompression, uint error)
         {
             var packetData = new MemoryStream();
 
@@ -283,111 +252,8 @@ namespace QuazalWV
             np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_NEED_ACK };
             np.m_uiSignature = client.IDsend;
 
-            MakeAndSend(client, p, np, packetData.ToArray());
+			handler.MakeAndSend(client, p, np, packetData.ToArray());
         }
-
-        public static void MakeAndSend(ClientInfo client, QPacket reqPacket, QPacket newPacket, byte[] data)
-        {
-            var stream = new MemoryStream(data);
-
-            int numFragments = 0;
-
-            // Houston, we have a problem...
-            // BUG: Can't send lengthy messages through PRUDP, game simply doesn't accept them :(
-
-            if (stream.Length > Global.packetFragmentSize)
-                newPacket.flags.AddRange(new[] { QPacket.PACKETFLAG.FLAG_HAS_SIZE });
-
-            // var fragmentBytes = new MemoryStream();
-
-            newPacket.uiSeqId = client.seqCounterOut;
-            newPacket.m_byPartNumber = 1;
-            while(stream.Position < stream.Length)
-			{
-                int payloadSize = (int)(stream.Length - stream.Position);
-
-                if(payloadSize <= Global.packetFragmentSize)
-				{
-                    newPacket.m_byPartNumber = 0;  // indicate last packet
-                }
-                else
-                    payloadSize = Global.packetFragmentSize;
-
-                byte[] buff = new byte[payloadSize];
-                stream.Read(buff, 0, payloadSize);
-
-                newPacket.uiSeqId++;
-                newPacket.payload = buff;
-                newPacket.payloadSize = (ushort)newPacket.payload.Length;
-
-                // send a fragment
-                /*{
-                    var packetBuf = np.toBuffer();
-
-                    // print debug stuff
-                    var sb = new StringBuilder();
-                    foreach (byte b in packetBuf)
-                        sb.Append(b.ToString("X2") + " ");
-
-                    WriteLog(5, "send : " + np.ToStringShort());
-                    WriteLog(10, "send : " + sb.ToString());
-                    WriteLog(10, "send : " + np.ToStringDetailed());
-
-                    Log.LogPacket(true, packetBuf);
-
-                    fragmentBytes.Write(packetBuf, 0, packetBuf.Length);
-
-                    if (numFragments % 2 == 1)
-                    {
-                        client.udp.Send(fragmentBytes.GetBuffer(), (int)fragmentBytes.Length, client.ep);
-                        fragmentBytes = new MemoryStream();
-                    }
-                }*/
-
-                Send(client.udp, reqPacket, newPacket, client);
-
-                newPacket.m_byPartNumber++;
-                numFragments++;
-            }
-
-            client.seqCounterOut = newPacket.uiSeqId;
-
-            // send last packets
-            //if(fragmentBytes.Length > 0)
-            //    client.udp.Send(fragmentBytes.GetBuffer(), (int)fragmentBytes.Length, client.ep);
-
-            WriteLog(10, $"sent { numFragments } packets");
-        }
-
-        public static void Send(UdpClient udp, QPacket reqPacket, QPacket packet, ClientInfo client)
-        {
-            byte[] data = packet.toBuffer();
-
-            QPacketReliable.CacheResponse(reqPacket, new QPacket(data));
-
-            var sb = new StringBuilder();
-            foreach (byte b in data)
-                sb.Append(b.ToString("X2") + " ");
-
-            WriteLog(5, "send : " + packet.ToStringShort());
-            WriteLog(10, "send : " + sb.ToString());
-            WriteLog(10, "send : " + packet.ToStringDetailed());
-
-            udp.Send(data, data.Length, client.ep);
-
-            Log.LogPacket(true, data);
-        }
-
-		public static void RetrySend(UdpClient udp, QReliableResponse cache, ClientInfo client)
-		{
-			WriteLog(2, "Re-sending reliable packets...");
-
-			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
-			{
-				byte[] data = crp.Packet.toBuffer();
-				udp.Send(data, data.Length, client.ep);
-			}
-		}
 
 		public static void SendNotification(ClientInfo client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
         {
@@ -423,7 +289,7 @@ namespace QuazalWV
             rmc.callID = ++client.callCounterRMC;
 
             var reply = new RMCPResponseDDL<byte[]>(payload);
-            RMC.SendRequestPacket(client.udp, q, rmc, client, reply, true, 0);
+            //RMC.SendRequestPacket(client.udp, q, rmc, client, reply, true, 0);
         }
 
         private static void WriteLog(int priority, string s)
