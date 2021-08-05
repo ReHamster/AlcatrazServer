@@ -120,6 +120,7 @@ namespace QuazalWV
             {
                 QPacket p = new QPacket(data);
                 MemoryStream m = new MemoryStream(data);
+
                 byte[] buff = new byte[(int)p.realSize];
                 m.Seek(0, 0);
                 m.Read(buff, 0, buff.Length);
@@ -127,10 +128,13 @@ namespace QuazalWV
                 Log.WriteLine(5, "[" + source + "] received : " + p.ToStringShort());
                 Log.WriteLine(10, "[" + source + "] received : " + sb.ToString());
                 Log.WriteLine(10, "[" + source + "] received : " + p.ToStringDetailed());
+
                 QPacket reply = null;
                 ClientInfo client = null;
+
                 if (p.type != QPacket.PACKETTYPE.SYN && p.type != QPacket.PACKETTYPE.NATPING)
                     client = Global.GetClientByIDrecv(p.m_uiSignature);
+
                 switch (p.type)
                 {
                     case QPacket.PACKETTYPE.SYN:
@@ -150,10 +154,15 @@ namespace QuazalWV
                         }
                         break;
                     case QPacket.PACKETTYPE.DATA:
-                        if (p.m_oSourceVPort.type == QPacket.STREAMTYPE.OldRVSec)
-                            RMC.HandlePacket(listener, p);
-                        if (p.m_oSourceVPort.type == QPacket.STREAMTYPE.DO)
-                            DO.HandlePacket(listener, p);
+						{
+							if (QPacketReliable.Defrag(p) == false)
+								break;
+
+							if (p.m_oSourceVPort.type == QPacket.STREAMTYPE.OldRVSec)
+								RMC.HandlePacket(listener, p);
+							if (p.m_oSourceVPort.type == QPacket.STREAMTYPE.DO)
+								DO.HandlePacket(listener, p);
+						}
                         break;
                     case QPacket.PACKETTYPE.DISCONNECT:
                         if (client != null)
@@ -188,8 +197,10 @@ namespace QuazalWV
                         }
                         break;
                 }
+
                 if (reply != null)
                     Send(source, reply, ep, listener);
+
                 if (p.realSize != data.Length)
                 {
                     m = new MemoryStream(data);
