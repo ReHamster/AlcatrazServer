@@ -35,14 +35,6 @@ namespace QuazalWV
                 return;
             }
 
-            // resend 
-            var cache = QPacketReliable.GetCachedResponseByRequestPacket(p);
-            if (cache != null)
-            {
-				RetrySend(client.udp, cache, client);
-				return;
-            }
-
             WriteLog(10, "Handling packet...");
 
             RMCP rmc = new RMCP(p);
@@ -73,7 +65,7 @@ namespace QuazalWV
                 rmc.error = Helper.ReadU32(m);
                 rmc.callID = Helper.ReadU32(m);
             }
-            WriteLog(1, "Got response for Protocol " + rmc.proto + " = " + (rmc.success ? "Success" : "Fail"));
+            WriteLog(1, "Got response for Protocol " + rmc.proto + " = " + (rmc.success ? "Success" : $"Fail : { rmc.error.ToString("X8") } for callID = { rmc.callID }"));
         }
 
         private static object[] HandleMethodParameters(MethodInfo method, Stream m)
@@ -102,7 +94,16 @@ namespace QuazalWV
             if (payload != "")
                 WriteLog(5, payload);
 
-            var rmcContext = new RMCContext(rmc, client, p);
+			// resend?
+			var cache = QPacketReliable.GetCachedResponseByRequestPacket(p);
+			if (cache != null)
+			{
+				SendACK(client.udp, p, client);
+				RetrySend(client.udp, cache, client);
+				return;
+			}
+
+			var rmcContext = new RMCContext(rmc, client, p);
 
             // create service instance
             var serviceInstance = RMCServiceFactory.GetServiceInstance(rmc.proto);
@@ -379,7 +380,7 @@ namespace QuazalWV
 
 		public static void RetrySend(UdpClient udp, QReliableResponse cache, ClientInfo client)
 		{
-			WriteLog(1, "Re-sending reliable packets...");
+			WriteLog(2, "Re-sending reliable packets...");
 
 			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
 			{

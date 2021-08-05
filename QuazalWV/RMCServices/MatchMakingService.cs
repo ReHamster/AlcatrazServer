@@ -64,9 +64,9 @@ namespace QuazalWV.RMCServices
 			UNIMPLEMENTED();
 		}
 
-		[RMCMethod(11)] public void Participate()
+		[RMCMethod(11)] public RMCResult Participate(uint idGathering, string strMessage)
 		{
-			UNIMPLEMENTED();
+			return Result(new { result = true });
 		}
 
 		[RMCMethod(12)] public void CancelParticipation()
@@ -209,9 +209,9 @@ namespace QuazalWV.RMCServices
 			UNIMPLEMENTED();
 		}
 
-		[RMCMethod(40)] public void UpdateSessionHostV1()
+		[RMCMethod(40)] public void UpdateSessionHostV1(uint gid)
 		{
-			UNIMPLEMENTED();
+
 		}
 
 		[RMCMethod(41)] public void GetSessionURLs()

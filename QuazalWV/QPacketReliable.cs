@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -44,7 +45,23 @@ namespace QuazalWV
 		private static List<QPacket> FragmentPackets = new List<QPacket>();
 		private static List<QReliableResponse> CachedResponses = new List<QReliableResponse>();
 
-		public static bool Defrag(QPacket packet)
+		private static void SendACK(UdpClient udp, QPacket p, ClientInfo client)
+		{
+			QPacket np = new QPacket(p.toBuffer());
+			np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
+
+			np.m_oSourceVPort = p.m_oDestinationVPort;
+			np.m_oDestinationVPort = p.m_oSourceVPort;
+			np.m_uiSignature = client.IDsend;
+			np.payload = new byte[0];
+			np.payloadSize = 0;
+
+			byte[] data = p.toBuffer();
+
+			udp.Send(data, data.Length, client.ep);
+		}
+
+		public static bool Defrag(ClientInfo client, QPacket packet)
 		{
 			if (packet.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 				return true;
@@ -52,7 +69,17 @@ namespace QuazalWV
 			if (!packet.flags.Contains(QPacket.PACKETFLAG.FLAG_RELIABLE))
 				return true;
 
-			FragmentPackets.Add(packet);
+			if (!FragmentPackets.Any(x =>
+				 x.uiSeqId == packet.uiSeqId &&
+				 x.checkSum == packet.checkSum &&
+				 x.m_byPartNumber == packet.m_byPartNumber &&
+				 x.checkSum == packet.checkSum &&
+				 x.m_bySessionID == packet.m_bySessionID &&
+				 x.m_uiSignature == packet.m_uiSignature
+				))
+			{
+				FragmentPackets.Add(packet);
+			}
 
 			if (packet.m_byPartNumber != 0)
 			{
@@ -61,16 +88,64 @@ namespace QuazalWV
 			}
 
 			// got last fragment, assemble
-			var orderedFragments = FragmentPackets.OrderByDescending(x => x.uiSeqId);
+			var orderedFragments = FragmentPackets
+				// .Where(x => 
+				// 	x.m_bySessionID == packet.m_bySessionID && 
+				// 	x.m_uiConnectionSignature == packet.m_uiConnectionSignature)
+				.OrderBy(x => x.uiSeqId);
 
-			int numPackets = orderedFragments.FirstOrDefault().m_byPartNumber + 1;
-			var fragments = orderedFragments.Take(numPackets).Reverse();
+			int numPackets = 0;
+			foreach (var fragPacket in orderedFragments)
+			{
+				numPackets++;
+				if (fragPacket.m_byPartNumber == 0)
+					break;
+			}
+
+			var fragments = orderedFragments.Take(numPackets).ToArray();
 
 			// remove fragments that we processed
-			FragmentPackets.RemoveAll(x => fragments.Contains(x));
+			FragmentPackets.Clear();//RemoveAll(x => fragments.Contains(x));
 
-			if(numPackets > 1)
+			if (numPackets > 1)
 			{
+				// validate algorightm above
+				ushort seqId = fragments.First().uiSeqId;
+				int nfrag = 1;
+				foreach (var fragPacket in fragments)
+				{
+					// if(fragPacket.uiSeqId != seqId)
+					// {
+					// 	Log.WriteLine(1, "ERROR : invalid packet sequence for defragmenting - call a programmer!");
+					// 	return false;
+					// }
+
+					if(fragments.Length == nfrag && fragPacket.m_byPartNumber != 0)
+					{
+						Log.WriteLine(1, "ERROR : packet sequence does not end with 0 - call a programmer!");
+						return false;
+					}
+
+					if(!(fragPacket.m_byPartNumber == 0 && fragments.Length == nfrag))
+					{
+						if (fragPacket.m_byPartNumber != nfrag)
+						{
+							Log.WriteLine(1, "ERROR : insufficient packet fragments - call a programmer!");
+							return false;
+						}
+					}
+
+					seqId++;
+					nfrag++;
+				}
+
+				// acks are required for each packet
+				foreach (var fragPacket in fragments)
+				{
+					if (fragPacket.flags.Contains(QPacket.PACKETFLAG.FLAG_NEED_ACK))
+						SendACK(client.udp, fragPacket, client);
+				}
+
 				var fullPacketData = new MemoryStream();
 				foreach (var fragPacket in fragments)
 					fullPacketData.Write(fragPacket.payload, 0, fragPacket.payload.Length);

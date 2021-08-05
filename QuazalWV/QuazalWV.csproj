@@ -185,6 +185,7 @@
     <Compile Include="QPacketReliable.cs" />
     <Compile Include="RMCServices\GameInfoService.cs" />
     <Compile Include="RMCServices\LocalizationService.cs" />
+    <Compile Include="RMCServices\MatchMakingService.cs" />
     <Compile Include="RMCServices\NewsService.cs" />
     <Compile Include="RMCServices\OverlordFriendsService.cs" />
     <Compile Include="RMCServices\PersistentStoreService.cs" />

@@ -27,7 +27,7 @@ namespace GROBackendWV
                 string line;
                 List<string> lines = new List<string>();
                 while ((line = sr.ReadLine()) != null)
-                    lines.Add(line);
+                    lines.Add(line.Replace(" ", ""));
                 StringBuilder sb = new StringBuilder();
                 foreach (string l in lines)
                 {
