@@ -24,7 +24,6 @@ namespace QuazalWV.Services
 		public RMCResult WritePlayerStats(IEnumerable<StatisticWriteWithBoard> playerStats)
 		{
 			UNIMPLEMENTED();
-			//SendResponseWithACK(new RMCPResponseEmpty());
 			return Error(0);
 		}
 

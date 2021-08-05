@@ -18,9 +18,9 @@ namespace QuazalWV.Services
 		}
 
 		[RMCMethod(2)]
-		public void SetLocaleCode(string localeCode)
+		public RMCResult SetLocaleCode(string localeCode)
 		{
-			SendResponseWithACK(new RMCPResponseEmpty());
+			return Error(0);
 		}
 	}
 }

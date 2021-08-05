@@ -12,18 +12,15 @@ namespace QuazalWV
 	{
 		public enum STREAMTYPE
 		{
-			Unused,
-			DO,
-			RV,
-			OldRVSec,
-			SBMGMT,         // sandbox management
+			DO = 1,
+			RVAuthentication,
+			RVSecure,
+			SandBoxMgmt,
 			NAT,
 			SessionDiscovery,
 			NATEcho,
 			Routing,
-			Game,
-			RVSecure,
-			Relay
+			LastStreamType,
 		}
 
 		public enum PACKETFLAG
@@ -65,6 +62,21 @@ namespace QuazalWV
 				byte result = port;
 				result |= (byte)((byte)type << 4);
 				return result;
+			}
+
+			public override bool Equals(object obj)
+			{
+				//Check for null and compare run-time types.
+				if ((obj == null) || !GetType().Equals(obj.GetType()))
+					return false;
+
+				var p = (VPort)obj;
+				return (type == p.type) && (port == p.port);
+			}
+
+			public override int GetHashCode()
+			{
+				return ((int)type << 2) ^ port;
 			}
 		}
 
@@ -125,7 +137,7 @@ namespace QuazalWV
 
 			if (payload != null && payload.Length > 0 && type != PACKETTYPE.SYN && m_oSourceVPort.type != STREAMTYPE.NAT)
 			{
-				if (m_oSourceVPort.type == STREAMTYPE.OldRVSec)
+				if (m_oSourceVPort.type == STREAMTYPE.RVSecure)
 					payload = Helper.Decrypt(Global.keyDATA, payload);
 
 				usesCompression = payload[0] != 0;
@@ -178,7 +190,7 @@ namespace QuazalWV
 					tmpPayload = m2.ToArray();
 				}
 
-				if (m_oSourceVPort.type == STREAMTYPE.OldRVSec)
+				if (m_oSourceVPort.type == STREAMTYPE.RVSecure)
 					tmpPayload = Helper.Encrypt(Global.keyDATA, tmpPayload);
 			}
 

@@ -181,9 +181,11 @@
     <Compile Include="Classes\StdMaps.cs" />
     <Compile Include="ClientInfo.cs" />
     <Compile Include="DDL\DDLSerializer.cs" />
+    <Compile Include="DDL\Models\DriverG2WService\UnlockInputData.cs" />
     <Compile Include="Interfaces\RMCResult.cs" />
     <Compile Include="DDL\Models\StatisticsService\StatisticData.cs" />
-    <Compile Include="QPacketReliable.cs" />
+    <Compile Include="Packet\QPacketHandlerPRUDPReliable.cs" />
+    <Compile Include="Services\DriverG2WService.cs" />
     <Compile Include="Services\GameInfoService.cs" />
     <Compile Include="Services\LocalizationService.cs" />
     <Compile Include="Services\MatchMakingService.cs" />
@@ -244,8 +246,8 @@
     <Compile Include="NotificationQuene.cs" />
     <Compile Include="NotificationQueneEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QPacket.cs" />
-    <Compile Include="QPacketHandler.cs" />
+    <Compile Include="Packet\QPacket.cs" />
+    <Compile Include="Packet\QPacketHandlerPRUDP.cs" />
     <Compile Include="DDL\Models\AuthenticationService\Request\RMCPacketRequestLoginCustomData.cs" />
     <Compile Include="DDL\Models\AuthenticationService\Request\RMCPacketRequestRequestTicket.cs" />
     <Compile Include="DDL\Models\AuthenticationService\Response\RMCPacketResponseLoginCustomData.cs" />
@@ -259,7 +261,6 @@
     <Compile Include="RMC\RMCProtocol.cs" />
     <Compile Include="DDL\Models\SecureService\Request\RMCPacketRequestRegisterEx.cs" />
     <Compile Include="DDL\Models\SecureService\Response\RMCPacketResponseRegisterEx.cs" />
-    <Compile Include="DDL\Models\SecureService\SecureService.cs" />
     <Compile Include="DDL\Models\UbiAccountManagementService\UbiAccount.cs" />
     <Compile Include="DDL\Models\UbiNewsService\NewsChannel.cs" />
     <Compile Include="DDL\Models\UbiWinService\UplayAction.cs" />
@@ -268,7 +269,9 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="PRUDP\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

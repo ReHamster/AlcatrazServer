@@ -75,7 +75,7 @@ namespace GROBackendWV
                 rmc.callID = ++client.callCounterRMC;
 				
 				var reply = new RMCPResponseDDL<byte[]>(payload);
-                RMC.SendRequestPacket(client.udp, q, rmc, client, reply, true, 0);
+                // RMC.SendRequestPacket(client.udp, q, rmc, client, reply, true, 0);
             }
         }
     }

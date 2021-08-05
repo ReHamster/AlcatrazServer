@@ -40,28 +40,9 @@ namespace QuazalWV
 
 	//-----------------------------------------------------
 
-	public static class QPacketReliable
+	public partial class QPacketHandlerPRUDP
 	{
-		private static List<QPacket> FragmentPackets = new List<QPacket>();
-		private static List<QReliableResponse> CachedResponses = new List<QReliableResponse>();
-
-		private static void SendACK(UdpClient udp, QPacket p, ClientInfo client)
-		{
-			QPacket np = new QPacket(p.toBuffer());
-			np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
-
-			np.m_oSourceVPort = p.m_oDestinationVPort;
-			np.m_oDestinationVPort = p.m_oSourceVPort;
-			np.m_uiSignature = client.IDsend;
-			np.payload = new byte[0];
-			np.payloadSize = 0;
-
-			byte[] data = p.toBuffer();
-
-			udp.Send(data, data.Length, client.ep);
-		}
-
-		public static bool Defrag(ClientInfo client, QPacket packet)
+		public bool Defrag(ClientInfo client, QPacket packet)
 		{
 			if (packet.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 				return true;
@@ -69,7 +50,7 @@ namespace QuazalWV
 			if (!packet.flags.Contains(QPacket.PACKETFLAG.FLAG_RELIABLE))
 				return true;
 
-			if (!FragmentPackets.Any(x =>
+			if (!AccumulatedPackets.Any(x =>
 				 x.uiSeqId == packet.uiSeqId &&
 				 x.checkSum == packet.checkSum &&
 				 x.m_byPartNumber == packet.m_byPartNumber &&
@@ -78,7 +59,7 @@ namespace QuazalWV
 				 x.m_uiSignature == packet.m_uiSignature
 				))
 			{
-				FragmentPackets.Add(packet);
+				AccumulatedPackets.Add(packet);
 			}
 
 			if (packet.m_byPartNumber != 0)
@@ -88,11 +69,7 @@ namespace QuazalWV
 			}
 
 			// got last fragment, assemble
-			var orderedFragments = FragmentPackets
-				// .Where(x => 
-				// 	x.m_bySessionID == packet.m_bySessionID && 
-				// 	x.m_uiConnectionSignature == packet.m_uiConnectionSignature)
-				.OrderBy(x => x.uiSeqId);
+			var orderedFragments = AccumulatedPackets.OrderBy(x => x.uiSeqId);
 
 			int numPackets = 0;
 			foreach (var fragPacket in orderedFragments)
@@ -105,7 +82,7 @@ namespace QuazalWV
 			var fragments = orderedFragments.Take(numPackets).ToArray();
 
 			// remove fragments that we processed
-			FragmentPackets.Clear();//RemoveAll(x => fragments.Contains(x));
+			AccumulatedPackets.Clear();//RemoveAll(x => fragments.Contains(x));
 
 			if (numPackets > 1)
 			{
@@ -143,7 +120,7 @@ namespace QuazalWV
 				foreach (var fragPacket in fragments)
 				{
 					if (fragPacket.flags.Contains(QPacket.PACKETFLAG.FLAG_NEED_ACK))
-						SendACK(client.udp, fragPacket, client);
+						SendACK(fragPacket, client);
 				}
 
 				var fullPacketData = new MemoryStream();
@@ -161,7 +138,7 @@ namespace QuazalWV
 		}
 
 		// acknowledges packet
-		public static void OnGotAck(QPacket ackPacket)
+		public void OnGotAck(QPacket ackPacket)
 		{
 			var (cr, ack) = GetCachedResponseByAckPacket(ackPacket);
 			if (cr == null)
@@ -178,7 +155,7 @@ namespace QuazalWV
 		}
 
 		// returns response cache list by request packet
-		public static (QReliableResponse, QPacketState) GetCachedResponseByAckPacket(QPacket packet)
+		public (QReliableResponse, QPacketState) GetCachedResponseByAckPacket(QPacket packet)
 		{
 			foreach (var cr in CachedResponses)
 			{
@@ -193,7 +170,7 @@ namespace QuazalWV
 		}
 
 		// returns response cache list by request packet
-		public static QReliableResponse GetCachedResponseByRequestPacket(QPacket packet)
+		public QReliableResponse GetCachedResponseByRequestPacket(QPacket packet)
 		{
 			// FIXME: check packet type?
 			return CachedResponses.FirstOrDefault(cr =>
@@ -208,8 +185,12 @@ namespace QuazalWV
 		}
 
 		// Caches the response which is going to be sent
-		public static void CacheResponse(QPacket requestPacket, QPacket responsePacket)
+		public void CacheResponse(QPacket requestPacket, QPacket responsePacket)
 		{
+			// only DATA can be reliable
+			if (responsePacket.type != QPacket.PACKETTYPE.DATA)
+				return;
+
 			// don't cache non-reliable packets
 			if (!responsePacket.flags.Contains(QPacket.PACKETFLAG.FLAG_RELIABLE))
 				return;
