@@ -60,7 +60,7 @@ namespace QuazalWV
             foreach (var cr in CachedResponses)
             {
                 var st = cr.ResponseList.FirstOrDefault(x =>
-                     x.Packet.m_uiSignature == packet.m_uiSignature &&
+                     x.Packet.m_bySessionID == packet.m_bySessionID &&
                      x.Packet.uiSeqId == packet.uiSeqId);
 
                 if (st != null)
