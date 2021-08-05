@@ -1,5 +1,6 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Interfaces;
+using System.Collections.Generic;
 
 namespace QuazalWV.RMCServices
 {
@@ -76,15 +77,17 @@ namespace QuazalWV.RMCServices
         }
 
         [RMCMethod(12)]
-        public void GetDetailedList()
+        public RMCResult GetDetailedList(byte byRelationship, bool bReversed)
         {
-            UNIMPLEMENTED();
+			var result = new List<FriendData>();
+
+			return Result(result);
         }
 
         [RMCMethod(13)]
         public RMCResult GetRelationships(int offset, int size)
         {
-            var result = new GetRelationshipsResult();
+            var result = new RelationshipsResult();
 
             return Result(result);
         }

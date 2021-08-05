@@ -22,8 +22,8 @@ namespace QuazalWV.RMCServices
 		[RMCMethod(2)]
 		public void WritePlayerStats( IEnumerable<StatisticWriteWithBoard> playerStats)
 		{
-			UNIMPLEMENTED();
 			//SendResponseWithACK(new RMCPResponseEmpty());
+			// return Error(0);
 		}
 
 		[RMCMethod(3)]
