@@ -19,53 +19,33 @@ namespace QuazalWV
             ClientInfo client = Global.GetClientByIDrecv(p.m_uiSignature);
 
             if (client == null)
-			{
+            {
                 WriteLog(1, "Error : Cant find client!\n");
                 return;
             }
 
-            client.udp = udp;
             client.sessionID = p.m_bySessionID;
-
-            if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
-			{
-                WriteLog(1, $"Recieved packet ACK seq: { p.uiSeqId }");
-                QPacketReliable.OnGotAck(p);
-            }
-            else
-			{
-                WriteLog(1, $"Recieved packet { p.type } seq: { p.uiSeqId }");
-            }
-
-            // immediately send acknowledge
-            if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_NEED_ACK))
-			{
-                SendACK(udp, p, client);
-            }
-
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
+            client.udp = udp;
 
             if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
+			{
+                QPacketReliable.OnGotAck(p);
                 return;
+            }
 
             // resend 
             var cache = QPacketReliable.GetCachedResponseByRequestPacket(p);
             if (cache != null)
             {
-                WriteLog(10, "Re-sending reliable packets...");
-                foreach(var crp in cache.ResponseList.Where(x => x.GotAck == false))
-				{
-                    Send(client.udp, p, crp.Packet, client);
-				}
-
-                return;
+				RetrySend(client.udp, cache, client);
+				return;
             }
 
             WriteLog(10, "Handling packet...");
 
-            var rmc = new RMCP(p);
-
+            RMCP rmc = new RMCP(p);
             if (rmc.isRequest)
                 HandleRequest(client, p, rmc);
             else
@@ -195,7 +175,7 @@ namespace QuazalWV
             if (payload != "")
                 WriteLog(5, "Response Data Content : \n" + payload);
 
-            //SendACK(udp, p, client);
+            SendACK(udp, p, client);
             SendResponsePacket(udp, p, rmc, client, reply, useCompression, error);
         }
 
@@ -210,7 +190,6 @@ namespace QuazalWV
             np.payload = new byte[0];
             np.payloadSize = 0;
             WriteLog(10, "send ACK packet");
-            WriteLog(1, $"Sent ACK packet seq: { p.uiSeqId }");
 
             Send(udp, p, np, client);
         }
@@ -340,8 +319,6 @@ namespace QuazalWV
                 newPacket.payload = buff;
                 newPacket.payloadSize = (ushort)newPacket.payload.Length;
 
-                WriteLog(1, $"Sent data packet seq: { newPacket.uiSeqId } part { newPacket.m_byPartNumber }");
-
                 // send a fragment
                 /*{
                     var packetBuf = np.toBuffer();
@@ -400,8 +377,18 @@ namespace QuazalWV
             Log.LogPacket(true, data);
         }
 
+		public static void RetrySend(UdpClient udp, QReliableResponse cache, ClientInfo client)
+		{
+			WriteLog(1, "Re-sending reliable packets...");
 
-        public static void SendNotification(ClientInfo client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
+			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
+			{
+				byte[] data = crp.Packet.toBuffer();
+				udp.Send(data, data.Length, client.ep);
+			}
+		}
+
+		public static void SendNotification(ClientInfo client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
         {
             WriteLog(1, "Send Notification: [" + source.ToString("X8") + " " 
                                          + type.ToString("X8") + " "

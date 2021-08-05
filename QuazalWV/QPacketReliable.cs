@@ -75,9 +75,11 @@ namespace QuazalWV
             // FIXME: check packet type?
             return CachedResponses.FirstOrDefault(cr =>
                     cr.SrcPacket.m_uiSignature == packet.m_uiSignature &&
-                    cr.SrcPacket.m_oSourceVPort == packet.m_oSourceVPort &&
-                    cr.SrcPacket.m_oDestinationVPort == packet.m_oDestinationVPort &&
-                    cr.SrcPacket.uiSeqId == packet.uiSeqId &&
+                    cr.SrcPacket.m_oSourceVPort.type == packet.m_oSourceVPort.type &&
+					cr.SrcPacket.m_oSourceVPort.port == packet.m_oSourceVPort.port &&
+					cr.SrcPacket.m_oDestinationVPort.type == packet.m_oDestinationVPort.type &&
+					cr.SrcPacket.m_oDestinationVPort.port == packet.m_oDestinationVPort.port &&
+					cr.SrcPacket.uiSeqId == packet.uiSeqId &&
                     cr.SrcPacket.checkSum == packet.checkSum);
         }
 

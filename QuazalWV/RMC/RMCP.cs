@@ -29,7 +29,7 @@ namespace QuazalWV
             MetaSessionService           	= 112,
             GameInfoService              	= 113,
             ContactsExtensionsService    	= 114,
-            MatchmakingService           	= 115,
+            UbiMatchmakingService           = 115,
             AchievementsService          	= 116,
             PartyService                 	= 117,
             DriverUniqueIDService        	= 118,
