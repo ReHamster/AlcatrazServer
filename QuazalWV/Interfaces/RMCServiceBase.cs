@@ -38,6 +38,7 @@ namespace QuazalWV.Interfaces
 			return new RMCResult(new RMCPResponseEmpty(), true, code);
 		}
 
+		// This is for reverse-engineering
 		protected void UNIMPLEMENTED()
 		{
 			var stackTrace = new StackTrace();

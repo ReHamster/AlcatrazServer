@@ -25,8 +25,8 @@ namespace GROBackendWV
 
         private void PacketGenerator_Load(object sender, EventArgs e)
         {
-            protoNames.AddRange(Enum.GetNames(typeof(RMCP.PROTOCOL)));
-            protoIDs.AddRange(Enum.GetValues(typeof(RMCP.PROTOCOL)).Cast<int>());
+            protoNames.AddRange(Enum.GetNames(typeof(RMCProtocol)));
+            protoIDs.AddRange(Enum.GetValues(typeof(RMCProtocol)).Cast<int>());
             while (true)
             {
                 bool found = false;
@@ -69,12 +69,12 @@ namespace GROBackendWV
                 q.payload = new byte[0];
                 q.uiSeqId = (ushort)(++client.seqCounter);
                 q.m_bySessionID = client.sessionID;
-                RMCP rmc = new RMCP();
-                rmc.proto = (RMCP.PROTOCOL)protoIDs[toolStripComboBox1.SelectedIndex];
+                RMCPacket rmc = new RMCPacket();
+                rmc.proto = (RMCProtocol)protoIDs[toolStripComboBox1.SelectedIndex];
                 rmc.methodID = Convert.ToUInt32(toolStripTextBox1.Text);
                 rmc.callID = ++client.callCounterRMC;
-                RMCPCustom reply = new RMCPCustom();
-                reply.buffer = payload;
+				
+				var reply = new RMCPResponseDDL<byte[]>(payload);
                 RMC.SendRequestPacket(client.udp, q, rmc, client, reply, true, 0);
             }
         }

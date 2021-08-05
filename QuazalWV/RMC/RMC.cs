@@ -1,6 +1,6 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Factory;
-using QuazalWV.Helpers;
+using QuazalWV.DDL;
 using QuazalWV.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -37,20 +37,20 @@ namespace QuazalWV
 
             WriteLog(10, "Handling packet...");
 
-            RMCP rmc = new RMCP(p);
+            RMCPacket rmc = new RMCPacket(p);
             if (rmc.isRequest)
                 HandleRequest(client, p, rmc);
             else
                 HandleResponse(client, p, rmc);
         }
 
-        public static void HandleResponse(ClientInfo client, QPacket p, RMCP rmc)
+        public static void HandleResponse(ClientInfo client, QPacket p, RMCPacket rmc)
         {
             ProcessResponse(client, p, rmc);
             WriteLog(1, "Received Response : " + rmc.ToString());
         }
 
-        public static void ProcessResponse(ClientInfo client, QPacket p, RMCP rmc)
+        public static void ProcessResponse(ClientInfo client, QPacket p, RMCPacket rmc)
         {
             MemoryStream m = new MemoryStream(p.payload);
             m.Seek(rmc._afterProtocolOffset, 0);
@@ -73,10 +73,10 @@ namespace QuazalWV
             // TODO: extended info
             var typeList = method.GetParameters().Select(x => x.ParameterType);
 
-            return DDLHelper.ReadPropertyValues(typeList.ToArray(), m);
+            return DDLSerializer.ReadPropertyValues(typeList.ToArray(), m);
         }
 
-        public static void HandleRequest(ClientInfo client, QPacket p, RMCP rmc)
+        public static void HandleRequest(ClientInfo client, QPacket p, RMCPacket rmc)
         {
             MemoryStream m = new MemoryStream(p.payload);
 
@@ -168,7 +168,7 @@ namespace QuazalWV
             }
         }
 
-        public static void SendResponseWithACK(UdpClient udp, QPacket p, RMCP rmc, ClientInfo client, RMCPResponse reply, bool useCompression = true, uint error = 0)
+        public static void SendResponseWithACK(UdpClient udp, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse reply, bool useCompression = true, uint error = 0)
         {
             WriteLog(2, "Response : " + reply.ToString());
             string payload = reply.PayloadToString();
@@ -195,7 +195,7 @@ namespace QuazalWV
             Send(udp, p, np, client);
         }
 
-        private static void SendResponsePacket(UdpClient udp, QPacket p, RMCP rmc, ClientInfo client, RMCPResponse reply, bool useCompression, uint error)
+        private static void SendResponsePacket(UdpClient udp, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse reply, bool useCompression, uint error)
         {
             var packetData = new MemoryStream();
 
@@ -247,7 +247,7 @@ namespace QuazalWV
             MakeAndSend(client, p, np, packetData.ToArray());
         }
         
-        public static void SendRequestPacket(UdpClient udp, QPacket p, RMCP rmc, ClientInfo client, RMCPResponse packet, bool useCompression, uint error)
+        public static void SendRequestPacket(UdpClient udp, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse packet, bool useCompression, uint error)
         {
             var packetData = new MemoryStream();
 
@@ -417,12 +417,12 @@ namespace QuazalWV
             q.payload = new byte[0];
             q.uiSeqId++;
             q.m_bySessionID = client.sessionID;
-            RMCP rmc = new RMCP();
-            rmc.proto = RMCP.PROTOCOL.NotificationEventManager;
+            RMCPacket rmc = new RMCPacket();
+            rmc.proto = RMCProtocol.NotificationEventManager;
             rmc.methodID = 1;
             rmc.callID = ++client.callCounterRMC;
-            RMCPCustom reply = new RMCPCustom();
-            reply.buffer = payload;
+
+            var reply = new RMCPResponseDDL<byte[]>(payload);
             RMC.SendRequestPacket(client.udp, q, rmc, client, reply, true, 0);
         }
 

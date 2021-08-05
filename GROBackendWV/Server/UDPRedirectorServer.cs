@@ -36,10 +36,12 @@ namespace GROBackendWV
 
         public static void tMainThread(object obj)
         {
-            WriteLog(1, "Server started");
             listener = new UdpClient(listenPort);
             IPEndPoint ep = new IPEndPoint(IPAddress.Any, 0);
-            while (true)
+
+			WriteLog(1, $"Server started at port { listenPort }");
+
+			while (true)
             {
                 lock (_sync)
                 {

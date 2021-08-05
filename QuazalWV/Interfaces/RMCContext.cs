@@ -8,14 +8,14 @@ namespace QuazalWV.Interfaces
 {
 	public class RMCContext
 	{
-		public RMCContext(RMCP rmc, ClientInfo clientInfo, QPacket packet)
+		public RMCContext(RMCPacket rmc, ClientInfo clientInfo, QPacket packet)
 		{
 			RMC = rmc;
 			Client = clientInfo;
 			Packet = packet;
 		}
 
-		public readonly RMCP RMC;
+		public readonly RMCPacket RMC;
 		public readonly ClientInfo Client;
 		public readonly QPacket Packet;
 	}

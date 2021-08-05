@@ -102,7 +102,7 @@ namespace QuazalSharkWV
 
         private string GetRMCDetails(QPacket q)
         {
-            RMCP p = new RMCP(q);
+            RMCPacket p = new RMCPacket(q);
             MemoryStream m = new MemoryStream(q.payload);
             m.Seek(p._afterProtocolOffset, 0);
             if (m.ReadByte() == 1)
