@@ -1,1 +1,0 @@
-void ZEN_Init(DWORD addr);

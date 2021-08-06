@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31313.79
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Be.Windows.Forms.HexBox", "Be.Windows.Forms.HexBox\Be.Windows.Forms.HexBox.csproj", "{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DareParserWV", "DareParserWV\DareParserWV.csproj", "{AD68E5AD-5306-4B36-8D11-13B9D0A439D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DareDebuggerWV", "DareDebuggerWV\DareDebuggerWV.csproj", "{7FF93ACD-B4C8-4CD3-BAC8-11B20D3CA3A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTBReaderWV", "DTBReaderWV\DTBReaderWV.csproj", "{26A73BFE-AF61-4EFD-8007-ED4253BF2AEA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuazalWV", "QuazalWV\QuazalWV.csproj", "{8330545E-0887-434A-A0DE-343B90AEA2CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuazalSharkWV", "QuazalSharkWV\QuazalSharkWV.csproj", "{E3D7B61E-6CF7-4373-B30B-7135365DE9F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSFBackendDebugServer", "DSFBackendDebugServer\DSFBackendDebugServer.csproj", "{AB87FC0F-1A7C-4846-911F-A15ED83E7EEA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}.Release|Win32.ActiveCfg = Release|x86
+		{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}.Release|Win32.Build.0 = Release|x86
+		{AD68E5AD-5306-4B36-8D11-13B9D0A439D1}.Release|Win32.ActiveCfg = Release|x86
+		{AD68E5AD-5306-4B36-8D11-13B9D0A439D1}.Release|Win32.Build.0 = Release|x86
+		{7FF93ACD-B4C8-4CD3-BAC8-11B20D3CA3A8}.Release|Win32.ActiveCfg = Release|x86
+		{7FF93ACD-B4C8-4CD3-BAC8-11B20D3CA3A8}.Release|Win32.Build.0 = Release|x86
+		{26A73BFE-AF61-4EFD-8007-ED4253BF2AEA}.Release|Win32.ActiveCfg = Release|x86
+		{26A73BFE-AF61-4EFD-8007-ED4253BF2AEA}.Release|Win32.Build.0 = Release|x86
+		{8330545E-0887-434A-A0DE-343B90AEA2CE}.Release|Win32.ActiveCfg = Release|x86
+		{8330545E-0887-434A-A0DE-343B90AEA2CE}.Release|Win32.Build.0 = Release|x86
+		{E3D7B61E-6CF7-4373-B30B-7135365DE9F3}.Release|Win32.ActiveCfg = Release|x86
+		{E3D7B61E-6CF7-4373-B30B-7135365DE9F3}.Release|Win32.Build.0 = Release|x86
+		{AB87FC0F-1A7C-4846-911F-A15ED83E7EEA}.Release|Win32.ActiveCfg = Release|x86
+		{AB87FC0F-1A7C-4846-911F-A15ED83E7EEA}.Release|Win32.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {38FC8A9A-99E4-4439-8AA8-EF08747AE6AF}
+	EndGlobalSection
+EndGlobal
