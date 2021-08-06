@@ -11,6 +11,17 @@ namespace QuazalWV.Services
 		[RMCMethod(1)]
 		public RMCResult CreateSession(GameSession gameSession)
 		{
+			Log.WriteLine(1, "CreateSession : GameSession {");
+			Log.WriteLine(1, $"    m_typeID = {gameSession.m_typeID}");
+			Log.WriteLine(1, $"    m_attributes = ");
+			int n = 0;
+			foreach(var attr in gameSession.m_attributes)
+			{
+				Log.WriteLine(1, $"        [{n}] = ID { attr.ID }, Value = { attr.Value }");
+				n++;
+			}
+			Log.WriteLine(1, "}");
+
 			var result = new GameSessionKey();
 			result.m_sessionID = 1;
 			result.m_typeID = gameSession.m_typeID;
@@ -22,6 +33,17 @@ namespace QuazalWV.Services
 		[RMCMethod(2)]
 		public RMCResult UpdateSession(GameSessionUpdate gameSessionUpdate)
 		{
+			Log.WriteLine(1, "UpdateSession : GameSessionUpdate {");
+			Log.WriteLine(1, $"    m_sessionKey = {gameSessionUpdate.m_sessionKey.m_sessionID}");
+			Log.WriteLine(1, $"    m_attributes = ");
+			int n = 0;
+			foreach (var attr in gameSessionUpdate.m_attributes)
+			{
+				Log.WriteLine(1, $"        [{n}] = ID { attr.ID }, Value = { attr.Value }");
+				n++;
+			}
+			Log.WriteLine(1, "}");
+
 			UNIMPLEMENTED();
 			return Error(0);
 		}
@@ -65,6 +87,24 @@ namespace QuazalWV.Services
 		[RMCMethod(8)]
 		public RMCResult AddParticipants(GameSessionKey gameSessionKey, IEnumerable<uint> publicParticipantIDs, IEnumerable<uint> privateParticipantIDs)
 		{
+			Log.WriteLine(1, "AddParticipants : gameSessionKey, publicParticipantIDs, privateParticipantIDs {");
+			Log.WriteLine(1, $"    gameSessionKey = {gameSessionKey.m_sessionID}");
+			Log.WriteLine(1, $"    publicParticipantIDs = ");
+			int n = 0;
+			foreach (var p in publicParticipantIDs)
+			{
+				Log.WriteLine(1, $"        [{n}] = {p}");
+				n++;
+			}
+			Log.WriteLine(1, $"    privateParticipantIDs = ");
+			n = 0;
+			foreach (var p in privateParticipantIDs)
+			{
+				Log.WriteLine(1, $"        [{n}] = {p}");
+				n++;
+			}
+			Log.WriteLine(1, "}");
+
 			UNIMPLEMENTED();
 			return Error(0);
 		}
