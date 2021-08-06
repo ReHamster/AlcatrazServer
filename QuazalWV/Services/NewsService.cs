@@ -18,26 +18,24 @@ namespace QuazalWV.Services
 		[RMCMethod(8)]
 		public RMCResult GetNewsHeaders(NewsRecipient recipient, uint offset, uint size)
 		{
-			var headers = new List<NewsHeader>();
-			headers.Add(new NewsHeader
-			{
-				m_ID = 0,
-				m_publisherName = "SoapyMan",
-				m_title = "SoapyMan overtakes the world and raises taxes by 400% on coffee!",
-				m_link = "",
-				m_displayTime = DateTime.UtcNow,
-				m_expirationTime = DateTime.UtcNow.AddDays(10),
-				m_publicationTime = new DateTime(2000, 10, 12, 13, 0, 0),
-				m_publisherPID = Context.Client.PID,
-				m_recipientID = Context.Client.IDsend,
-				m_recipientType = 0,
-			});
+			var random = new Random();
 
-			headers.Add(new NewsHeader
+			string[] funNews = {
+				"Actumcnally",
+				$"Welcome to Driver Madness server free from U-beey-soft!",
+				$"SoapyMan overtakes the DSF and reduces taxes on coffee by {random.Next(10, 400)}%!",
+				"Play latest REDRIVER2 at opendriver2.github.io!",
+				$"Inspiration Byte stocks has raisen by { random.Next(1, 40) }% last trading day!",
+				"Subscribe to VortexStory on YouTube!",
+				"Play online matches with Driver Madness discord members at fridays!",
+				$"Shocking! Olanov started playing DSF again! Stocks has risen by { random.Next(4, 40) }"
+			};
+
+			var headers = funNews.Select((x, idx) => new NewsHeader
 			{
-				m_ID = 0,
+				m_ID = (uint)idx + 1,
 				m_publisherName = "SoapyMan",
-				m_title = "Inspiration Byte stocks has raisen by 5.6% last trading day",
+				m_title = x,
 				m_link = "",
 				m_displayTime = DateTime.UtcNow,
 				m_expirationTime = DateTime.UtcNow.AddDays(10),
