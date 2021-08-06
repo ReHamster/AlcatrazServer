@@ -27,8 +27,8 @@ namespace GROBackendWV
         {
             timer1.Enabled = true;
             TCPServer.Start();
-            UDPMainServer.Start();
-            UDPRedirectorServer.Start();           
+            BackendServicesServer.Start();
+            RDVServer.Start();           
             toolStripButton1.Enabled = false;
             toolStripButton2.Enabled = true;
         }
@@ -37,8 +37,8 @@ namespace GROBackendWV
         {
             timer1.Enabled = false;
             TCPServer.Stop();
-            UDPMainServer.Stop();
-            UDPRedirectorServer.Stop();
+            BackendServicesServer.Stop();
+            RDVServer.Stop();
             toolStripButton1.Enabled = true;
             toolStripButton2.Enabled = false;
         }
@@ -46,8 +46,8 @@ namespace GROBackendWV
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             TCPServer.Stop();
-            UDPMainServer.Stop();
-            UDPRedirectorServer.Stop();
+            BackendServicesServer.Stop();
+            RDVServer.Stop();
         }
 
         private void toolStripButton3_Click(object sender, EventArgs e)

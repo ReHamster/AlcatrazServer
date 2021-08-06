@@ -40,7 +40,7 @@ namespace QuazalWV.Services
 				m_displayTime = DateTime.UtcNow,
 				m_expirationTime = DateTime.UtcNow.AddDays(10),
 				m_publicationTime = new DateTime(2000, 10, 12, 13, 0, 0),
-				m_publisherPID = Context.Client.PID,
+				m_publisherPID = Context.Client.sPID,
 				m_recipientID = Context.Client.IDsend,
 				m_recipientType = 0,
 			});

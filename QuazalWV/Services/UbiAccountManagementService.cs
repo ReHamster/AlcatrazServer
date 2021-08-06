@@ -27,9 +27,9 @@ namespace QuazalWV.Services
 		public RMCResult GetAccount()
 		{
 			var reply = new UbiAccount();
-			reply.m_ubiAccountId = Context.Client.accountId;
-			reply.m_username = Context.Client.name;
-			reply.m_password = Context.Client.pass;
+			reply.m_ubiAccountId = Context.Client.info.accountId;
+			reply.m_username = Context.Client.info.name;
+			reply.m_password = Context.Client.info.pass;
 			reply.m_firstName = "Soapy";
 			reply.m_lastName = "Man";
 			reply.m_countryCode = "kz";

@@ -9,7 +9,7 @@ namespace QuazalWV
 {
 	public class NotificationQueneEntry
 	{
-		public ClientInfo client;
+		public QClient client;
 		public Stopwatch timer;
 		public uint timeout;
 		public uint source;
@@ -20,7 +20,7 @@ namespace QuazalWV
 		public uint param3;
 		public string paramStr;
 
-		public NotificationQueneEntry(ClientInfo c, uint time, uint src, uint t, uint st, uint p1, uint p2, uint p3, string ps)
+		public NotificationQueneEntry(QClient c, uint time, uint src, uint t, uint st, uint p1, uint p2, uint p3, string ps)
 		{
 			client = c;
 			timer = new Stopwatch();

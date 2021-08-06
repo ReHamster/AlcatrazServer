@@ -19,6 +19,7 @@ namespace QuazalWV
 			NATPingTimeToIgnore = new List<ulong>();
 			AccumulatedPackets = new List<QPacket>();
 			CachedResponses = new List<QReliableResponse>();
+			Clients = new List<QClient>();
 		}
 
 		private readonly UdpClient UDP;
@@ -29,26 +30,60 @@ namespace QuazalWV
 		private List<QReliableResponse> CachedResponses = new List<QReliableResponse>();
 		private readonly List<ulong> NATPingTimeToIgnore;
 
-		private QPacket ProcessSYN(QPacket p, IPEndPoint from, out ClientInfo client)
+		private List<QClient> Clients;
+
+		public uint ClientIdCounter = 0x12345678;	// or client signature
+
+		public QClient GetQClientByIDrecv(uint id)
 		{
-			client = Global.GetClientByEndPoint(from);
-			if (client == null)
+			foreach (var c in Clients)
 			{
-				Log.WriteLine(2, "[QUAZAL] Creating new client data...");
-				client = new ClientInfo();
-				client.endpoint = from;
-				client.IDrecv = Global.idCounter++;
-				client.PID = Global.pidCounter++;
-				Global.clients.Add(client);
+				if (c.IDrecv == id)
+					return c;
 			}
 
-			p.m_uiConnectionSignature = client.IDrecv;
-			client.seqCounterOut = 0;
-
-			return MakeACK(p, client);
+			Log.WriteLine(1, $"[{ SourceName }] Error : Cant find client for id : 0x" + id.ToString("X8"));
+			return null;
 		}
 
-		private QPacket ProcessCONNECT(ClientInfo client, QPacket p)
+		public QClient GetQClientByEndPoint(IPEndPoint ep)
+		{
+			foreach (var c in Clients)
+			{
+				if (c.endpoint.Address.ToString() == ep.Address.ToString() && c.endpoint.Port == ep.Port)
+					return c;
+			}
+
+			return null;
+		}
+
+		private QPacket ProcessSYN(QPacket p, IPEndPoint from)
+		{
+			// create protocol client
+			var qclient = GetQClientByEndPoint(from);
+			if(qclient == null)
+			{
+				Log.WriteLine(2, "[QUAZAL] Creating new client data...");
+				qclient = new QClient();
+				qclient.endpoint = from;
+				qclient.IDrecv = ClientIdCounter++;
+
+				Clients.Add(qclient);
+			}
+
+			// create client
+			if(qclient.info == null)
+			{
+				qclient.info = Global.GetOrCreateClient(from);
+			}
+
+			p.m_uiConnectionSignature = qclient.IDrecv;
+			qclient.seqCounterOut = 0;
+
+			return MakeACK(p, qclient);
+		}
+
+		private QPacket ProcessCONNECT(QClient client, QPacket p)
 		{
 			client.IDsend = p.m_uiConnectionSignature;
 
@@ -60,7 +95,7 @@ namespace QuazalWV
 			return reply;
 		}
 
-		private byte[] MakeConnectPayload(ClientInfo client, QPacket p)
+		private byte[] MakeConnectPayload(QClient client, QPacket p)
 		{
 			MemoryStream m = new MemoryStream(p.payload);
 			uint size = Helper.ReadU32(m);
@@ -69,7 +104,7 @@ namespace QuazalWV
 			size = Helper.ReadU32(m) - 16;
 			buff = new byte[size];
 			m.Read(buff, 0, (int)size);
-			buff = Helper.Decrypt(client.sessionKey, buff);
+			buff = Helper.Decrypt(client.info.sessionKey, buff);
 			m = new MemoryStream(buff);
 			Helper.ReadU32(m);
 			Helper.ReadU32(m);
@@ -81,7 +116,7 @@ namespace QuazalWV
 			return m.ToArray();
 		}
 
-		private QPacket ProcessDISCONNECT(ClientInfo client, QPacket p)
+		private QPacket ProcessDISCONNECT(QClient client, QPacket p)
 		{
 			QPacket reply = new QPacket();
 			reply.m_oSourceVPort = p.m_oDestinationVPort;
@@ -95,7 +130,7 @@ namespace QuazalWV
 			return reply;
 		}
 
-		private QPacket ProcessPING(ClientInfo client, QPacket p)
+		private QPacket ProcessPING(QClient client, QPacket p)
 		{
 			QPacket reply = new QPacket();
 			reply.m_oSourceVPort = p.m_oDestinationVPort;
@@ -120,16 +155,16 @@ namespace QuazalWV
 			foreach (byte b in data)
 				sb.Append(b.ToString("X2") + " ");
 
-			Log.WriteLine(5, "[" + SourceName + "] send : " + sendPacket.ToStringShort());
-			Log.WriteLine(10, "[" + SourceName + "] send : " + sb.ToString());
-			Log.WriteLine(10, "[" + SourceName + "] send : " + sendPacket.ToStringDetailed());
+			Log.WriteLine(5,  $"[{ SourceName }] send : { sendPacket.ToStringShort()}");
+			Log.WriteLine(10, $"[{ SourceName }] send : { sb.ToString()}");
+			Log.WriteLine(10, $"[{ SourceName }] send : { sendPacket.ToStringDetailed() }");
 
 			UDP.Send(data, data.Length, ep);
 
 			Log.LogPacket(true, data);
 		}
 
-		public QPacket MakeACK(QPacket p, ClientInfo client)
+		public QPacket MakeACK(QPacket p, QClient client)
 		{
 			QPacket np = new QPacket(p.toBuffer());
 			np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK, QPacket.PACKETFLAG.FLAG_HAS_SIZE };
@@ -142,7 +177,7 @@ namespace QuazalWV
 			return np;
 		}
 
-		public void SendACK(QPacket p, ClientInfo client)
+		public void SendACK(QPacket p, QClient client)
 		{
 			var np = MakeACK(p, client);
 			var data = np.toBuffer();
@@ -150,7 +185,7 @@ namespace QuazalWV
 			UDP.Send(data, data.Length, client.endpoint);
 		}
 
-		public void MakeAndSend(ClientInfo client, QPacket reqPacket, QPacket newPacket, byte[] data)
+		public void MakeAndSend(QClient client, QPacket reqPacket, QPacket newPacket, byte[] data)
 		{
 			var stream = new MemoryStream(data);
 
@@ -224,7 +259,7 @@ namespace QuazalWV
 			Log.WriteLine(10, $"[{ SourceName }] sent { numFragments } packets");
 		}
 
-		public void RetrySend(QReliableResponse cache, ClientInfo client)
+		public void RetrySend(QReliableResponse cache, QClient client)
 		{
 			Log.WriteLine(5, "Re-sending reliable packets...");
 
@@ -246,85 +281,85 @@ namespace QuazalWV
 
 			while (true)
 			{
-				var p = new QPacket(data);
+				var packetIn = new QPacket(data);
 
 				{
 					var m = new MemoryStream(data);
 
-					byte[] buff = new byte[(int)p.realSize];
+					byte[] buff = new byte[(int)packetIn.realSize];
 					m.Read(buff, 0, buff.Length);
 
 					Log.LogPacket(false, buff);
-					Log.WriteLine(5, "[" + SourceName + "] received : " + p.ToStringShort());
-					Log.WriteLine(10, "[" + SourceName + "] received : " + sb.ToString());
-					Log.WriteLine(10, "[" + SourceName + "] received : " + p.ToStringDetailed());
+					Log.WriteLine(5, $"[{ SourceName }] received : { packetIn.ToStringShort() }" );
+					Log.WriteLine(10,$"[{ SourceName }] received : { sb }" );
+					Log.WriteLine(10,$"[{ SourceName }] received : { packetIn.ToStringDetailed() }");
 				}
 
 				QPacket reply = null;
-				ClientInfo client = null;
+				QClient client = null;
 
-				if (p.type != QPacket.PACKETTYPE.SYN && p.type != QPacket.PACKETTYPE.NATPING)
-					client = Global.GetClientByIDrecv(p.m_uiSignature);
+				if (packetIn.type != QPacket.PACKETTYPE.SYN && packetIn.type != QPacket.PACKETTYPE.NATPING)
+					client = GetQClientByIDrecv(packetIn.m_uiSignature);
 
-				switch (p.type)
+				switch (packetIn.type)
 				{
 					case QPacket.PACKETTYPE.SYN:
-						reply = ProcessSYN(p, from, out client);
+						reply = ProcessSYN(packetIn, from);
 						break;
 					case QPacket.PACKETTYPE.CONNECT:
-						if (client != null && !p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
+						if (client != null && !packetIn.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 						{
 							client.sPID = PID;
 							client.sPort = Port;
 
 							if (removeConnectPayload)
 							{
-								p.payload = new byte[0];
-								p.payloadSize = 0;
+								packetIn.payload = new byte[0];
+								packetIn.payloadSize = 0;
 							}
 
-							reply = ProcessCONNECT(client, p);
+							reply = ProcessCONNECT(client, packetIn);
 						}
 						break;
 					case QPacket.PACKETTYPE.DATA:
 						{
-							if (Defrag(client, p) == false)
+							if (Defrag(client, packetIn) == false)
 								break;
 
 							// ack for reliable packets
-							if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
+							if (packetIn.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 							{
-								OnGotAck(p);
+								OnGotAck(packetIn);
 								break;
 							}
 
 							// resend?
-							var cache = GetCachedResponseByRequestPacket(p);
+							var cache = GetCachedResponseByRequestPacket(packetIn);
 							if (cache != null)
 							{
-								SendACK(p, client);
+								SendACK(packetIn, client);
 								RetrySend(cache, client);
 								break;
 							}
 
-							if (p.m_oSourceVPort.type == QPacket.STREAMTYPE.RVSecure)
-								RMC.HandlePacket(this, p);
+							if (packetIn.m_oSourceVPort.type == QPacket.STREAMTYPE.RVSecure)
+								RMC.HandlePacket(this, packetIn, client);
 
-							if (p.m_oSourceVPort.type == QPacket.STREAMTYPE.DO)
-								DO.HandlePacket(this, p);
+							if (packetIn.m_oSourceVPort.type == QPacket.STREAMTYPE.DO)
+								DO.HandlePacket(this, packetIn, client);
 						}
 						break;
 					case QPacket.PACKETTYPE.DISCONNECT:
 						if (client != null)
-							reply = ProcessDISCONNECT(client, p);
+							reply = ProcessDISCONNECT(client, packetIn);
 						break;
 					case QPacket.PACKETTYPE.PING:
 						if (client != null)
-							reply = ProcessPING(client, p);
+							reply = ProcessPING(client, packetIn);
 						break;
 					case QPacket.PACKETTYPE.NATPING:
 
-						ulong time = BitConverter.ToUInt64(p.payload, 5);
+						ulong time = BitConverter.ToUInt64(packetIn.payload, 5);
 
 						if (NATPingTimeToIgnore.Contains(time))
 						{
@@ -332,7 +367,7 @@ namespace QuazalWV
 						}
 						else
 						{
-							reply = p;
+							reply = packetIn;
 							var m = new MemoryStream();
 							byte b = (byte)(reply.payload[0] == 1 ? 0 : 1);
 
@@ -343,7 +378,7 @@ namespace QuazalWV
 
 							reply.payload = m.ToArray();
 
-							Send(p, reply, from);
+							Send(packetIn, reply, from);
 
 							m = new MemoryStream();
 							b = (byte)(b == 1 ? 0 : 1);
@@ -362,17 +397,17 @@ namespace QuazalWV
 				}
 
 				if (reply != null)
-					Send(p, reply, from);
+					Send(packetIn, reply, from);
 
 				// more packets in data stream?
-				if (p.realSize != data.Length)
+				if (packetIn.realSize != data.Length)
 				{
 					var m = new MemoryStream(data);
 
-					int left = (int)(data.Length - p.realSize);
+					int left = (int)(data.Length - packetIn.realSize);
 					byte[] newData = new byte[left];
 
-					m.Seek(p.realSize, 0);
+					m.Seek(packetIn.realSize, 0);
 					m.Read(newData, 0, left);
 
 					data = newData;

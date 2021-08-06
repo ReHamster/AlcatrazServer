@@ -10,14 +10,16 @@ using QuazalWV;
 
 namespace GROBackendWV
 {
-    public static class UDPRedirectorServer
+    public static class BackendServicesServer
     {
+        public static readonly uint serverPID = 0x1000;
         public static readonly object _sync = new object();
         public static bool _exit = false;
-        public static ushort listenPort = 21030;
-        private static UdpClient listener;
+        public static ushort listenPort = Global.BackendServiceServerPort;
+        public static UdpClient listener;
         public static ushort _skipNextNAT = 0xFFFF;
 		static QPacketHandlerPRUDP packetHandler;
+
 
 		public static void Start()
         {
@@ -39,7 +41,8 @@ namespace GROBackendWV
         {
             listener = new UdpClient(listenPort);
             IPEndPoint ep = new IPEndPoint(IPAddress.Any, 0);
-			packetHandler = new QPacketHandlerPRUDP(listener, UDPMainServer.serverPID, UDPMainServer.listenPort, "UDP Redirector");
+
+			packetHandler = new QPacketHandlerPRUDP(listener, serverPID, listenPort, "BackendServices");
 
 			WriteLog(1, $"Server started at port { listenPort }");
 
@@ -70,7 +73,7 @@ namespace GROBackendWV
 
         private static void WriteLog(int priority, string s)
         {
-            Log.WriteLine(priority, "[UDP Redirector] " + s);
+            Log.WriteLine(priority, "[BackendServices] " + s);
         }
     }
 }

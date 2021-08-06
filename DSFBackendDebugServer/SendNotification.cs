@@ -23,7 +23,9 @@ namespace GROBackendWV
         {
             try
             {
-                foreach (ClientInfo client in Global.clients)
+				Log.WriteLine(1, "ERROR : unimplemented SendNotification");
+#if false
+				foreach (ClientInfo client in Global.clients)
                 {
                     NotificationQuene.AddNotification(
                         new NotificationQueneEntry(client, 
@@ -36,6 +38,7 @@ namespace GROBackendWV
                             Convert.ToUInt32(textBox6.Text),
                             textBox7.Text));
                 }
+#endif
             }
             catch { }
         }

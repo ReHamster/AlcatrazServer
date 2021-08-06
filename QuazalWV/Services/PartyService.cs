@@ -16,7 +16,7 @@ namespace QuazalWV.Services
 		}
 
 		[RMCMethod(2)]
-		public void SendGameIdToPlayerByName(string playerNaNotifyPartyToLeaveGameme, uint toJoinId, int gameType, string msgRequest)
+		public void SendGameIdToPlayerByName(string playerName, uint toJoinId, int gameType, string msgRequest)
 		{
 			UNIMPLEMENTED();
 		}

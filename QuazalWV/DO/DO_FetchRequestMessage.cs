@@ -9,9 +9,10 @@ namespace QuazalWV
 {
     public static class DO_FetchRequestMessage
     {
-        public static byte[] HandleMessage(ClientInfo client, byte[] data)
+        public static byte[] HandleMessage(QClient client, byte[] data)
         {
-            List<byte[]> msgs;
+			ClientInfo ci = client.info;
+			List<byte[]> msgs;
             Log.WriteLine(2, "[DO] Handling DO_FetchRequestMessage...");
             MemoryStream m = new MemoryStream(data);
             m.Seek(3, 0);
@@ -20,14 +21,18 @@ namespace QuazalWV
             {
                 case 0x5C00001:
                     msgs = new List<byte[]>();
-                    if (!client.bootStrapDone)
+                    if (!ci.bootStrapDone)
                     {
                         foreach (DupObj obj in DO_Session.DupObjs)
                             msgs.Add(DO_CreateDuplicaMessage.Create(obj, 2));
-                        client.bootStrapDone = true;
+						ci.bootStrapDone = true;
                     }
-                    msgs.Add(DO_MigrationMessage.Create(client.callCounterDO_RMC++, new DupObj(DupObjClass.Station, 1), new DupObj(DupObjClass.Station, client.stationID), new DupObj(DupObjClass.Station, client.stationID), 3, new List<uint>() { new DupObj(DupObjClass.Station, client.stationID) }));
-                    return DO_BundleMessage.Create(client, msgs);
+                    msgs.Add(DO_MigrationMessage.Create(client.seqCounterOut++, 
+						new DupObj(DupObjClass.Station, 1), 
+						new DupObj(DupObjClass.Station, ci.stationID),
+						new DupObj(DupObjClass.Station, ci.stationID), 3, 
+						new List<uint>() { new DupObj(DupObjClass.Station, ci.stationID) }));
+                    return DO_BundleMessage.Create(ci, msgs);
                 default:
                     Log.WriteLine(1, "[DO] Handling DO_FetchRequest unknown dupObj 0x" + dupObj.ToString("X8") + "!");
                     return new byte[0];

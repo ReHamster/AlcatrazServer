@@ -24,7 +24,7 @@ namespace QuazalWV.Services
 				m_locale = "en-US",
 				m_name = "Test",
 				m_description = "Test news channel",
-				m_ownerPID = Context.Client.PID,
+				m_ownerPID = Context.Client.sPID,
 				m_subscribable = false,
 				m_type = "Title",
 				m_creationTime = DateTime.UtcNow,
