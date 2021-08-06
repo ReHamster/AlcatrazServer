@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace QuazalWV.Services
 {
-	[RMCService(RMCProtocol.RichPresenceService)]
+	[RMCService(RMCProtocolId.RichPresenceService)]
 	public class RichPresenceService : RMCServiceBase
 	{
 		[RMCMethod(1)]

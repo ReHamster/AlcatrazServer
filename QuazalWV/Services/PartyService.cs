@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace QuazalWV.Services
 {
-	[RMCService(RMCProtocol.PartyService)]
+	[RMCService(RMCProtocolId.PartyService)]
 	class PartyService : RMCServiceBase
 	{
 		[RMCMethod(1)]

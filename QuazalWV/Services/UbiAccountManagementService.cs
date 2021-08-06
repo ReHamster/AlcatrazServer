@@ -8,7 +8,7 @@ namespace QuazalWV.Services
 	/// <summary>
 	/// Ubi account management service
 	/// </summary>
-	[RMCService(RMCProtocol.UbiAccountManagementService)]
+	[RMCService(RMCProtocolId.UbiAccountManagementService)]
 	public class UbiAccountManagementService : RMCServiceBase
 	{
 		[RMCMethod(1)]

@@ -7,7 +7,7 @@ namespace QuazalWV.Services
 	/// <summary>
 	/// User friends service
 	/// </summary>
-	[RMCService(RMCProtocol.FriendsService)]
+	[RMCService(RMCProtocolId.FriendsService)]
 	public class FriendsService : RMCServiceBase
 	{
 		[RMCMethod(1)]

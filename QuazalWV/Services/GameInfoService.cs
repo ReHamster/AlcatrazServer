@@ -10,7 +10,7 @@ namespace QuazalWV.Services
 	/// <summary>
 	/// Hermes Game Info protocol
 	/// </summary>
-	[RMCService(RMCProtocol.GameInfoService)]
+	[RMCService(RMCProtocolId.GameInfoService)]
 	class GameInfoService : RMCServiceBase
 	{
 		// files which server can renturn

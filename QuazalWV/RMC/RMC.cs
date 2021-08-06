@@ -194,7 +194,7 @@ namespace QuazalWV
             else
             {
                 Helper.WriteU8(packetData, 0);
-                Helper.WriteU32(packetData, error);
+                Helper.WriteU32(packetData, error | 0x80000000);
                 Helper.WriteU32(packetData, rmc.callID);
             } 
 
@@ -284,7 +284,7 @@ namespace QuazalWV
             q.uiSeqId++;
             q.m_bySessionID = client.sessionID;
             RMCPacket rmc = new RMCPacket();
-            rmc.proto = RMCProtocol.NotificationEventManager;
+            rmc.proto = RMCProtocolId.NotificationEventManager;
             rmc.methodID = 1;
             rmc.callID = ++client.callCounterRMC;
 

@@ -8,7 +8,7 @@ namespace QuazalWV.Services
 	/// <summary>
 	/// Secure connection service protocol
 	/// </summary>
-	[RMCService(RMCProtocol.PrivilegesService)]
+	[RMCService(RMCProtocolId.PrivilegesService)]
 	public class PrivilegesService : RMCServiceBase
 	{
 		[RMCMethod(1)]

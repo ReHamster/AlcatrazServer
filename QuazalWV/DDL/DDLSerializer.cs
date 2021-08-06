@@ -105,7 +105,20 @@ namespace QuazalWV.DDL
 
                 instance = array;
             }
-            else if (typeof(IDictionary).IsAssignableFrom(currentType))
+			else if (typeof(IAnyData).IsAssignableFrom(currentType))
+			{
+				var newObjectFunc = Expression.Lambda<Func<IAnyData>>(
+					Expression.New(currentType.GetConstructor(Type.EmptyTypes))
+				).Compile();
+
+				// emit new AnyData and read it
+				var anyObject = newObjectFunc();
+
+				anyObject.Read(str);
+
+				instance = anyObject;
+			}
+			else if (typeof(IDictionary).IsAssignableFrom(currentType))
             {
                 var dictTypes = currentType.GetType().GetGenericArguments();
                 var dictGenericType = typeof(Dictionary<,>).MakeGenericType(dictTypes);
@@ -253,7 +266,13 @@ namespace QuazalWV.DDL
                 Helper.WriteU32(str, (uint)array.Length);
                 str.Write(array, 0, array.Length);
             }
-            else if (typeof(IDictionary).IsAssignableFrom(currentType))
+			else if (typeof(IAnyData).IsAssignableFrom(currentType))
+			{
+				// emit new AnyData and read it
+				var anyObject = (IAnyData)obj;
+				anyObject.Write(str);
+			}
+			else if (typeof(IDictionary).IsAssignableFrom(currentType))
 			{
                 var dictionary = (IDictionary)obj;
                 var size = dictionary.Keys.Count;

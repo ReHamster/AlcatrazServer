@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace QuazalWV.Services
 {
-	[RMCService(RMCProtocol.LocalizationService)]
+	[RMCService(RMCProtocolId.LocalizationService)]
 	public class LocalizationService : RMCServiceBase
 	{
 		[RMCMethod(1)]

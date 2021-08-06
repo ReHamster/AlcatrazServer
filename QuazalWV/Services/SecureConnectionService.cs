@@ -1,13 +1,15 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Interfaces;
 using QuazalWV.DDL.Models;
+using System.Collections.Generic;
+using QuazalWV.DDL;
 
 namespace QuazalWV.Services
 {
 	/// <summary>
 	/// Secure connection service protocol
 	/// </summary>
-	[RMCService(RMCProtocol.SecureConnectionService)]
+	[RMCService(RMCProtocolId.SecureConnectionService)]
 	public class SecureConnectionService : RMCServiceBase
 	{
 		[RMCMethod(2)]
@@ -23,18 +25,27 @@ namespace QuazalWV.Services
 		}
 
 		[RMCMethod(4)]
-		public void RegisterEx(RMCPacketRequestRegisterEx request)
+		public RMCResult RegisterEx(IEnumerable<string> stationUrls, AnyData<UbiAuthenticationLoginCustomData> hCustomData)
 		{
-			switch (request.className)
+			if(hCustomData.data != null)
 			{
-				case "UbiAuthenticationLoginCustomData":
-					var reply = new RMCPacketResponseRegisterEx(Context.Client.PID);
-					SendResponseWithACK(reply);
-					break;
-				default:
-					Log.WriteLine(1, $"[RMC Secure] Error: Unknown Custom Data class {request.className}");
-					break;
+				var rdvConnectionString = $"prudps:/address={ Global.serverBindAddress };port={ Global.serverBindPort };CID=1;PID={Context.Client.PID};sid=1;stream=3;type=2";
+
+				var result = new RegisterResult()
+				{
+					pidConnectionID = 78,
+					retval = (int)RMCErrorCode.Core_NoError,
+					urlPublic = rdvConnectionString
+				};
+
+				return Result(result);
 			}
+			else
+			{
+				Log.WriteLine(1, $"[RMC Secure] Error: Unknown Custom Data class {hCustomData.className}");
+			}
+
+			return Error((int)RMCErrorCode.RendezVous_ClassNotFound);
 		}
 
 		[RMCMethod(5)]
