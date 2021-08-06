@@ -1,4 +1,5 @@
 ﻿using QuazalWV.Attributes;
+using QuazalWV.DDL;
 using QuazalWV.Interfaces;
 using System.Collections.Generic;
 using System.IO;
@@ -13,9 +14,32 @@ namespace QuazalWV.Services
 	class MatchMakingService : RMCServiceBase
 	{
 		[RMCMethod(1)]
-		public RMCResult RegisterGathering(/* TODO: model*/)
+		public RMCResult RegisterGathering(AnyData<HermesPartySession> anyGathering)
 		{
 			uint result = 1;
+			if(anyGathering.data != null)
+			{
+				Log.WriteLine(1, "RegisterGathering : HermesPartySession:Gathering {");
+				Log.WriteLine(1, $"    m_freePublicSlots = {anyGathering.data.m_freePublicSlots }");
+				Log.WriteLine(1, $"    m_freePrivateSlots = { anyGathering.data.m_freePrivateSlots }");
+				Log.WriteLine(1, $"    m_maxPrivateSlots = {anyGathering.data. m_maxPrivateSlots }");
+				Log.WriteLine(1, $"    m_privacySettings = { anyGathering.data.m_privacySettings }");
+				Log.WriteLine(1, $"    m_name = { anyGathering.data.m_name }");
+				Log.WriteLine(1, $"    m_buffurizedOwnerId = { anyGathering.data.m_buffurizedOwnerId }");
+				Log.WriteLine(1, $"    base.m_idMyself = {anyGathering.data.m_idMyself}");
+				Log.WriteLine(1, $"    base.m_pidOwner = {anyGathering.data.m_pidOwner}");
+				Log.WriteLine(1, $"    base.m_pidHost = {anyGathering.data.m_pidHost}");
+				Log.WriteLine(1, $"    base.m_uiMinParticipants = {anyGathering.data.m_uiMinParticipants}");
+				Log.WriteLine(1, $"    base.m_uiMaxParticipants = {anyGathering.data.m_uiMaxParticipants}");
+				Log.WriteLine(1, $"    base.m_uiParticipationPolicy = {anyGathering.data.m_uiParticipationPolicy}");
+				Log.WriteLine(1, $"    base.m_uiPolicyArgument = {anyGathering.data.m_uiPolicyArgument}");
+				Log.WriteLine(1, $"    base.m_uiFlags = {anyGathering.data.m_uiFlags}");
+				Log.WriteLine(1, $"    base.m_uiState = {anyGathering.data.m_uiState}");
+				Log.WriteLine(1, $"    base.m_strDescription = {anyGathering.data.m_strDescription}");
+				Log.WriteLine(1, "}");
+			}
+
+			UNIMPLEMENTED();
 
 			return Result(new { gatheringId = result });
 		}
@@ -33,8 +57,31 @@ namespace QuazalWV.Services
 		}
 
 		[RMCMethod(4)]
-		public RMCResult UpdateGathering(/*Data<Gathering> anyGathering*/)
+		public RMCResult UpdateGathering(AnyData<HermesPartySession> anyGathering)
 		{
+			if (anyGathering.data != null)
+			{
+				Log.WriteLine(1, "UpdateGathering : HermesPartySession:Gathering {");
+				Log.WriteLine(1, $"    m_freePublicSlots = {anyGathering.data.m_freePublicSlots }");
+				Log.WriteLine(1, $"    m_freePrivateSlots = { anyGathering.data.m_freePrivateSlots }");
+				Log.WriteLine(1, $"    m_maxPrivateSlots = {anyGathering.data.m_maxPrivateSlots }");
+				Log.WriteLine(1, $"    m_privacySettings = { anyGathering.data.m_privacySettings }");
+				Log.WriteLine(1, $"    m_name = { anyGathering.data.m_name }");
+				Log.WriteLine(1, $"    m_buffurizedOwnerId = { anyGathering.data.m_buffurizedOwnerId }");
+				Log.WriteLine(1, $"    base.m_idMyself = {anyGathering.data.m_idMyself}");
+				Log.WriteLine(1, $"    base.m_pidOwner = {anyGathering.data.m_pidOwner}");
+				Log.WriteLine(1, $"    base.m_pidHost = {anyGathering.data.m_pidHost}");
+				Log.WriteLine(1, $"    base.m_uiMinParticipants = {anyGathering.data.m_uiMinParticipants}");
+				Log.WriteLine(1, $"    base.m_uiMaxParticipants = {anyGathering.data.m_uiMaxParticipants}");
+				Log.WriteLine(1, $"    base.m_uiParticipationPolicy = {anyGathering.data.m_uiParticipationPolicy}");
+				Log.WriteLine(1, $"    base.m_uiPolicyArgument = {anyGathering.data.m_uiPolicyArgument}");
+				Log.WriteLine(1, $"    base.m_uiFlags = {anyGathering.data.m_uiFlags}");
+				Log.WriteLine(1, $"    base.m_uiState = {anyGathering.data.m_uiState}");
+				Log.WriteLine(1, $"    base.m_strDescription = {anyGathering.data.m_strDescription}");
+				Log.WriteLine(1, "}");
+			}
+
+			UNIMPLEMENTED();
 			return Error(0);
 		}
 
@@ -77,12 +124,14 @@ namespace QuazalWV.Services
 		[RMCMethod(11)]
 		public RMCResult Participate(uint idGathering, string strMessage)
 		{
+			UNIMPLEMENTED($"uint idGathering = { idGathering }, string strMessage = { strMessage }");
 			return Result(new { result = true });
 		}
 
 		[RMCMethod(12)]
 		public RMCResult CancelParticipation()
 		{
+			UNIMPLEMENTED();
 			return Result(new { result = true });
 		}
 
@@ -239,12 +288,15 @@ namespace QuazalWV.Services
 		[RMCMethod(38)]
 		public RMCResult RegisterLocalURL(uint gid, string url)
 		{
+			UNIMPLEMENTED($"uint gid = {gid}, string url = {url}");
 			return Error(0);
 		}
 
 		[RMCMethod(39)]
 		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<string> urls)
 		{
+			UNIMPLEMENTED($"uint gid = {gid}");
+			UNIMPLEMENTED();
 			return Error(0);
 		}
 

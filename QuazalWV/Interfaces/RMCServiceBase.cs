@@ -39,7 +39,7 @@ namespace QuazalWV.Interfaces
 		}
 
 		// This is for reverse-engineering
-		protected void UNIMPLEMENTED()
+		protected void UNIMPLEMENTED(string additionalMessage = "")
 		{
 			var stackTrace = new StackTrace();
 			var method = stackTrace.GetFrame(1).GetMethod();
@@ -50,7 +50,10 @@ namespace QuazalWV.Interfaces
 			if(rmcMethodAttr != null && !string.IsNullOrWhiteSpace(rmcMethodAttr.Name))
 				methodName = rmcMethodAttr.Name;
 
-			Log.WriteLine(1, $"Error: Method '{ methodName }' is unimplemented in '{ _context.RMC.proto }'");
+			Log.WriteLine(1, $"[RMC] Error: Method '{ _context.RMC.proto }.{ methodName }' is unimplemented");
+
+			if(!string.IsNullOrWhiteSpace(additionalMessage))
+				Log.WriteLine(1, $"[RMC] error info: { additionalMessage } ");
 		}
 	}
 }

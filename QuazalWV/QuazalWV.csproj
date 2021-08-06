@@ -113,7 +113,7 @@
     <Compile Include="Classes\GR5_FriendData.cs" />
     <Compile Include="Classes\GR5_GameClass.cs" />
     <Compile Include="Classes\GR5_GameSessionParticipant.cs" />
-    <Compile Include="Classes\GR5_Gathering.cs" />
+    <Compile Include="DDL\Models\MatchMakingService\Gathering.cs" />
     <Compile Include="Classes\GR5_InboxMessage.cs" />
     <Compile Include="Classes\GR5_InstancedStatistic.cs" />
     <Compile Include="Classes\GR5_InventoryBag.cs" />

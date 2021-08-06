@@ -11,7 +11,7 @@ namespace QuazalWV.Services
 		[RMCMethod(1)]
 		public RMCResult SendGameIdToParty(uint id, uint toJoinId, int gameType, string msgRequest)
 		{
-			UNIMPLEMENTED();
+			UNIMPLEMENTED($"uint id = {id}, uint toJoinId = {toJoinId}, int gameType = {gameType}, string msgRequest = {msgRequest}");
 			return Error(0);
 		}
 
