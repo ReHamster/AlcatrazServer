@@ -9,7 +9,7 @@ namespace QuazalWV
 {
     public static class DO_Outcome
     {
-        public static byte[] HandleMessage(ClientInfo client, byte[] data)
+        public static byte[] HandleMessage(QClient client, byte[] data)
         {
             Log.WriteLine(2, "[DO] Received Called Outcome 0x" + BitConverter.ToUInt32(data, 3).ToString("X") + " for call ID 0x" + BitConverter.ToUInt16(data, 1).ToString("X"));
             return null;

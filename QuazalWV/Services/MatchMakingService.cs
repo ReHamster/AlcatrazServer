@@ -81,9 +81,9 @@ namespace QuazalWV.Services
 		}
 
 		[RMCMethod(12)]
-		public void CancelParticipation()
+		public RMCResult CancelParticipation()
 		{
-			UNIMPLEMENTED();
+			return Result(new { result = true });
 		}
 
 		[RMCMethod(13)]

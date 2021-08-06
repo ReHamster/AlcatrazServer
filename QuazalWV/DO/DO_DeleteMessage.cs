@@ -11,7 +11,7 @@ namespace QuazalWV
 {
     public class DO_DeleteMessage
     {
-        public static byte[] HandleMessage(ClientInfo client, byte[] data)
+        public static byte[] HandleMessage(QClient client, byte[] data)
         {
             Log.WriteLine(2, "[DO] Handling DO_DeleteMessage");
             uint handle = BitConverter.ToUInt32(data, 1);

@@ -29,7 +29,7 @@ namespace QuazalWV.Services
 		{
 			if(hCustomData.data != null)
 			{
-				var rdvConnectionString = $"prudps:/address={ Global.serverBindAddress };port={ Global.serverBindPort };CID=1;PID={Context.Client.PID};sid=1;stream=3;type=2";
+				var rdvConnectionString = $"prudps:/address={ Global.serverBindAddress };port={ Global.serverBindPort };CID=1;PID={Context.Client.info.PID};sid=1;stream=3;type=2";
 
 				var result = new RegisterResult()
 				{

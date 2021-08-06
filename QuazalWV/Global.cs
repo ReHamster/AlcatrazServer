@@ -18,39 +18,34 @@ namespace QuazalWV
 		public static readonly int packetFragmentSize = 963;
 
 		public static string serverBindAddress = "127.0.0.1";
-		public static int serverBindPort = 21006; // 3074
-		public static uint idCounter = 0x12345678;
+
+		public static ushort RDVServerPort = 21005;
+		public static ushort BackendServiceServerPort = 21006;
+
+		public static ushort serverBindPort = 21006; // 3074
+
 		public static uint pidCounter = 0x1234;
+
 		public static uint dummyFriendPidCounter = 0x1235;
+
 		public static string sessionURL = "prudp:/address=127.0.0.1;port=21032;RVCID=4660";
 
 		public static List<ClientInfo> clients = new List<ClientInfo>();
 		public static Stopwatch uptime = new Stopwatch();
 
-		public static ClientInfo GetClientByEndPoint(IPEndPoint ep)
+		public static ClientInfo GetOrCreateClient(IPEndPoint ep)
 		{
 			foreach (ClientInfo c in clients)
+			{
 				if (c.endpoint.Address.ToString() == ep.Address.ToString() && c.endpoint.Port == ep.Port)
 					return c;
+			}
 
-			return null;
-		}
+			var client = new ClientInfo();
+			client.endpoint = ep;
+			client.PID = Global.pidCounter++;
+			clients.Add(client);
 
-		public static ClientInfo GetClientByIDsend(uint id)
-		{
-			foreach (ClientInfo c in clients)
-				if (c.IDsend == id)
-					return c;
-			WriteLog(1, "Error : Cant find client for id : 0x" + id.ToString("X8"));
-			return null;
-		}
-
-		public static ClientInfo GetClientByIDrecv(uint id)
-		{
-			foreach (ClientInfo c in clients)
-				if (c.IDrecv == id)
-					return c;
-			WriteLog(1, "Error : Cant find client for id : 0x" + id.ToString("X8"));
 			return null;
 		}
 

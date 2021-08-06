@@ -10,9 +10,10 @@ namespace QuazalWV
 {
     public static class DO_MigrationMessage
     {    
-        public static byte[] HandleMessage(ClientInfo client, byte[] data)
+        public static byte[] HandleMessage(QClient client, byte[] data)
         {
-            Log.WriteLine(2, "[DO] Handling DO_MigrationMessage");
+			ClientInfo ci = client.info;
+			Log.WriteLine(2, "[DO] Handling DO_MigrationMessage");
             MemoryStream m = new MemoryStream(data);
             m.Seek(1, 0);
             ushort callID = Helper.ReadU16(m);
@@ -29,7 +30,7 @@ namespace QuazalWV
                 fobj.Master = to;
             List<byte[]> msgs = new List<byte[]>();
             msgs.Add(DO_Outcome.Create(callID, 0x60001));
-            if (fobj != null && fobj.Class == DupObjClass.SES_cl_Player_NetZ && fobj.ID == 257 && !client.matchStartSent)
+            if (fobj != null && fobj.Class == DupObjClass.SES_cl_Player_NetZ && fobj.ID == 257 && !ci.matchStartSent)
             {
                 SessionInfosParameter p = new SessionInfosParameter();
                 p.sParams.byte25 = 1;
@@ -48,16 +49,16 @@ namespace QuazalWV
                 p.toBuffer(m);
                 msgs.Add(m.ToArray());
                 
-                msgs.Add(DO_RMCRequestMessage.Create(client.callCounterDO_RMC++,
+                msgs.Add(DO_RMCRequestMessage.Create(client.seqCounterOut++,
                     0x806,
                     new DupObj(DupObjClass.Station, 1),
                     new DupObj(DupObjClass.SES_cl_SessionInfos, 2),
                     (ushort)DO_RMCRequestMessage.DOC_METHOD.OnStartMatch,
                     new byte[] { }
                     ));
-                client.matchStartSent = true;
+				ci.matchStartSent = true;
             }
-            return DO_BundleMessage.Create(client, msgs);
+            return DO_BundleMessage.Create(ci, msgs);
         }
 
         public static byte[] Create(ushort callID, uint fromStationID, uint dupObj, uint toStationID, byte version, List<uint> handles)

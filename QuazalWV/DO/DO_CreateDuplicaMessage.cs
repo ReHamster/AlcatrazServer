@@ -9,7 +9,7 @@ namespace QuazalWV
 {
     public static class DO_CreateDuplicaMessage
     {        
-        public static byte[] HandleMessage(ClientInfo client, byte[] data)
+        public static byte[] HandleMessage(QClient client, byte[] data)
         {
             Log.WriteLine(2, "[DO] Handling DO_CreateDuplicaMessage...");
             MemoryStream m = new MemoryStream(data);

@@ -32,12 +32,9 @@ namespace QuazalWV
             EOS = 0xFF
         }
 
-        public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p)
+        public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p, QClient client)
         {
-            ClientInfo client = Global.GetClientByIDrecv(p.m_uiSignature);
-            if (client == null)
-                return;
-            client.sessionID = p.m_bySessionID;
+            client.info.sessionID = p.m_bySessionID;
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
 
@@ -67,8 +64,10 @@ namespace QuazalWV
             }
         }
 
-        public static byte[] ProcessMessage(ClientInfo client, QPacket p, byte[] data)
+        public static byte[] ProcessMessage(QClient client, QPacket p, byte[] data)
         {
+			ClientInfo ci = client.info;
+
             METHOD method = (METHOD)data[0];
             byte[] replyPayload = null;
             switch (method)
@@ -80,9 +79,8 @@ namespace QuazalWV
                     Log.WriteLine(1, "[DO] Received JoinResponse");
                     break;
                 case METHOD.GetParticipantsRequest:
-                    client.seqCounterDO = 1;
-                    client.callCounterDO_RMC = 1;
-                    client.stationID = 2;
+					client.callCounterRMC = 1;
+					ci.stationID = 2;
                     replyPayload = DO_GetParticipantsRequestMessage.HandleMessage(client, data);
                     break;
                 case METHOD.FetchRequest:
@@ -152,7 +150,7 @@ namespace QuazalWV
             return null;
         }
 
-        private static void SendMessage(QPacketHandlerPRUDP handler, ClientInfo client, QPacket p, byte[] data)
+        private static void SendMessage(QPacketHandlerPRUDP handler, QClient client, QPacket p, byte[] data)
         {
 			var np = new QPacket(p.toBuffer());
 

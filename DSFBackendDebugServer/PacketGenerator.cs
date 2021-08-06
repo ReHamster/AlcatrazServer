@@ -56,9 +56,13 @@ namespace GROBackendWV
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             MemoryStream m = new MemoryStream();
+
             for (long i = 0; i < hb1.ByteProvider.Length; i++)
                 m.WriteByte(hb1.ByteProvider.ReadByte(i));
-            byte[] payload = m.ToArray();
+
+			Log.WriteLine(1, "ERROR - unimplemented packet generator");
+#if false
+			byte[] payload = m.ToArray();
             foreach (ClientInfo client in Global.clients)
             {
                 QPacket q = new QPacket();
@@ -77,6 +81,7 @@ namespace GROBackendWV
 				var reply = new RMCPResponseDDL<byte[]>(payload);
                 // RMC.SendRequestPacket(client.udp, q, rmc, client, reply, true, 0);
             }
+#endif
         }
     }
 }

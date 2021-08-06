@@ -14,17 +14,9 @@ namespace QuazalWV
 {
 	public static class RMC
     {
-        public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p)
+        public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p, QClient client)
         {
-            ClientInfo client = Global.GetClientByIDrecv(p.m_uiSignature);
-
-            if (client == null)
-            {
-                WriteLog(1, "Error : Cant find client!\n");
-                return;
-            }
-
-            client.sessionID = p.m_bySessionID;
+            client.info.sessionID = p.m_bySessionID;
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
 
@@ -37,13 +29,13 @@ namespace QuazalWV
                 HandleResponse(handler, client, p, rmc);
         }
 
-        public static void HandleResponse(QPacketHandlerPRUDP handler, ClientInfo client, QPacket p, RMCPacket rmc)
+        public static void HandleResponse(QPacketHandlerPRUDP handler, QClient client, QPacket p, RMCPacket rmc)
         {
             ProcessResponse(client, p, rmc);
             WriteLog(1, "Received Response : " + rmc.ToString());
         }
 
-        public static void ProcessResponse(ClientInfo client, QPacket p, RMCPacket rmc)
+        public static void ProcessResponse(QClient client, QPacket p, RMCPacket rmc)
         {
             MemoryStream m = new MemoryStream(p.payload);
             m.Seek(rmc._afterProtocolOffset, 0);
@@ -69,7 +61,7 @@ namespace QuazalWV
             return DDLSerializer.ReadPropertyValues(typeList.ToArray(), m);
         }
 
-        public static void HandleRequest(QPacketHandlerPRUDP handler, ClientInfo client, QPacket p, RMCPacket rmc)
+        public static void HandleRequest(QPacketHandlerPRUDP handler, QClient client, QPacket p, RMCPacket rmc)
         {
             MemoryStream m = new MemoryStream(p.payload);
 
@@ -152,7 +144,7 @@ namespace QuazalWV
             }
         }
 
-        public static void SendResponseWithACK(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse reply, bool useCompression = true, uint error = 0)
+        public static void SendResponseWithACK(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, QClient client, RMCPResponse reply, bool useCompression = true, uint error = 0)
         {
             WriteLog(2, "Response : " + reply.ToString());
             string payload = reply.PayloadToString();
@@ -164,7 +156,7 @@ namespace QuazalWV
             SendResponsePacket(handler, p, rmc, client, reply, useCompression, error);
         }
 
-        private static void SendResponsePacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse reply, bool useCompression, uint error)
+        private static void SendResponsePacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, QClient client, RMCPResponse reply, bool useCompression, uint error)
         {
             var packetData = new MemoryStream();
 
@@ -216,7 +208,7 @@ namespace QuazalWV
 			handler.MakeAndSend(client, p, np, packetData.ToArray());
         }
         
-        public static void SendRequestPacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, ClientInfo client, RMCPResponse packet, bool useCompression, uint error)
+        public static void SendRequestPacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, QClient client, RMCPResponse packet, bool useCompression, uint error)
         {
             var packetData = new MemoryStream();
 
@@ -255,7 +247,7 @@ namespace QuazalWV
 			handler.MakeAndSend(client, p, np, packetData.ToArray());
         }
 
-		public static void SendNotification(ClientInfo client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
+		public static void SendNotification(QClient client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
         {
             WriteLog(1, "Send Notification: [" + source.ToString("X8") + " " 
                                          + type.ToString("X8") + " "
@@ -282,7 +274,7 @@ namespace QuazalWV
             q.flags = new List<QPacket.PACKETFLAG>();
             q.payload = new byte[0];
             q.uiSeqId++;
-            q.m_bySessionID = client.sessionID;
+            q.m_bySessionID = client.info.sessionID;
             RMCPacket rmc = new RMCPacket();
             rmc.proto = RMCProtocolId.NotificationEventManager;
             rmc.methodID = 1;

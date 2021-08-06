@@ -45,15 +45,18 @@ namespace QuazalWV
             return m.ToArray();
         }
 
-        public static byte[] HandleMessage(ClientInfo client, Stream s)
+        public static byte[] HandleMessage(QClient client, Stream s)
         {
-            if (Helper.ReadU16(s) < 5 || Helper.ReadU16(s) < 3)
+			ClientInfo ci = client.info;
+
+			if (Helper.ReadU16(s) < 5 || Helper.ReadU16(s) < 3)
                 return null;
             byte type = Helper.ReadU8(s);
             if (type != 0xA)
                 return null;
             ushort msgID = (ushort)((Helper.ReadU8(s) << 8) | Helper.ReadU8(s));
             List<byte[]> msgs = new List<byte[]>();
+
             switch(msgID)
             {
                 case 0x96:
@@ -65,7 +68,7 @@ namespace QuazalWV
                     s.Read(payload, 0, size);
                     payload[0x11] = 0;
                     payload[0x12] = 0x27;
-                    msgs.Add(DO_RMCRequestMessage.Create(client.callCounterDO_RMC++,
+                    msgs.Add(DO_RMCRequestMessage.Create(client.seqCounterOut++,
                         0x1006,
                         new DupObj(DupObjClass.Station, 1),
                         new DupObj(DupObjClass.NET_MessageBroker, 5),
@@ -74,36 +77,36 @@ namespace QuazalWV
                         ));
                     break;
                 case 0xA3:
-                    if (!client.playerCreateStuffSent1)
+                    if (!ci.playerCreateStuffSent1)
                     {
-                        msgs.Add(DO_RMCRequestMessage.Create(client.callCounterDO_RMC++,
+                        msgs.Add(DO_RMCRequestMessage.Create(client.seqCounterOut++,
                             0x1006,
                             new DupObj(DupObjClass.Station, 1),
                             new DupObj(DupObjClass.NET_MessageBroker, 5),
                             (ushort)DO_RMCRequestMessage.DOC_METHOD.ProcessMessage,
                             Make(new MSG_ID_Net_Obj_Create(0x2C, 0x15, new OCP_AbstractPlayerEntity(1).MakePayload()))
                             ));
-                        msgs.Add(DO_RMCRequestMessage.Create(client.callCounterDO_RMC++,
+                        msgs.Add(DO_RMCRequestMessage.Create(client.seqCounterOut++,
                             0x1006,
                             new DupObj(DupObjClass.Station, 1),
                             new DupObj(DupObjClass.NET_MessageBroker, 5),
                             (ushort)DO_RMCRequestMessage.DOC_METHOD.ProcessMessage,
-                            Make(new MSG_ID_Entity_Cmd(client, 0x33))
-                            )); 
-                        client.playerCreateStuffSent1 = true;
+                            Make(new MSG_ID_Entity_Cmd(ci, 0x33))
+                            ));
+						ci.playerCreateStuffSent1 = true;
                     }
-                    msgs.Add(DO_RMCRequestMessage.Create(client.callCounterDO_RMC++,
+                    msgs.Add(DO_RMCRequestMessage.Create(client.seqCounterOut++,
                         0x1006,
                         new DupObj(DupObjClass.Station, 1),
                         new DupObj(DupObjClass.NET_MessageBroker, 5),
                         (ushort)DO_RMCRequestMessage.DOC_METHOD.ProcessMessage,
-                        Make(new MSG_ID_NetRule_Synchronize(client.netRulesState))
+                        Make(new MSG_ID_NetRule_Synchronize(ci.netRulesState))
                         ));
                     break;
                 case 0x266:
                     break;
                 case 0x325:
-                    msgs.Add(DO_RMCRequestMessage.Create(client.callCounterDO_RMC++,
+                    msgs.Add(DO_RMCRequestMessage.Create(client.seqCounterOut++,
                         0x1006,
                         new DupObj(DupObjClass.Station, 1),
                         new DupObj(DupObjClass.NET_MessageBroker, 5),
@@ -113,7 +116,7 @@ namespace QuazalWV
                     break;
             }
             if (msgs.Count > 0)
-                return DO_BundleMessage.Create(client, msgs);
+                return DO_BundleMessage.Create(ci, msgs);
             else
                 return null;
         }

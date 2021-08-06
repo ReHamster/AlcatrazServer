@@ -37,7 +37,7 @@ namespace QuazalWV.Services
 
 			if (userName == "Tracking")
 			{
-				var kerberos = new KerberosTicket(Context.Client.PID, Context.Client.sPID, sessionKey, ticket);
+				var kerberos = new KerberosTicket(Context.Client.info.PID, Context.Client.sPID, sessionKey, ticket);
 
 				var reply = new Login()
 				{
@@ -80,14 +80,14 @@ namespace QuazalWV.Services
 				{
 					if (user.pass == oExtraData.data.password)
 					{
-						var kerberos = new KerberosTicket(Context.Client.PID, Context.Client.sPID, sessionKey, ticket);
+						var kerberos = new KerberosTicket(Context.Client.info.PID, Context.Client.sPID, sessionKey, ticket);
 
-						Context.Client.accountId = userName;
-						Context.Client.name = oExtraData.data.username;
-						Context.Client.pass = oExtraData.data.password;
-						Context.Client.sessionKey = sessionKey;
+						Context.Client.info.accountId = userName;
+						Context.Client.info.name = oExtraData.data.username;
+						Context.Client.info.pass = oExtraData.data.password;
+						Context.Client.info.sessionKey = sessionKey;
 
-						var loginData = new Login(Context.Client.PID, Context.Client.sPID)
+						var loginData = new Login(Context.Client.info.PID, Context.Client.sPID)
 						{
 							retVal = (int)RMCErrorCode.Core_NoError,
 							pConnectionData = new RVConnectionData()
@@ -121,7 +121,7 @@ namespace QuazalWV.Services
 		[RMCMethod(3)]
 		public RMCResult RequestTicket(uint sourcePID, uint targetPID)
 		{
-			var kerberos = new KerberosTicket(Context.Client.PID, Context.Client.sPID, sessionKey, ticket);
+			var kerberos = new KerberosTicket(Context.Client.info.PID, Context.Client.sPID, sessionKey, ticket);
 
 			var ticketData = new TicketData()
 			{

@@ -8,32 +8,19 @@ using System.Threading.Tasks;
 
 namespace QuazalWV
 {
+	// FIXME: rename to secure client? Or UserInfo?
 	public class ClientInfo
 	{
 		public uint PID;
-		public uint sPID;
-		public ushort sPort;
-
-		public uint IDrecv;
-		public uint IDsend;
-
 		public IPEndPoint endpoint;
 
 		public byte sessionID;
 		public byte[] sessionKey;
 
-		public ushort seqCounter;
-		public ushort seqCounterOut;
-		public ushort seqCounterDO;
-
-		public ushort callCounterDO_RMC;
-
-		public uint callCounterRMC;
 		public uint stationID;
 		public string accountId;
 		public string name;
 		public string pass;
-
 
 		public bool bootStrapDone = false;
 		public bool matchStartSent = false;

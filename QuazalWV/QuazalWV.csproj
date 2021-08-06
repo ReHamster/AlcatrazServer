@@ -180,13 +180,14 @@
     <Compile Include="Classes\StationInfo.cs" />
     <Compile Include="Classes\StdMaps.cs" />
     <Compile Include="ClientInfo.cs" />
+    <Compile Include="Connection\QClient.cs" />
     <Compile Include="DDL\AnyData.cs" />
     <Compile Include="DDL\DDLSerializer.cs" />
     <Compile Include="DDL\Models\DriverG2WService\UnlockInputData.cs" />
     <Compile Include="DDL\Models\GameSessionService\GameSession.cs" />
     <Compile Include="Interfaces\RMCResult.cs" />
     <Compile Include="DDL\Models\StatisticsService\StatisticData.cs" />
-    <Compile Include="Packet\QPacketHandlerPRUDPReliable.cs" />
+    <Compile Include="Connection\QPacketHandlerPRUDPReliable.cs" />
     <Compile Include="RMC\RMCErrorCode.cs" />
     <Compile Include="Services\DriverG2WService.cs" />
     <Compile Include="Services\DriverUniqueIDService.cs" />
@@ -251,8 +252,8 @@
     <Compile Include="NotificationQuene.cs" />
     <Compile Include="NotificationQueneEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Packet\QPacket.cs" />
-    <Compile Include="Packet\QPacketHandlerPRUDP.cs" />
+    <Compile Include="Connection\QPacket.cs" />
+    <Compile Include="Connection\QPacketHandlerPRUDP.cs" />
     <Compile Include="DDL\Models\TicketGrantingService\AuthenticationInfo.cs" />
     <Compile Include="DDL\Models\TicketGrantingService\Login.cs" />
     <Compile Include="DDL\Models\PrivilegesService\Privilege.cs" />

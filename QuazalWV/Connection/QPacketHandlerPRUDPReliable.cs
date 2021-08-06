@@ -42,7 +42,7 @@ namespace QuazalWV
 
 	public partial class QPacketHandlerPRUDP
 	{
-		public bool Defrag(ClientInfo client, QPacket packet)
+		public bool Defrag(QClient client, QPacket packet)
 		{
 			if (packet.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 				return true;

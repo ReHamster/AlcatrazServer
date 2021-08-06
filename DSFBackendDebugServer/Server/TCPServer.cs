@@ -17,7 +17,7 @@ namespace GROBackendWV
         private static TcpListener listener;
         private static string ip = Global.serverBindAddress;
         private static ushort listenPort = 80;
-        private static ushort targetPort = 21030;
+        private static ushort targetPort = Global.RDVServerPort;
 
         public static void Start()
         {
