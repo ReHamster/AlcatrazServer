@@ -1,7 +1,9 @@
 ﻿.idea
 .vscode
 .vs
-/.vs/GRPBackendWV/v16/Browse.VC.opendb
 *.ipch
 */obj/*
 *.pdb
+*.exe
+*.dll
+packages/*
