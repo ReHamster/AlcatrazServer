@@ -46,7 +46,7 @@ namespace QuazalWV
 			client.PID = Global.pidCounter++;
 			clients.Add(client);
 
-			return null;
+			return client;
 		}
 
 		private static void WriteLog(int priority, string s)

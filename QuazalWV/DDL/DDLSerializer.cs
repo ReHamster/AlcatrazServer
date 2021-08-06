@@ -172,15 +172,17 @@ namespace QuazalWV.DDL
             }
             else // read complex object
 			{
-                // collect all properties even from base types
-                var allProperties = new List<PropertyInfo>();
+				// collect all properties even from base types in right order
+				BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly;
+				var allProperties = new List<PropertyInfo>();
 
                 var nType = currentType;
+				int n = 0;
                 do
                 {
-                    // FIXME: prepend or append?
-                    allProperties.AddRange(nType.GetProperties());
-                    nType = nType.BaseType;
+					allProperties.InsertRange(0, nType.GetProperties(bindingFlags));
+					nType = nType.BaseType;
+					n++;
                 } while (nType != null);
 
                 // make creation lambda and use default constructor
@@ -309,20 +311,21 @@ namespace QuazalWV.DDL
             }
 			else
 			{
-                // assume it's a nested complex type
-                // collect all properties even from base types
-                var allProperties = new List<PropertyInfo>();
+				// collect all properties even from base types in right order
+				BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly;
+				var allProperties = new List<PropertyInfo>();
 
-                var nType = currentType;
-                do
-                {
-                    // FIXME: prepend or append?
-                    allProperties.AddRange(nType.GetProperties());
-                    nType = nType.BaseType;
-                } while (nType != null);
+				var nType = currentType;
+				int n = 0;
+				do
+				{
+					allProperties.InsertRange(0, nType.GetProperties(bindingFlags));
+					nType = nType.BaseType;
+					n++;
+				} while (nType != null);
 
-                // get types and skip read-only
-                var allPropertyTypes = allProperties.Select(x => x.CanRead ? x.PropertyType : null);
+				// get types and skip read-only
+				var allPropertyTypes = allProperties.Select(x => x.CanRead ? x.PropertyType : null);
 
                 // assign all values to new instance
                 for (int i = 0; i < allProperties.Count; i++)
