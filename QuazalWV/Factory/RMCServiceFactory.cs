@@ -12,9 +12,9 @@ namespace QuazalWV.Factory
 {
 	static class RMCServiceFactory
 	{
-		static Dictionary<RMCProtocol, Func<RMCServiceBase>> s_FactoryFuncs = new Dictionary<RMCProtocol, Func<RMCServiceBase>>();
+		static Dictionary<RMCProtocolId, Func<RMCServiceBase>> s_FactoryFuncs = new Dictionary<RMCProtocolId, Func<RMCServiceBase>>();
 
-		public static RMCServiceBase GetServiceInstance(RMCProtocol protocolId)
+		public static RMCServiceBase GetServiceInstance(RMCProtocolId protocolId)
 		{
 			Func<RMCServiceBase> existingFactory;
 			if (s_FactoryFuncs.TryGetValue(protocolId, out existingFactory))

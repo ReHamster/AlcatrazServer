@@ -12,7 +12,7 @@ namespace QuazalWV.Services
 	/// <summary>
 	/// Ubi news service
 	/// </summary>
-	[RMCService(RMCProtocol.UbiNewsService)]
+	[RMCService(RMCProtocolId.UbiNewsService)]
 	public class UbiNewsService : RMCServiceBase
 	{
 		[RMCMethod(1)]

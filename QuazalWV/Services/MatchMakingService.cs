@@ -9,7 +9,7 @@ namespace QuazalWV.Services
 	/// <summary>
 	/// Hermes 
 	/// </summary>
-	[RMCService(RMCProtocol.MatchMakingService)]
+	[RMCService(RMCProtocolId.MatchMakingService)]
 	class MatchMakingService : RMCServiceBase
 	{
 		[RMCMethod(1)]

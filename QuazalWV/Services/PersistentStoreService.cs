@@ -8,7 +8,7 @@ namespace QuazalWV.Services
 	/// <summary>
 	/// User friends service
 	/// </summary>
-	[RMCService(RMCProtocol.PersistentStoreService)]
+	[RMCService(RMCProtocolId.PersistentStoreService)]
 	public class PersistentStoreService : RMCServiceBase
 	{
 		[RMCMethod(1)]

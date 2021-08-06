@@ -9,7 +9,7 @@ namespace QuazalWV.Services
 	/// <summary>
 	/// Uplay achievements service
 	/// </summary>
-	[RMCService(RMCProtocol.UplayWinService)]
+	[RMCService(RMCProtocolId.UplayWinService)]
 	class UbiWinService : RMCServiceBase
 	{
 		[RMCMethod(1)]

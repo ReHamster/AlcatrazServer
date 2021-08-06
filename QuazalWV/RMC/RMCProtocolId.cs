@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace QuazalWV
 {
-    public enum RMCProtocol
+    public enum RMCProtocolId
     {
         NATTraversalService 			= 3,
         TicketGrantingService 			= 10,	// U

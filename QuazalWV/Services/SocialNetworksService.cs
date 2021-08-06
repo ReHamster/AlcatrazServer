@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace QuazalWV.Services
 {
-	[RMCService(RMCProtocol.SocialNetworksService)]
+	[RMCService(RMCProtocolId.SocialNetworksService)]
 	public class SocialNetworksService : RMCServiceBase
 	{
 		[RMCMethod(1)]

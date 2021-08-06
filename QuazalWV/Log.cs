@@ -95,7 +95,7 @@ namespace QuazalWV
 								sb.AppendLine("\tRMC Request  : " + p.isRequest);
 								sb.AppendLine("\tRMC Protocol : " + p.proto);
 								sb.AppendLine("\tRMC Method   : " + p.methodID.ToString("X"));
-								if (p.proto == RMCProtocol.NotificationEventManager && p.methodID == 1)
+								if (p.proto == RMCProtocolId.NotificationEventManager && p.methodID == 1)
 								{
 									sb.AppendLine("\t\tNotification :");
 									sb.AppendLine("\t\t\tSource".PadRight(20) + ": 0x" + Helper.ReadU32(m).ToString("X8"));

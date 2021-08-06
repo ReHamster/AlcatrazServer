@@ -5,7 +5,7 @@ namespace QuazalWV
 {
 	public class RMCPacket
     {
-        public RMCProtocol proto;
+        public RMCProtocolId proto;
         public bool isRequest;
         public bool success;
         public uint error;
@@ -27,11 +27,11 @@ namespace QuazalWV
             try
             {
                 if ((b & 0x7F) != 0x7F)
-                    proto = (RMCProtocol)(b & 0x7F);
+                    proto = (RMCProtocolId)(b & 0x7F);
                 else
                 {
                     b = Helper.ReadU16(m);
-                    proto = (RMCProtocol)(b);
+                    proto = (RMCProtocolId)(b);
                 }
             }
             catch

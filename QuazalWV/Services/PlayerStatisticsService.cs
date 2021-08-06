@@ -11,7 +11,7 @@ namespace QuazalWV.Services
 {
 
 
-	[RMCService(RMCProtocol.PlayerStatsService)]
+	[RMCService(RMCProtocolId.PlayerStatsService)]
 	public class PlayerStatisticsService : RMCServiceBase
 	{
 		[RMCMethod(1)]

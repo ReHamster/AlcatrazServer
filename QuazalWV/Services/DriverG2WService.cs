@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace QuazalWV.Services
 {
-	[RMCService(RMCProtocol.DriverG2WService)]
+	[RMCService(RMCProtocolId.DriverG2WService)]
 	public class DriverG2WService : RMCServiceBase
 	{
 		[RMCMethod(3)]

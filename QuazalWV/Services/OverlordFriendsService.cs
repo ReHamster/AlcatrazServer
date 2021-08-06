@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace QuazalWV.Services
 {
-	[RMCService(RMCProtocol.OverlordFriendsService)]
+	[RMCService(RMCProtocolId.OverlordFriendsService)]
 	public class OverlordFriendsService : RMCServiceBase
 	{
 		[RMCMethod(1)]

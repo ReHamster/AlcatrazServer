@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace QuazalWV.Services
 {
-	[RMCService(RMCProtocol.DriverUniqueIDService)]
+	[RMCService(RMCProtocolId.DriverUniqueIDService)]
 	public class DriverUniqueIDService : RMCServiceBase
 	{
 		[RMCMethod(2)]
