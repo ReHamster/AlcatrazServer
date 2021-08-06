@@ -22,6 +22,7 @@ namespace QuazalWV
         PrivilegesService 				= 35,	// U
         TrackingProtocol3Client 		= 36,
         LocalizationService 			= 39,
+		GameSessionService				= 42,
         MatchMakingProtocolExtClient 	= 50,
         LSPService 						= 81,
         PlayerStatsService           	= 108,
