@@ -34,6 +34,9 @@
     <Reference Include="DotNetZip">
       <HintPath>dll\DotNetZip.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite">
@@ -185,6 +188,7 @@
     <Compile Include="DDL\DDLSerializer.cs" />
     <Compile Include="DDL\Models\DriverG2WService\UnlockInputData.cs" />
     <Compile Include="DDL\Models\GameSessionService\GameSession.cs" />
+    <Compile Include="DDL\Models\NotificationEventManager\NotificationEvent.cs" />
     <Compile Include="Interfaces\RMCResult.cs" />
     <Compile Include="DDL\Models\StatisticsService\StatisticData.cs" />
     <Compile Include="Connection\QPacketHandlerPRUDPReliable.cs" />
@@ -250,7 +254,7 @@
     <Compile Include="DDL\Models\PersistentStoreService\StorageFile.cs" />
     <Compile Include="DDL\Models\NATTraversalService\NATTraversalService.cs" />
     <Compile Include="NotificationQuene.cs" />
-    <Compile Include="NotificationQueneEntry.cs" />
+    <Compile Include="NotificationQueueEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Connection\QPacket.cs" />
     <Compile Include="Connection\QPacketHandlerPRUDP.cs" />

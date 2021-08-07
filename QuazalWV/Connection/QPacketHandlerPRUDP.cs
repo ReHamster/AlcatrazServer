@@ -30,7 +30,7 @@ namespace QuazalWV
 		private List<QReliableResponse> CachedResponses = new List<QReliableResponse>();
 		private readonly List<ulong> NATPingTimeToIgnore;
 
-		private List<QClient> Clients;
+		public List<QClient> Clients;
 
 		public uint ClientIdCounter = 0x12345678;	// or client signature
 

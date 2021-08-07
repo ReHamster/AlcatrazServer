@@ -102,7 +102,7 @@ namespace GROBackendWV
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            NotificationQuene.Update();
+            NotificationQuene.Update(BackendServicesServer.packetHandler);
         }
 
         private void toolStripButton9_Click(object sender, EventArgs e)

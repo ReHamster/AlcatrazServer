@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace QuazalWV.DDL
 {
@@ -335,5 +336,15 @@ namespace QuazalWV.DDL
                 }
             }
         }
-    }
+
+		public static string ObjectToString<T>(T obj) where T: class
+		{
+			return JsonConvert.SerializeObject(obj, Formatting.Indented);
+		}
+
+		public static string ObjectToString(object obj)
+		{
+			return JsonConvert.SerializeObject(obj, Formatting.Indented);
+		}
+	}
 }

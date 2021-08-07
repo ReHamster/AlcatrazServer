@@ -9,9 +9,9 @@ namespace QuazalWV
 	public static class NotificationQuene
 	{
 		private static readonly object _sync = new object();
-		private static List<NotificationQueneEntry> quene = new List<NotificationQueneEntry>();
+		private static List<NotificationQueueEntry> quene = new List<NotificationQueueEntry>();
 
-		public static void AddNotification(NotificationQueneEntry n)
+		public static void AddNotification(NotificationQueueEntry n)
 		{
 			lock (_sync)
 			{
@@ -19,16 +19,16 @@ namespace QuazalWV
 			}
 		}
 
-		public static void Update()
+		public static void Update(QPacketHandlerPRUDP handler)
 		{
 			lock (_sync)
 			{
 				for (int i = 0; i < quene.Count; i++)
 				{
-					NotificationQueneEntry n = quene[i];
+					NotificationQueueEntry n = quene[i];
 					if (n.timer.ElapsedMilliseconds > n.timeout)
 					{
-						n.Execute();
+						n.Execute(handler);
 						n.timer.Stop();
 						quene.RemoveAt(i);
 						i--;

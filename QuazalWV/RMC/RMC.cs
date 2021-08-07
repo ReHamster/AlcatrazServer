@@ -1,12 +1,11 @@
 ﻿using QuazalWV.Attributes;
-using QuazalWV.Factory;
 using QuazalWV.DDL;
+using QuazalWV.DDL.Models;
+using QuazalWV.Factory;
 using QuazalWV.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 
@@ -82,63 +81,50 @@ namespace QuazalWV
 
 			var rmcContext = new RMCContext(rmc, handler, client, p);
 
-            // create service instance
-            var serviceInstance = RMCServiceFactory.GetServiceInstance(rmc.proto);
-            if (serviceInstance != null)
-            {
-                // set the execution context
-                serviceInstance.Context = rmcContext;
+			// create service instance
+			var serviceFactory = RMCServiceFactory.GetServiceFactory(rmc.proto);
 
-                MethodInfo bestMethod = null;
+			if(serviceFactory != null)
+			{
+				var serviceInstance = serviceFactory();
+				var bestMethod = serviceInstance.GetServiceMethodById(rmc.methodID);
 
-                // find suitable method
-                var allMethods = serviceInstance.GetType().GetMethods();
-                foreach (var method in allMethods)
-                {
-                    var rmcMethodAttr = (RMCMethodAttribute)method.GetCustomAttributes(typeof(RMCMethodAttribute), true).SingleOrDefault();
-                    if (rmcMethodAttr != null)
-                    {
-                        if (rmcMethodAttr.MethodId == rmc.methodID)
-                        {
-                            bestMethod = method;
-                            break;
-                        }
-                    }
-                }
+				if (bestMethod != null)
+				{
+					// set the execution context
+					serviceInstance.Context = rmcContext;
 
-                // call method
-                if (bestMethod != null)
-                {
-                    var parameters = HandleMethodParameters(bestMethod, m);
-                    var returnValue = bestMethod.Invoke(serviceInstance, parameters);
+					// call method
+					var parameters = HandleMethodParameters(bestMethod, m);
+					var returnValue = bestMethod.Invoke(serviceInstance, parameters);
 
-                    if(returnValue != null)
+					if (returnValue != null)
 					{
-                        if(typeof(RMCResult).IsAssignableFrom(returnValue.GetType()))
+						if (typeof(RMCResult).IsAssignableFrom(returnValue.GetType()))
 						{
-                            var rmcResult = (RMCResult)returnValue;
+							var rmcResult = (RMCResult)returnValue;
 
-                            SendResponseWithACK(
+							SendResponseWithACK(
 								handler,
-                                rmcContext.Packet,
-                                rmcContext.RMC,
-                                rmcContext.Client,
-                                rmcResult.Response,
-                                rmcResult.Compression, rmcResult.Error);
-                        }
-                        else
+								rmcContext.Packet,
+								rmcContext.RMC,
+								rmcContext.Client,
+								rmcResult.Response,
+								rmcResult.Compression, rmcResult.Error);
+						}
+						else
 						{
-                            // TODO: try to cast and create RMCPResponseDDL???
+							// TODO: try to cast and create RMCPResponseDDL???
 						}
 					}
 
-                    return;
-                }
-                else
-                {
-                    WriteLog(1, $"Error: No method '{ rmc.methodID }' registered for protocol '{ rmc.proto }'");
-                }
-            }
+					return;
+				}
+				else
+				{
+					WriteLog(1, $"Error: No method '{ rmc.methodID }' registered for protocol '{ rmc.proto }'");
+				}
+			}
             else
             {
                 WriteLog(1, $"Error: No service registered for packet protocol '{ rmc.proto }' (protocolId = { (int)rmc.proto })");
@@ -242,13 +228,37 @@ namespace QuazalWV
             packetData.Write(buff, 0, buff.Length);
 
             QPacket np = new QPacket(p.toBuffer());
-            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_NEED_ACK };
+            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_RELIABLE | QPacket.PACKETFLAG.FLAG_NEED_ACK };
             np.m_uiSignature = client.IDsend;
 
 			handler.MakeAndSend(client, p, np, packetData.ToArray());
         }
 
-		public static void SendNotification(QClient client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
+		public static void SendNotification(QPacketHandlerPRUDP handler, QClient client, NotificationEvent eventData)
+		{
+			var packet = new QPacket();
+
+			packet.m_oSourceVPort = new QPacket.VPort(0x31);
+			packet.m_oDestinationVPort = new QPacket.VPort(0x3f);
+
+			packet.type = QPacket.PACKETTYPE.DATA;
+			packet.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_RELIABLE | QPacket.PACKETFLAG.FLAG_NEED_ACK };
+			packet.payload = new byte[0];
+			packet.m_bySessionID = client.info.sessionID;
+
+			var rmc = new RMCPacket();
+
+			rmc.proto = RMCProtocolId.NotificationEventManager;
+			rmc.methodID = 1;
+			rmc.callID = ++client.callCounterRMC;
+
+			Log.WriteLine(1, "Sending NotificationEvent");
+			Log.WriteLine(1, DDLSerializer.ObjectToString(eventData));
+
+			SendRequestPacket(handler, packet, rmc, client, new RMCPResponseDDL<NotificationEvent>(eventData), true, 0);
+		}
+
+		public static void SendNotification(QPacketHandlerPRUDP handler, QClient client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
         {
             WriteLog(1, "Send Notification: [" + source.ToString("X8") + " " 
                                          + type.ToString("X8") + " "
@@ -257,32 +267,39 @@ namespace QuazalWV
                                          + param2.ToString("X8") + " "
                                          + param3.ToString("X8") + " \""
                                          + paramStr + "\"]");
+
             MemoryStream m = new MemoryStream();
+
             Helper.WriteU32(m, source);
             Helper.WriteU32(m, type * 1000 + subType);
             Helper.WriteU32(m, param1);
             Helper.WriteU32(m, param2);
             Helper.WriteU16(m, (ushort)(paramStr.Length + 1));
+
             foreach (char c in paramStr)
                 m.WriteByte((byte)c);
+
             m.WriteByte(0);
             Helper.WriteU32(m, param3);
             byte[] payload = m.ToArray();
+
             QPacket q = new QPacket();
             q.m_oSourceVPort = new QPacket.VPort(0x31);
             q.m_oDestinationVPort = new QPacket.VPort(0x3f);
             q.type = QPacket.PACKETTYPE.DATA;
             q.flags = new List<QPacket.PACKETFLAG>();
             q.payload = new byte[0];
-            q.uiSeqId++;
             q.m_bySessionID = client.info.sessionID;
+
             RMCPacket rmc = new RMCPacket();
+
             rmc.proto = RMCProtocolId.NotificationEventManager;
             rmc.methodID = 1;
             rmc.callID = ++client.callCounterRMC;
 
             var reply = new RMCPResponseDDL<byte[]>(payload);
-            //RMC.SendRequestPacket(client.udp, q, rmc, client, reply, true, 0);
+
+            SendRequestPacket(handler, q, rmc, client, reply, true, 0);
         }
 
         private static void WriteLog(int priority, string s)

@@ -18,7 +18,7 @@ namespace GROBackendWV
         public static ushort listenPort = Global.BackendServiceServerPort;
         public static UdpClient listener;
         public static ushort _skipNextNAT = 0xFFFF;
-		static QPacketHandlerPRUDP packetHandler;
+		public static QPacketHandlerPRUDP packetHandler;
 
 
 		public static void Start()

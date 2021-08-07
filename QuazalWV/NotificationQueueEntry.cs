@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace QuazalWV
 {
-	public class NotificationQueneEntry
+	public class NotificationQueueEntry
 	{
 		public QClient client;
 		public Stopwatch timer;
@@ -20,7 +20,7 @@ namespace QuazalWV
 		public uint param3;
 		public string paramStr;
 
-		public NotificationQueneEntry(QClient c, uint time, uint src, uint t, uint st, uint p1, uint p2, uint p3, string ps)
+		public NotificationQueueEntry(QClient c, uint time, uint src, uint t, uint st, uint p1, uint p2, uint p3, string ps)
 		{
 			client = c;
 			timer = new Stopwatch();
@@ -35,9 +35,9 @@ namespace QuazalWV
 			paramStr = ps;
 		}
 
-		public void Execute()
+		public void Execute(QPacketHandlerPRUDP handler)
 		{
-			RMC.SendNotification(client, source, type, subType, param1, param2, param3, paramStr);
+			RMC.SendNotification(handler, client, source, type, subType, param1, param2, param3, paramStr);
 		}
 	}
 }

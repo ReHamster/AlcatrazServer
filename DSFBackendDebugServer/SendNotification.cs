@@ -21,14 +21,14 @@ namespace GROBackendWV
 
         private void button1_Click(object sender, EventArgs e)
         {
-            try
+			var packetHandler = BackendServicesServer.packetHandler;
+
+			try
             {
-				Log.WriteLine(1, "ERROR : unimplemented SendNotification");
-#if false
-				foreach (ClientInfo client in Global.clients)
+				foreach (var client in packetHandler.Clients)
                 {
                     NotificationQuene.AddNotification(
-                        new NotificationQueneEntry(client, 
+                        new NotificationQueueEntry(client, 
                             0,
                             Convert.ToUInt32(textBox1.Text),
                             Convert.ToUInt32(textBox2.Text),
@@ -38,7 +38,7 @@ namespace GROBackendWV
                             Convert.ToUInt32(textBox6.Text),
                             textBox7.Text));
                 }
-#endif
+
             }
             catch { }
         }
