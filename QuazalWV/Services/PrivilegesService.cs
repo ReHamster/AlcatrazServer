@@ -14,6 +14,9 @@ namespace QuazalWV.Services
 		[RMCMethod(1)]
 		public RMCResult GetPrivileges(string localeCode)
 		{
+			// return bytes:
+			//2D 00 00 00 23 01 16 00 00 00 01 80 00 00 01 00 00 00 01 00 00 00 01 00 00 00 15 00 41 6C 6C 6F 77 20 74 6F 20 70 6C 61 79 20 6F 6E 6C 69 6E 65 00
+
 			var result = new Dictionary<uint, Privilege>();
 
 			// TODO: populate

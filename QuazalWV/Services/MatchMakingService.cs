@@ -16,7 +16,7 @@ namespace QuazalWV.Services
 		[RMCMethod(1)]
 		public RMCResult RegisterGathering(AnyData<HermesPartySession> anyGathering)
 		{
-			uint result = 1;
+			uint result = 39704;
 			if(anyGathering.data != null)
 			{
 				Log.WriteLine(1, "RegisterGathering : HermesPartySession:Gathering {");
@@ -39,6 +39,8 @@ namespace QuazalWV.Services
 				Log.WriteLine(1, "}");
 			}
 
+			// return 39704
+
 			UNIMPLEMENTED();
 
 			return Result(new { gatheringId = result });
@@ -59,6 +61,8 @@ namespace QuazalWV.Services
 		[RMCMethod(4)]
 		public RMCResult UpdateGathering(AnyData<HermesPartySession> anyGathering)
 		{
+			//m_idMyself = gathering ID 39704
+
 			if (anyGathering.data != null)
 			{
 				Log.WriteLine(1, "UpdateGathering : HermesPartySession:Gathering {");
@@ -81,8 +85,10 @@ namespace QuazalWV.Services
 				Log.WriteLine(1, "}");
 			}
 
+			// return True
+
 			UNIMPLEMENTED();
-			return Error(0);
+			return Result(new { result = true });
 		}
 
 		[RMCMethod(5)]
@@ -295,8 +301,8 @@ namespace QuazalWV.Services
 		[RMCMethod(39)]
 		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<string> urls)
 		{
+
 			UNIMPLEMENTED($"uint gid = {gid}");
-			UNIMPLEMENTED();
 			return Error(0);
 		}
 
