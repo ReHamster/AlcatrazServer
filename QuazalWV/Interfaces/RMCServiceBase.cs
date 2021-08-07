@@ -1,4 +1,5 @@
 ﻿using QuazalWV.Attributes;
+using QuazalWV.Factory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,6 +22,11 @@ namespace QuazalWV.Interfaces
 				if(_context == null)
 					_context = value;
 			} 
+		}
+
+		public MethodInfo GetServiceMethodById(uint methodId)
+		{
+			return RMCServiceFactory.GetServiceMethodById(GetType(), methodId);
 		}
 
 		protected void SendResponseWithACK(RMCPResponse reply, bool useCompression = true, uint error = 0)

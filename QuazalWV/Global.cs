@@ -33,6 +33,8 @@ namespace QuazalWV
 		public static List<ClientInfo> clients = new List<ClientInfo>();
 		public static Stopwatch uptime = new Stopwatch();
 
+		public static List<string> clientStationURLs = new List<string>();
+
 		public static ClientInfo GetOrCreateClient(IPEndPoint ep)
 		{
 			foreach (ClientInfo c in clients)

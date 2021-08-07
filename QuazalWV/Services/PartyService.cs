@@ -12,6 +12,7 @@ namespace QuazalWV.Services
 		public RMCResult SendGameIdToParty(uint id, uint toJoinId, int gameType, string msgRequest)
 		{
 			UNIMPLEMENTED($"uint id = {id}, uint toJoinId = {toJoinId}, int gameType = {gameType}, string msgRequest = {msgRequest}");
+
 			return Error(0);
 		}
 
@@ -93,16 +94,68 @@ namespace QuazalWV.Services
 			UNIMPLEMENTED();
 		}
 
+		/*
+		RMC Request  : True
+		RMC Protocol : NotificationEventManager
+		RMC Method   : 1
+		Notification :
+		Source           : 0x00084504
+		Type             : 1004
+		SubType          : 6
+		Param 1          : 0x00030000
+		Param 2          : 0xFFFFFFFF
+		Param String     : 
+		Param 3          : 0x00000000
+
+		//-------------------------------------------------
+
+		RMC Request  : True
+		RMC Protocol : NotificationEventManager
+		RMC Method   : 1
+		Notification :
+		Source           : 0x00084504
+		Type             : 1004
+		SubType          : 0
+		Param 1          : 0x00005614
+		Param 2          : 0x00000001
+		Param String     : NetZHost:prudp:/address=192.168.1.211;port=3074;RVCID=759825|prudp:/address=92.46.131.79;port=3074;sid=15;type=3;RVCID=759825|
+		Param 3          : 0x00000000
+
+		 */
+
 		[RMCMethod(14)]
 		public RMCResult SendMatchmakingStatus(uint gid, uint pid)
 		{
 			UNIMPLEMENTED();
+
+			var notification = new NotificationEvent(NotificationType.PartyEvent, 6)
+			{
+				m_pidSource = Context.Client.info.PID,
+				m_uiParam1 = pid, // gid ???
+				m_uiParam2 = 0xffffffff,
+				m_strParam = "",
+			};
+
+			RMC.SendNotification(Context.Handler, Context.Client, notification);
+
 			return Result(new { result = true });
 		}
 
 		[RMCMethod(15)]
 		public RMCResult JoinMatchmakingStatus(uint gid, uint pid, bool joinSuccess)
 		{
+			var connStrings = $"NetZHost:{string.Join("|", Global.clientStationURLs)}|";
+
+			var notification = new NotificationEvent(NotificationType.PartyEvent, 0)
+			{
+				m_pidSource = pid,
+				m_uiParam1 = 0x5614, // gid ???
+				m_uiParam2 = gid,
+				m_strParam = connStrings,
+			};
+
+			RMC.SendNotification(Context.Handler, Context.Client, notification);
+
 			UNIMPLEMENTED();
 			return Result(new { result = true });
 		}

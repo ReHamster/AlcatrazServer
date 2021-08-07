@@ -9,10 +9,10 @@ namespace QuazalWV.Attributes
 	[AttributeUsage(AttributeTargets.Method)]
 	public class RMCMethodAttribute : Attribute
 	{
-		public readonly int MethodId;
+		public readonly uint MethodId;
 		public readonly string Name;
 
-		public RMCMethodAttribute(int methodId, string name = null)
+		public RMCMethodAttribute(uint methodId, string name = null)
 		{
 			MethodId = methodId;
 			Name = name;

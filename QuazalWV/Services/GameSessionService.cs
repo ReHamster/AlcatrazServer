@@ -197,6 +197,14 @@ namespace QuazalWV.Services
 		[RMCMethod(21)]
 		public RMCResult RegisterURLs(IEnumerable<string> stationURLs)
 		{
+			Global.clientStationURLs.AddRange(stationURLs);
+
+			Log.WriteLine(1, "RegisterURLs : stationURLs {");
+			foreach (var url in stationURLs)
+			{
+				Log.WriteLine(1, $"    {url}");
+			}
+			Log.WriteLine(1, "}");
 			// TODO:
 			UNIMPLEMENTED();
 			return Error(0);
