@@ -6,6 +6,9 @@ using System.Text;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+using QuazalWV.Factory;
+using System.Reflection;
+using QuazalWV.DDL;
 
 namespace QuazalWV
 {
@@ -67,6 +70,23 @@ namespace QuazalWV
 			}
 			catch { }
 		}
+		private static object HandleMethodParameters(MethodInfo method, Stream m)
+		{
+			// TODO: extended info
+			var paramList = method.GetParameters();
+			var typeList = paramList.Select(x => x.ParameterType);
+
+			var values = DDLSerializer.ReadPropertyValues(typeList.ToArray(), m);
+
+			var members = new Dictionary<string, object>();
+
+			for (var i = 0; i < paramList.Count(); i++)
+			{
+				members[paramList[i].Name] = values[i];
+			}
+
+			return members;
+		}
 
 		public static string MakeDetailedPacketLog(byte[] data, bool isSinglePacket = false)
 		{
@@ -88,30 +108,49 @@ namespace QuazalWV
 							{
 								MemoryStream m = new MemoryStream(qp.payload);
 								RMCPacket p = new RMCPacket(qp);
-								m.Seek(p._afterProtocolOffset + 4, 0);
-								if (!p.isRequest)
-									m.ReadByte();
-								p.methodID = Helper.ReadU32(m);
-								sb.AppendLine("\tRMC Request  : " + p.isRequest);
-								sb.AppendLine("\tRMC Protocol : " + p.proto);
-								sb.AppendLine("\tRMC Method   : " + p.methodID.ToString("X"));
-								if (p.proto == RMCProtocolId.NotificationEventManager && p.methodID == 1)
+
+								m.Seek(p._afterProtocolOffset, SeekOrigin.Begin);
+
+								string methodName = p.methodID.ToString();
+
+								var serviceFactory = RMCServiceFactory.GetServiceFactory(p.proto);
+								MethodInfo bestMethod = null;
+								if(serviceFactory != null)
 								{
-									sb.AppendLine("\t\tNotification :");
-									sb.AppendLine("\t\t\tSource".PadRight(20) + ": 0x" + Helper.ReadU32(m).ToString("X8"));
-									uint type = Helper.ReadU32(m);
-									sb.AppendLine("\t\t\tType".PadRight(20) + ": " + (type / 1000));
-									sb.AppendLine("\t\t\tSubType".PadRight(20) + ": " + (type % 1000));
-									sb.AppendLine("\t\t\tParam 1".PadRight(20) + ": 0x" + Helper.ReadU32(m).ToString("X8"));
-									sb.AppendLine("\t\t\tParam 2".PadRight(20) + ": 0x" + Helper.ReadU32(m).ToString("X8"));
-									sb.AppendLine("\t\t\tParam String".PadRight(20) + ": " + Helper.ReadString(m));
-									sb.AppendLine("\t\t\tParam 3".PadRight(20) + ": 0x" + Helper.ReadU32(m).ToString("X8"));
+									var service = serviceFactory();
+									
+									bestMethod = service.GetServiceMethodById(p.methodID);
+									if (bestMethod != null)
+										methodName = bestMethod.Name;
 								}
+
+								sb.AppendLine("\tRMC CallId : " + p.callID);
+								sb.AppendLine("\tRMC Protocol : " + p.proto);
+								sb.AppendLine("\tRMC Method   : " + methodName);
+
+								if (p.isRequest)
+								{
+									sb.AppendLine("\tRMC Request  : " + p.isRequest);
+
+									if (bestMethod != null)
+									{
+										sb.AppendLine("RMC Method arguments:");
+										var paramValues = HandleMethodParameters(bestMethod, m);
+
+										// serialize input parameters
+										sb.Append(DDLSerializer.ObjectToString(paramValues));
+									}
+								}
+								else
+								{
+									sb.AppendLine("\tRMC Response " + (p.success ? "Success" : $"Error : { p.error.ToString("X8") }"));
+								}
+
 								sb.AppendLine();
 							}
-							catch
+							catch(Exception ex)
 							{
-								sb.AppendLine("Error processing RMC packet");
+								sb.AppendLine("Error processing RMC packet: " + ex.Message);
 								sb.AppendLine();
 							}
 							break;
