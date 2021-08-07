@@ -24,7 +24,7 @@ namespace QuazalWV
 
 		public static ushort serverBindPort = 21006; // 3074
 
-		public static uint pidCounter = 0x1234;
+		public static uint pidCounter = 0x1234;		// 0x84504
 
 		public static uint dummyFriendPidCounter = 0x1235;
 
@@ -32,9 +32,6 @@ namespace QuazalWV
 
 		public static List<ClientInfo> clients = new List<ClientInfo>();
 		public static Stopwatch uptime = new Stopwatch();
-
-		public static List<string> clientStationURLs = new List<string>();
-
 		public static ClientInfo GetOrCreateClient(IPEndPoint ep)
 		{
 			foreach (ClientInfo c in clients)
@@ -45,15 +42,10 @@ namespace QuazalWV
 
 			var client = new ClientInfo();
 			client.endpoint = ep;
-			client.PID = Global.pidCounter++;
+			client.PID = pidCounter++;
 			clients.Add(client);
 
 			return client;
-		}
-
-		private static void WriteLog(int priority, string s)
-		{
-			Log.WriteLine(priority, "[Global] " + s);
 		}
 	}
 }

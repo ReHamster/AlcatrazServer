@@ -206,6 +206,7 @@
     <Compile Include="Services\PlayerStatisticsService.cs" />
     <Compile Include="Services\RichPresenceService.cs" />
     <Compile Include="Services\SocialNetworksService.cs" />
+    <Compile Include="Services\TrackingService3.cs" />
     <Compile Include="Services\UbiAccountManagementService.cs" />
     <Compile Include="Services\TicketGrantingService.cs" />
     <Compile Include="Attributes\RMCMethodAttribute.cs" />
@@ -253,8 +254,7 @@
     <Compile Include="DDL\Models\NewsService\NewsRecipient.cs" />
     <Compile Include="DDL\Models\PersistentStoreService\StorageFile.cs" />
     <Compile Include="DDL\Models\NATTraversalService\NATTraversalService.cs" />
-    <Compile Include="NotificationQuene.cs" />
-    <Compile Include="NotificationQueueEntry.cs" />
+    <Compile Include="NotificationQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Connection\QPacket.cs" />
     <Compile Include="Connection\QPacketHandlerPRUDP.cs" />

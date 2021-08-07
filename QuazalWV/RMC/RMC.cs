@@ -185,51 +185,6 @@ namespace QuazalWV
 
 			SendRequestPacket(handler, packet, rmc, client, new RMCPRequestDDL<NotificationEvent>(eventData), true, 0);
 		}
-
-		public static void SendNotification(QPacketHandlerPRUDP handler, QClient client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
-        {
-            WriteLog(1, "Send Notification: [" + source.ToString("X8") + " " 
-                                         + type.ToString("X8") + " "
-                                         + subType.ToString("X8") + " " 
-                                         + param1.ToString("X8") + " "
-                                         + param2.ToString("X8") + " "
-                                         + param3.ToString("X8") + " \""
-                                         + paramStr + "\"]");
-
-            MemoryStream m = new MemoryStream();
-
-            Helper.WriteU32(m, source);
-            Helper.WriteU32(m, type * 1000 + subType);
-            Helper.WriteU32(m, param1);
-            Helper.WriteU32(m, param2);
-            Helper.WriteU16(m, (ushort)(paramStr.Length + 1));
-
-            foreach (char c in paramStr)
-                m.WriteByte((byte)c);
-
-            m.WriteByte(0);
-            Helper.WriteU32(m, param3);
-            byte[] payload = m.ToArray();
-
-            QPacket q = new QPacket();
-            q.m_oSourceVPort = new QPacket.VPort(0x31);
-            q.m_oDestinationVPort = new QPacket.VPort(0x3f);
-            q.type = QPacket.PACKETTYPE.DATA;
-            q.flags = new List<QPacket.PACKETFLAG>();
-            q.payload = new byte[0];
-            q.m_bySessionID = client.info.sessionID;
-
-            RMCPacket rmc = new RMCPacket();
-
-            rmc.proto = RMCProtocolId.NotificationEventManager;
-            rmc.methodID = 1;
-            rmc.callID = ++client.callCounterRMC;
-
-            var reply = new RMCPRequestDDL<byte[]>(payload);
-
-            SendRequestPacket(handler, q, rmc, client, reply, true, 0);
-        }
-
         private static void WriteLog(int priority, string s)
         {
             Log.WriteLine(priority, "[RMC] " + s);

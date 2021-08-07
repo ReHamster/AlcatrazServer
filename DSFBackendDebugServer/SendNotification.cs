@@ -1,18 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using QuazalWV;
+using QuazalWV.DDL.Models;
+using System;
 using System.Windows.Forms;
-using QuazalWV;
 
 namespace GROBackendWV
 {
-    public partial class SendNotification : Form
+	public partial class SendNotification : Form
     {
         public SendNotification()
         {
@@ -27,16 +20,16 @@ namespace GROBackendWV
             {
 				foreach (var client in packetHandler.Clients)
                 {
-                    NotificationQuene.AddNotification(
-                        new NotificationQueueEntry(client, 
-                            0,
-                            Convert.ToUInt32(textBox1.Text),
-                            Convert.ToUInt32(textBox2.Text),
-                            Convert.ToUInt32(textBox3.Text),
-                            Convert.ToUInt32(textBox4.Text),
-                            Convert.ToUInt32(textBox5.Text),
-                            Convert.ToUInt32(textBox6.Text),
-                            textBox7.Text));
+					var evtData = new NotificationEvent((NotificationType)Convert.ToUInt32(txt_type.Text), Convert.ToUInt32(txt_subType.Text))
+					{
+						m_pidSource = Convert.ToUInt32(txt_sourcePID.Text),
+						m_uiParam1 = Convert.ToUInt32(txt_param1.Text),
+						m_uiParam2 = Convert.ToUInt32(txt_param2.Text),
+						m_strParam = txt_stringParam.Text,
+						m_uiParam3 = Convert.ToUInt32(txt_param3.Text)
+					};
+
+                    NotificationQueue.AddNotification(evtData, client, 0);
                 }
 
             }
