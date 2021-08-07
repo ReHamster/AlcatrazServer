@@ -29,11 +29,11 @@ namespace QuazalWV.Services
 		{
 			if(hCustomData.data != null)
 			{
-				var rdvConnectionString = $"prudps:/address={ Global.serverBindAddress };port={ Global.serverBindPort };CID=1;PID={Context.Client.info.PID};sid=1;stream=3;type=2";
+				var rdvConnectionString = $"prudp:/address={ Context.Client.endpoint.Address };port={ Context.Client.endpoint.Port };sid=14;type=3";
 
 				var result = new RegisterResult()
 				{
-					pidConnectionID = 78,
+					pidConnectionID = Context.Client.info.PID,
 					retval = (int)RMCErrorCode.Core_NoError,
 					urlPublic = rdvConnectionString
 				};

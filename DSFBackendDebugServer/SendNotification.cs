@@ -20,7 +20,7 @@ namespace GROBackendWV
             {
 				foreach (var client in packetHandler.Clients)
                 {
-					var evtData = new NotificationEvent((NotificationType)Convert.ToUInt32(txt_type.Text), Convert.ToUInt32(txt_subType.Text))
+					var evtData = new NotificationEvent((NotificationEventsType)Convert.ToUInt32(txt_type.Text), Convert.ToUInt32(txt_subType.Text))
 					{
 						m_pidSource = Convert.ToUInt32(txt_sourcePID.Text),
 						m_uiParam1 = Convert.ToUInt32(txt_param1.Text),
