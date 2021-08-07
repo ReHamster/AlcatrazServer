@@ -9,14 +9,6 @@ namespace QuazalWV.DDL.Models
 	public enum NotificationType : int
 	{
 		PartyEvent = 1004000,
-
-		// 3001 	New participant
-		// 3002 	Participation cancelled
-		// 3007 	Participant disconnected
-		// 3008 	Participation ended
-		// 4000 	Ownership change
-		// 109000 	Gathering unregistered
-		// 116000 	Matchmake referee round started
 	}
 
 	public class NotificationEvent
@@ -27,7 +19,7 @@ namespace QuazalWV.DDL.Models
 		}
 		public NotificationEvent(NotificationType type, uint subType)
 		{
-			m_uiType = (uint)type | subType;
+			m_uiType = (uint)type + subType;
 		}
 
 		public uint m_pidSource { get; set; }
@@ -37,5 +29,22 @@ namespace QuazalWV.DDL.Models
 		public uint m_uiParam1 { get; set; }
 		public uint m_uiParam2 { get; set; }
 		public string m_strParam { get; set; }
+		public uint m_uiParam3 { get; set; }
+
+		public override string ToString()
+		{
+			var stringBuilder = new StringBuilder();
+
+			stringBuilder.AppendLine("NotificationEvent {");
+			stringBuilder.AppendLine($"    m_pidSource = { m_pidSource }");
+			stringBuilder.AppendLine($"    m_uiType = ({ (NotificationType)(m_uiType - (m_uiType % 1000)) }, { m_uiType % 1000 })");
+			stringBuilder.AppendLine($"    m_uiParam1 = { m_uiParam1 }");
+			stringBuilder.AppendLine($"    m_uiParam2 = { m_uiParam2 }");
+			stringBuilder.AppendLine($"    m_strParam = { m_strParam }");
+			stringBuilder.AppendLine($"    m_uiParam3 = { m_uiParam3 }");
+			stringBuilder.AppendLine("}");
+
+			return stringBuilder.ToString();
+		}
 }
 }

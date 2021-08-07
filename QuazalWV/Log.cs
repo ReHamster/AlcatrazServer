@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using QuazalWV.Factory;
 using System.Reflection;
 using QuazalWV.DDL;
+using QuazalWV.DDL.Models;
 
 namespace QuazalWV
 {
@@ -132,7 +133,12 @@ namespace QuazalWV
 								{
 									sb.AppendLine("\tRMC Request  : " + p.isRequest);
 
-									if (bestMethod != null)
+									if (p.methodID == 1 && p.proto == RMCProtocolId.NotificationEventManager)
+									{
+										var notif = DDLSerializer.ReadObject<NotificationEvent>(m);
+										sb.AppendLine(notif.ToString());
+									}
+									else if (bestMethod != null)
 									{
 										sb.AppendLine("RMC Method arguments:");
 										var paramValues = HandleMethodParameters(bestMethod, m);
