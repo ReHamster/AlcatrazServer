@@ -23,7 +23,7 @@ namespace QuazalWV.Services
 			Log.WriteLine(1, "}");
 
 			var result = new GameSessionKey();
-			result.m_sessionID = 1;
+			result.m_sessionID = 22046;
 			result.m_typeID = gameSession.m_typeID;
 
 			return Result(result);
@@ -197,8 +197,6 @@ namespace QuazalWV.Services
 		[RMCMethod(21)]
 		public RMCResult RegisterURLs(IEnumerable<string> stationURLs)
 		{
-			Global.clientStationURLs.AddRange(stationURLs);
-
 			Log.WriteLine(1, "RegisterURLs : stationURLs {");
 			foreach (var url in stationURLs)
 			{
@@ -219,9 +217,13 @@ namespace QuazalWV.Services
 
 
 		[RMCMethod(23)]
-		public void AbandonSession()
+		public RMCResult AbandonSession(uint partyId)
 		{
+			// remove current client from partyId
+			// AND delete session?
+
 			UNIMPLEMENTED();
+			return Error(0);
 		}
 
 

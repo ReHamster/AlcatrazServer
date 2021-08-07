@@ -18,6 +18,7 @@ namespace QuazalWV.Services
 		[RMCMethod(2)]
 		public RMCResult GetPresence(uint type)
 		{
+			// ret: 0A 00 00 00 6D 01 1A 00 00 00 01 80 00 00 
 			UNIMPLEMENTED();
 			var list = new List<PresenceElement>();
 			return Result(list);
