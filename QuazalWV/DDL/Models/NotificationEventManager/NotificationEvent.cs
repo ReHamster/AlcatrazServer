@@ -6,20 +6,36 @@ using System.Threading.Tasks;
 
 namespace QuazalWV.DDL.Models
 {
-	public enum NotificationType : int
+	public enum NotificationEventsType
 	{
-		PartyEvent = 1004000,
-	}
+		FriendEvent				= 1,
+		SessionLaunched			= 2,
+		ParticipationEvent		= 3,
+		OwnershipChangeEvent	= 4,
+		FriendStatusChangeEvent	= 5,
+		ForceDisconnectEvent	= 6,
+		GameSessionEvent		= 7,
+		FirstUserNotification	= 1000,
+		 // Hermes::CustomNotificationEvents start
+		SwissRoundTournament	= 1001,
+		MetaSession				= 1002,
+		Clans					= 1003,
+		HermesPartySession		= 1004,
+		PartyProbeMatchmaking	= 1005,
+		PartyJoinMatchmaking	= 1006,
+		Statistics				= 1008,
+	};
 
+	// see PlatformListenerServiceRDV::ProcessNotificationEvent in game
 	public class NotificationEvent
 	{
 		public NotificationEvent()
 		{
 
 		}
-		public NotificationEvent(NotificationType type, uint subType)
+		public NotificationEvent(NotificationEventsType type, uint subType)
 		{
-			m_uiType = (uint)type + subType;
+			m_uiType = (uint)type * 1000 + subType;
 		}
 
 		public uint m_pidSource { get; set; }
@@ -35,9 +51,12 @@ namespace QuazalWV.DDL.Models
 		{
 			var stringBuilder = new StringBuilder();
 
+			var type = (m_uiType - (m_uiType % 1000)) / 1000;
+			var subType = m_uiType % 1000;
+
 			stringBuilder.AppendLine("NotificationEvent {");
 			stringBuilder.AppendLine($"    m_pidSource = { m_pidSource }");
-			stringBuilder.AppendLine($"    m_uiType = ({ (NotificationType)(m_uiType - (m_uiType % 1000)) }, { m_uiType % 1000 })");
+			stringBuilder.AppendLine($"    m_uiType = ({ (NotificationEventsType)type }, { subType })");
 			stringBuilder.AppendLine($"    m_uiParam1 = { m_uiParam1 }");
 			stringBuilder.AppendLine($"    m_uiParam2 = { m_uiParam2 }");
 			stringBuilder.AppendLine($"    m_strParam = { m_strParam }");

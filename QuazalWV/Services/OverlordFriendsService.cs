@@ -8,7 +8,7 @@ namespace QuazalWV.Services
 	public class OverlordFriendsService : RMCServiceBase
 	{
 		[RMCMethod(1)]
-		public RMCResult SyncFriends(uint friendType)
+		public RMCResult SyncFriends(uint friendType, IEnumerable<string> friends)
 		{
 			var list = new List<string>();
 			return Result(list);
