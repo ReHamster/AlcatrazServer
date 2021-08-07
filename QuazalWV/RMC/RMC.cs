@@ -22,7 +22,7 @@ namespace QuazalWV
 
             WriteLog(10, "Handling packet...");
 
-            RMCPacket rmc = new RMCPacket(p);
+            var rmc = new RMCPacket(p);
             if (rmc.isRequest)
                 HandleRequest(handler, client, p, rmc);
             else
@@ -37,19 +37,6 @@ namespace QuazalWV
 
         public static void ProcessResponse(QClient client, QPacket p, RMCPacket rmc)
         {
-            MemoryStream m = new MemoryStream(p.payload);
-            m.Seek(rmc._afterProtocolOffset, 0);
-            rmc.success = m.ReadByte() == 1;
-            if (rmc.success)
-            {
-                rmc.callID = Helper.ReadU32(m);
-                rmc.methodID = Helper.ReadU32(m);
-            }
-            else
-            {
-                rmc.error = Helper.ReadU32(m);
-                rmc.callID = Helper.ReadU32(m);
-            }
             WriteLog(1, "Got response for Protocol " + rmc.proto + " = " + (rmc.success ? "Success" : $"Fail : { rmc.error.ToString("X8") } for callID = { rmc.callID }"));
         }
 
@@ -65,9 +52,7 @@ namespace QuazalWV
         {
             MemoryStream m = new MemoryStream(p.payload);
 
-            m.Seek(rmc._afterProtocolOffset, 0);
-            rmc.callID = Helper.ReadU32(m);
-            rmc.methodID = Helper.ReadU32(m);
+			m.Seek(rmc._afterProtocolOffset, SeekOrigin.Begin);
 
             if (rmc.callID > client.callCounterRMC)
                 client.callCounterRMC = rmc.callID;
@@ -145,99 +130,42 @@ namespace QuazalWV
 
         private static void SendResponsePacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, QClient client, RMCPResponse reply, bool useCompression, uint error)
         {
-            var packetData = new MemoryStream();
+			rmc.isRequest = false;
+			rmc.response = reply;
+			rmc.error = error;
 
-            if ((ushort)rmc.proto < 0x7F)
-            {
-                Helper.WriteU8(packetData, (byte)rmc.proto);
-            }
-            else
-            {
-                Helper.WriteU8(packetData, 0x7F);
-                Helper.WriteU16(packetData, (ushort)rmc.proto);
-            }
+			var rmcResponseData = rmc.ToBuffer();
 
-            byte[] buff;
-
-            if (error == 0)
-            {
-                Helper.WriteU8(packetData, 0x1);
-                Helper.WriteU32(packetData, rmc.callID);
-                Helper.WriteU32(packetData, rmc.methodID | 0x8000);
-
-                buff = reply.ToBuffer();
-
-                if(buff != null) 
-                    packetData.Write(buff, 0, buff.Length);                
-            }
-            else
-            {
-                Helper.WriteU8(packetData, 0);
-                Helper.WriteU32(packetData, error | 0x80000000);
-                Helper.WriteU32(packetData, rmc.callID);
-            } 
-
-            buff = packetData.ToArray();
-
-            // now to payload
-            packetData = new MemoryStream();
-
-            Helper.WriteU32(packetData, (uint)buff.Length);
-            packetData.Write(buff, 0, buff.Length);
-
-            QPacket np = new QPacket(p.toBuffer());
+			QPacket np = new QPacket(p.toBuffer());
             np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_NEED_ACK, QPacket.PACKETFLAG.FLAG_RELIABLE };
             np.m_oSourceVPort = p.m_oDestinationVPort;
             np.m_oDestinationVPort = p.m_oSourceVPort;
             np.m_uiSignature = client.IDsend;
             np.usesCompression = useCompression;
 
-			handler.MakeAndSend(client, p, np, packetData.ToArray());
+			handler.MakeAndSend(client, p, np, rmcResponseData);
         }
         
-        public static void SendRequestPacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, QClient client, RMCPResponse packet, bool useCompression, uint error)
+        public static void SendRequestPacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, QClient client, RMCPRequest request, bool useCompression, uint error)
         {
-            var packetData = new MemoryStream();
+			rmc.isRequest = true;
+			rmc.request = request;
+			rmc.error = error;
+			var rmcRequestData = rmc.ToBuffer();
 
-            if ((ushort)rmc.proto < 0x7F)
-                Helper.WriteU8(packetData, (byte)((byte)rmc.proto | 0x80));
-            else
-            {
-                Helper.WriteU8(packetData, 0xFF);
-                Helper.WriteU16(packetData, (ushort)rmc.proto);
-            }
+			QPacket np = new QPacket(p.toBuffer());
+			np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_RELIABLE | QPacket.PACKETFLAG.FLAG_NEED_ACK };
+			np.m_uiSignature = client.IDsend;
+			np.usesCompression = useCompression;
 
-            byte[] buff;
-
-            if (error == 0)
-            {
-                Helper.WriteU32(packetData, rmc.callID);
-                Helper.WriteU32(packetData, rmc.methodID);
-                buff = packet.ToBuffer();
-                packetData.Write(buff, 0, buff.Length);
-            }
-            else
-            {
-                Helper.WriteU32(packetData, error);
-                Helper.WriteU32(packetData, rmc.callID);
-            }
-
-            buff = packetData.ToArray();
-            packetData = new MemoryStream();
-            Helper.WriteU32(packetData, (uint)buff.Length);
-            packetData.Write(buff, 0, buff.Length);
-
-            QPacket np = new QPacket(p.toBuffer());
-            np.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_RELIABLE | QPacket.PACKETFLAG.FLAG_NEED_ACK };
-            np.m_uiSignature = client.IDsend;
-
-			handler.MakeAndSend(client, p, np, packetData.ToArray());
-        }
+			handler.MakeAndSend(client, p, np, rmcRequestData);
+		}
 
 		public static void SendNotification(QPacketHandlerPRUDP handler, QClient client, NotificationEvent eventData)
 		{
 			var packet = new QPacket();
 
+			// FIXME: is this even valid?
 			packet.m_oSourceVPort = new QPacket.VPort(0x31);
 			packet.m_oDestinationVPort = new QPacket.VPort(0x3f);
 
@@ -255,7 +183,7 @@ namespace QuazalWV
 			Log.WriteLine(1, "Sending NotificationEvent");
 			Log.WriteLine(1, DDLSerializer.ObjectToString(eventData));
 
-			SendRequestPacket(handler, packet, rmc, client, new RMCPResponseDDL<NotificationEvent>(eventData), true, 0);
+			SendRequestPacket(handler, packet, rmc, client, new RMCPRequestDDL<NotificationEvent>(eventData), true, 0);
 		}
 
 		public static void SendNotification(QPacketHandlerPRUDP handler, QClient client, uint source, uint type, uint subType, uint param1, uint param2, uint param3, string paramStr)
@@ -297,7 +225,7 @@ namespace QuazalWV
             rmc.methodID = 1;
             rmc.callID = ++client.callCounterRMC;
 
-            var reply = new RMCPResponseDDL<byte[]>(payload);
+            var reply = new RMCPRequestDDL<byte[]>(payload);
 
             SendRequestPacket(handler, q, rmc, client, reply, true, 0);
         }
