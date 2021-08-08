@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using QuazalWV.Attributes;
 
 namespace QuazalWV.DDL
 {
@@ -241,25 +242,37 @@ namespace QuazalWV.DDL
             {
                 Helper.WriteDateTime(str, (DateTime)Convert.ChangeType(obj, currentType));
             }
-            else if (currentType == typeof(ulong) ||
-                     currentType == typeof(long))
+            else if (currentType == typeof(ulong)) // Bloody hell...
             {
-                Helper.WriteU64(str, (ulong)Convert.ChangeType(obj, currentType));
+                Helper.WriteU64(str, (ulong)obj);
             }
-            else if (currentType == typeof(byte) ||
-                     currentType == typeof(sbyte))
+			else if (currentType == typeof(long))
+			{
+				Helper.WriteU64(str, (ulong)(long)obj);
+			}
+			else if (currentType == typeof(byte))
             {
-                Helper.WriteU8(str, (byte)Convert.ChangeType(obj, currentType));
+                Helper.WriteU8(str, (byte)obj);
             }
-            else if (currentType == typeof(uint) ||
-                    currentType == typeof(int))
+			else if (currentType == typeof(sbyte))
+			{
+				Helper.WriteU8(str, (byte)(sbyte)obj);
+			}
+			else if (currentType == typeof(uint))
             {
-                Helper.WriteU32(str, (uint)Convert.ChangeType(obj, currentType));
+                Helper.WriteU32(str, (uint)obj);
             }
-            else if (currentType == typeof(ushort) ||
-                     currentType == typeof(short))
+			else if (currentType == typeof(int))
+			{
+				Helper.WriteU32(str, (uint)(int)obj);
+			}
+			else if (currentType == typeof(ushort))
+			{
+				Helper.WriteU16(str, (ushort)obj);
+			}
+			else if (currentType == typeof(short))
             {
-                Helper.WriteU16(str, (ushort)Convert.ChangeType(obj, currentType));
+                Helper.WriteU16(str, (ushort)(short)obj);
             }
             else if (currentType == typeof(byte[])) // This is Quazal.Buffer with 32 bit size
             {
