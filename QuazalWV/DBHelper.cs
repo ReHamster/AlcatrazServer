@@ -41,13 +41,27 @@ namespace QuazalWV
 		public static ClientInfo GetUserByName(string name)
 		{
 			ClientInfo result = null;
-			List<List<string>> results = GetQueryResults("SELECT * FROM users WHERE name='" + name + "'");
-			foreach (List<string> entry in results)
+			var results = GetQueryResults("SELECT * FROM users WHERE name='" + name + "'");
+			foreach (var entry in results)
 			{
 				result = new ClientInfo();
 				result.PID = Convert.ToUInt32(entry[1]);
+				result.name = entry[2];
 				result.pass = entry[3];
-				result.name = name;
+			}
+			return result;
+		}
+
+		public static ClientInfo GetUserByPID(uint PID)
+		{
+			ClientInfo result = null;
+			var results = GetQueryResults("SELECT * FROM users WHERE PID='" + PID + "'");
+			foreach (var entry in results)
+			{
+				result = new ClientInfo();
+				result.PID = Convert.ToUInt32(entry[1]);
+				result.name = entry[2];
+				result.pass = entry[3];
 			}
 			return result;
 		}
