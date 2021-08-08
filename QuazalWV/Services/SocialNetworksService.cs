@@ -46,13 +46,15 @@ namespace QuazalWV.Services
 		[RMCMethod(7)]
 		public RMCResult HasTwitterAuth()
 		{
-			return Result(new { a = false });
+			// this method is not implemented on original game server
+			return Error(0);
 		}
 
 		[RMCMethod(8)]
 		public RMCResult HasFBAuth()
 		{
-			return Result(new { a = false });
+			// this method is not implemented on original game server
+			return Error(0);
 		}
 
 	}
