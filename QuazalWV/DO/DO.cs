@@ -34,7 +34,7 @@ namespace QuazalWV
 
         public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p, QClient client)
         {
-            client.info.sessionID = p.m_bySessionID;
+            client.sessionID = p.m_bySessionID;
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
 

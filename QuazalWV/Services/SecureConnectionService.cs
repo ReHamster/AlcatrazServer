@@ -1,8 +1,9 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Interfaces;
 using QuazalWV.DDL.Models;
-using System.Collections.Generic;
 using QuazalWV.DDL;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace QuazalWV.Services
 {
@@ -12,6 +13,21 @@ namespace QuazalWV.Services
 	[RMCService(RMCProtocolId.SecureConnectionService)]
 	public class SecureConnectionService : RMCServiceBase
 	{
+		[RMCMethod(1)]
+		public RMCResult Register(List<string> vecMyURLs)
+		{
+			var rdvConnectionString = $"prudp:/address={ Context.Client.endpoint.Address };port={ Context.Client.endpoint.Port };sid=14;type=3";
+
+			var result = new RegisterResult()
+			{
+				pidConnectionID = Context.Client.info.RVCID,
+				retval = (int)RMCErrorCode.Core_NoError,
+				urlPublic = vecMyURLs.Last() + ";type=3" // rdvConnectionString
+			};
+
+			return Result(result);
+		}
+
 		[RMCMethod(2)]
 		public void RequestConnectionData()
 		{
@@ -25,7 +41,7 @@ namespace QuazalWV.Services
 		}
 
 		[RMCMethod(4)]
-		public RMCResult RegisterEx(IEnumerable<string> stationUrls, AnyData<UbiAuthenticationLoginCustomData> hCustomData)
+		public RMCResult RegisterEx(ICollection<string> vecMyURLs, AnyData<UbiAuthenticationLoginCustomData> hCustomData)
 		{
 			if(hCustomData.data != null)
 			{
@@ -33,9 +49,9 @@ namespace QuazalWV.Services
 
 				var result = new RegisterResult()
 				{
-					pidConnectionID = Context.Client.info.PID,
+					pidConnectionID = Context.Client.info.RVCID,
 					retval = (int)RMCErrorCode.Core_NoError,
-					urlPublic = rdvConnectionString
+					urlPublic = vecMyURLs.Last() + ";type=3" // rdvConnectionString
 				};
 
 				return Result(result);

@@ -63,22 +63,27 @@ namespace QuazalWV
 			var qclient = GetQClientByEndPoint(from);
 			if(qclient == null)
 			{
-				Log.WriteLine(2, "[QUAZAL] Creating new client data...");
+				Log.WriteLine(2, $"[{ SourceName }] [QUAZAL] New client { from.Address }:{ from.Port } registered at server PID={PID}");
 				qclient = new QClient();
 				qclient.endpoint = from;
 				qclient.IDrecv = ClientIdCounter++;
 
 				Clients.Add(qclient);
 			}
-
+			/*
 			// create client
 			if(qclient.info == null)
 			{
 				qclient.info = Global.GetOrCreateClient(from);
-			}
+			}*/
+
+			if (qclient.info == null)
+				qclient.info = Global.GetClientByConnection(qclient);
+
+			Log.WriteLine(2, $"[{ SourceName }] Got SYN packet");
+			qclient.seqCounterOut = 0;
 
 			p.m_uiConnectionSignature = qclient.IDrecv;
-			qclient.seqCounterOut = 0;
 
 			return MakeACK(p, qclient);
 		}
@@ -86,6 +91,8 @@ namespace QuazalWV
 		private QPacket ProcessCONNECT(QClient client, QPacket p)
 		{
 			client.IDsend = p.m_uiConnectionSignature;
+
+			Log.WriteLine(2, $"[{ SourceName }] Got CONNECT packet");
 
 			var reply = MakeACK(p, client);
 
@@ -97,22 +104,31 @@ namespace QuazalWV
 
 		private byte[] MakeConnectPayload(QClient client, QPacket p)
 		{
-			MemoryStream m = new MemoryStream(p.payload);
+			var m = new MemoryStream(p.payload);
+
+			// read kerberos ticket
 			uint size = Helper.ReadU32(m);
 			byte[] buff = new byte[size];
 			m.Read(buff, 0, (int)size);
+
+			// read encrypted data
 			size = Helper.ReadU32(m) - 16;
 			buff = new byte[size];
 			m.Read(buff, 0, (int)size);
+
 			buff = Helper.Decrypt(client.info.sessionKey, buff);
+
 			m = new MemoryStream(buff);
-			Helper.ReadU32(m);
-			Helper.ReadU32(m);
+			uint userPrincipalID = Helper.ReadU32(m);
+			uint connectionId = Helper.ReadU32(m);
+
 			uint responseCode = Helper.ReadU32(m);
-			Log.WriteLine(2, "[QAZAL] Got response code 0x" + responseCode.ToString("X8"));
+
+			// Buffer<uint>
 			m = new MemoryStream();
 			Helper.WriteU32(m, 4);
 			Helper.WriteU32(m, responseCode + 1);
+
 			return m.ToArray();
 		}
 
@@ -350,7 +366,7 @@ namespace QuazalWV
 						}
 						break;
 					case QPacket.PACKETTYPE.DISCONNECT:
-						if (client != null)
+						if (client != null) // TODO: send three times
 							reply = ProcessDISCONNECT(client, packetIn);
 						break;
 					case QPacket.PACKETTYPE.PING:

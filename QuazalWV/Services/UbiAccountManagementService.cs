@@ -1,7 +1,7 @@
 ﻿using QuazalWV.Attributes;
 using QuazalWV.Interfaces;
 using QuazalWV.DDL.Models;
-
+using System;
 
 namespace QuazalWV.Services
 {
@@ -26,15 +26,19 @@ namespace QuazalWV.Services
 		[RMCMethod(3)]
 		public RMCResult GetAccount()
 		{
-			var reply = new UbiAccount();
-			reply.m_ubiAccountId = Context.Client.info.accountId;
-			reply.m_username = Context.Client.info.name;
-			reply.m_password = Context.Client.info.pass;
-			reply.m_firstName = "Soapy";
-			reply.m_lastName = "Man";
-			reply.m_countryCode = "kz";
-			reply.m_email = "dumb@ass.com";
-
+			var reply = new UbiAccount()
+			{
+				m_ubiAccountId = Context.Client.info.accountId,
+				m_username = Context.Client.info.name,
+				m_password = Context.Client.info.pass,
+				m_firstName = "Soapy",
+				m_lastName = "Man",
+				m_countryCode = "kz",
+				m_email = "dumb@ass.com",
+				m_preferredLanguage = "en",
+				m_gender = 0,
+			};
+			
 			return Result(reply);
 		}
 

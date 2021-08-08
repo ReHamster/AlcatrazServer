@@ -8,6 +8,8 @@ namespace QuazalWV
 		public uint sPID;
 		public ushort sPort;
 
+		public byte sessionID;
+
 		public uint IDrecv;
 		public uint IDsend;
 
@@ -17,6 +19,6 @@ namespace QuazalWV
 		public ushort seqCounterOut;
 		public uint callCounterRMC;
 
-		public ClientInfo info;      // unique client info instance
+		public ClientInfo info;      // unique client info instance FIXME: needs to be resolved differently!
 	}
 }

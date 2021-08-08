@@ -121,7 +121,7 @@ namespace QuazalWV.DDL
 			}
 			else if (typeof(IDictionary).IsAssignableFrom(currentType))
             {
-                var dictTypes = currentType.GetType().GetGenericArguments();
+				var dictTypes = currentType.GetGenericArguments();
                 var dictGenericType = typeof(Dictionary<,>).MakeGenericType(dictTypes);
 
                 // make creation lambda and use default constructor

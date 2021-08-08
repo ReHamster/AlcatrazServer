@@ -3,6 +3,7 @@ using QuazalWV.Interfaces;
 using QuazalWV.DDL.Models;
 using System.IO;
 using QuazalWV.DDL;
+using System;
 
 namespace QuazalWV.Services
 {
@@ -25,21 +26,46 @@ namespace QuazalWV.Services
 			0x08, 0xEE, 0x6E, 0x69, 0x17, 0x35, 0x78, 0x2E, 0x6E
 		};
 
+
 		[RMCMethod(1)]
 		public RMCResult Login(string userName)
 		{
-			var rendezVousConnString = "prudps:/address=#ADDRESS#;port=#PORT#;CID=1;PID=#SERVERID#;sid=1;stream=3;type=2";
+			var rendezVousConnString = "prudps:/address=#ADDRESS#;port=#PORT#;CID=#CLIENTID#;PID=#SERVERID#;sid=1;stream=3;type=2";
 
 			rendezVousConnString = rendezVousConnString
+				.Replace("#CLIENTID#", "1")
 				.Replace("#ADDRESS#", Global.serverBindAddress)
-				.Replace("#PORT#", Global.serverBindPort.ToString())
-				.Replace("#SERVERID#", Context.Client.sPID.ToString());
+				.Replace("#PORT#", Context.Client.sPort.ToString())
+				.Replace("#SERVERID#", "2");
 
 			if (userName == "Tracking")
 			{
-				var kerberos = new KerberosTicket(Context.Client.info.PID, Context.Client.sPID, sessionKey, ticket);
+				// var trackingLoginData = "01 00 01 00 69 00 00 00 4C 00 00 00 99 39 C6 CB 93 13 50 8C 0B 02 C2 0B BC E4 94 6E B8 57 D0 15 A7 A1 AB 03 57 3F C1 69 F6 8E DC 55 0A A3 72 61 81 37 EB 6C A5 0C A2 C2 66 D5 B0 C6 23 15 E5 99 5A 3C 1F EC F7 90 55 2F 33 1E B7 C1 05 52 41 83 A0 1E 3F E8 18 02 7B 3B 4A 00 70 72 75 64 70 73 3A 2F 61 64 64 72 65 73 73 3D 31 38 35 2E 33 38 2E 32 31 2E 38 33 3B 70 6F 72 74 3D 32 31 30 30 36 3B 43 49 44 3D 31 3B 50 49 44 3D 32 3B 73 69 64 3D 31 3B 73 74 72 65 61 6D 3D 33 3B 74 79 70 65 3D 32 00 00 00 00 00 01 00 00 01 00 00";
+				// 
+				// var m = new MemoryStream(Helper.ParseByteArray(trackingLoginData));
+				// 
+				// var retModel = DDLSerializer.ReadObject<Login>(m);
+				// retModel.pConnectionData.m_urlRegularProtocols = rendezVousConnString;
 
-				var reply = new Login()
+				// create tracking client info
+				var client = Global.GetClientByUsername(userName);
+
+				if (client != null)
+				{
+					Log.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
+					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
+				}
+
+				Log.WriteLine(1, $"User login request {userName}");
+
+				client = Global.CreateClient(Context.Client);
+
+				client.accountId = userName;
+				client.name = userName;
+
+				var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, sessionKey, ticket);
+
+				var reply = new Login(client.PID)
 				{
 					retVal = (int)RMCErrorCode.Core_NoError,
 					pConnectionData = new RVConnectionData()
@@ -74,20 +100,33 @@ namespace QuazalWV.Services
 
 			if(oExtraData.data != null)
 			{
+				var client = Global.GetClientByUsername(userName);
+
+				if (client != null)
+				{
+					Log.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
+					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
+				}
+
 				ClientInfo user = DBHelper.GetUserByName(oExtraData.data.username);
 
 				if (user != null)
 				{
 					if (user.pass == oExtraData.data.password)
 					{
-						var kerberos = new KerberosTicket(Context.Client.info.PID, Context.Client.sPID, sessionKey, ticket);
+						Log.WriteLine(1, $"User login request {userName}");
+						client = Global.CreateClient(Context.Client);
 
-						Context.Client.info.accountId = userName;
-						Context.Client.info.name = oExtraData.data.username;
-						Context.Client.info.pass = oExtraData.data.password;
-						Context.Client.info.sessionKey = sessionKey;
+						Context.Client.info = client;   // TEMPORARY
 
-						var loginData = new Login(Context.Client.info.PID, Context.Client.sPID)
+						client.sessionKey = sessionKey;
+						client.accountId = userName;
+						client.name = oExtraData.data.username;
+						client.pass = oExtraData.data.password;
+
+						var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, sessionKey, ticket);
+
+						var loginData = new Login(client.PID)
 						{
 							retVal = (int)RMCErrorCode.Core_NoError,
 							pConnectionData = new RVConnectionData()
@@ -102,11 +141,13 @@ namespace QuazalWV.Services
 					}
 					else
 					{
+						Log.WriteLine(1, $"User login request {userName} DENIED - invalid password");
 						return Error((int)RMCErrorCode.RendezVous_InvalidPassword);
 					}
 				}
 				else
 				{
+					Log.WriteLine(1, $"User login request {userName} DENIED - invalid user name");
 					return Error((int)RMCErrorCode.RendezVous_InvalidUsername);
 				}
 			}
@@ -121,7 +162,11 @@ namespace QuazalWV.Services
 		[RMCMethod(3)]
 		public RMCResult RequestTicket(uint sourcePID, uint targetPID)
 		{
-			var kerberos = new KerberosTicket(Context.Client.info.PID, Context.Client.sPID, sessionKey, ticket);
+			// var requestTicketData = "01 00 01 00 4C 00 00 00 49 54 E6 90 C2 C9 E0 FF 2F 16 B5 10 CB 10 69 E7 BB 57 D0 15 A7 A1 AB 03 EC 22 2F BD 50 76 4C D8 4E 71 A1 E4 03 8C C9 6C 65 EB C6 23 74 78 2A E8 86 33 B4 51 91 D1 50 83 81 44 4E FA 88 36 70 2D DE C2 D6 B4 CF E8 0B ED 68 23 DB 7F ";
+			// var m = new MemoryStream(Helper.ParseByteArray(requestTicketData));
+			// var retModel = DDLSerializer.ReadObject<TicketData>(m);
+
+			var kerberos = new KerberosTicket(sourcePID, targetPID, sessionKey, ticket);
 
 			var ticketData = new TicketData()
 			{

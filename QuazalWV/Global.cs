@@ -22,25 +22,41 @@ namespace QuazalWV
 		public static ushort RDVServerPort = 21005;
 		public static ushort BackendServiceServerPort = 21006;
 
-		public static ushort serverBindPort = 21006; // 3074
-
-		public static uint pidCounter = 0x1234;		// 0x84504
+		public static uint pidCounter = 0x1234;     // 0x84504
+		public static uint RVCIDCounter = 0xBB98E;
 
 		public static uint dummyFriendPidCounter = 0x1235;
 
 		public static List<ClientInfo> clients = new List<ClientInfo>();
 		public static Stopwatch uptime = new Stopwatch();
-		public static ClientInfo GetOrCreateClient(IPEndPoint ep)
-		{
-			foreach (ClientInfo c in clients)
-			{
-				if (c.endpoint.Address.ToString() == ep.Address.ToString() && c.endpoint.Port == ep.Port)
-					return c;
-			}
 
+		public static ClientInfo GetClientByConnection(QClient connection)
+		{
+			foreach (ClientInfo client in clients)
+			{
+				if (client.endpoint.Address.ToString() == connection.endpoint.Address.ToString() && 
+					client.endpoint.Port == connection.endpoint.Port)
+					return client;
+			}
+			return null;
+		}
+
+		public static ClientInfo GetClientByUsername(string userName)
+		{
+			foreach (ClientInfo client in clients)
+			{
+				if (client.name == userName)
+					return client;
+			}
+			return null;
+		}
+
+		public static ClientInfo CreateClient(QClient connection)
+		{
 			var client = new ClientInfo();
-			client.endpoint = ep;
+			client.endpoint = connection.endpoint;
 			client.PID = pidCounter++;
+			client.RVCID = RVCIDCounter++;
 			clients.Add(client);
 
 			return client;

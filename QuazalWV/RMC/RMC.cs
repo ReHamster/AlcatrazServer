@@ -15,7 +15,7 @@ namespace QuazalWV
     {
         public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p, QClient client)
         {
-            client.info.sessionID = p.m_bySessionID;
+            client.sessionID = p.m_bySessionID;
 
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
@@ -172,7 +172,7 @@ namespace QuazalWV
 			packet.type = QPacket.PACKETTYPE.DATA;
 			packet.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_RELIABLE | QPacket.PACKETFLAG.FLAG_NEED_ACK };
 			packet.payload = new byte[0];
-			packet.m_bySessionID = client.info.sessionID;
+			packet.m_bySessionID = client.sessionID;
 
 			var rmc = new RMCPacket();
 
