@@ -13,6 +13,23 @@ namespace QuazalWV.DDL
 		void Write(Stream s);
 	}
 
+	public class qBuffer : IAnyData
+	{
+		public byte[] data;
+		public void Read(Stream s)
+		{
+			ushort thisSize = Helper.ReadU16(s);
+			data = new byte[thisSize];
+			s.Read(data, 0, thisSize);
+		}
+
+		public void Write(Stream s)
+		{
+			Helper.WriteU16(s, (ushort)data.Length);
+			s.Write(data, 0, data.Length);
+		}
+	}
+
 	public class AnyData<T> : IAnyData where T: class
 	{
 		public AnyData()
