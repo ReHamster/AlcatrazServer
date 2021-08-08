@@ -335,6 +335,10 @@ namespace QuazalWV
 						break;
 					case QPacket.PACKETTYPE.DATA:
 						{
+							// NOT VALID
+							if (client == null)
+								break;
+
 							if (Defrag(client, packetIn) == false)
 								break;
 
