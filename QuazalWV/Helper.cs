@@ -94,13 +94,24 @@ namespace QuazalWV
 		{
 			ulong v = ReadU64(s);
 
-			return new DateTime(
-				(int)(v >> 26 & 2047),
-				(int)(v >> 22 & 15),
-				(int)(v >> 17 & 31),
-				(int)(v << 12 & 31),
-				(int)(v >> 6 & 63),
-				(int)(v & 63));
+			DateTime ret;
+			try
+			{
+				ret = new DateTime(
+					(int)(v >> 26 & 2047),
+					(int)(v >> 22 & 15),
+					(int)(v >> 17 & 31),
+					(int)(v << 12 & 31),
+					(int)(v >> 6 & 63),
+					(int)(v & 63));
+			}
+			catch
+			{
+				// invalid date
+				ret = new DateTime(1900, 1, 1, 0, 0, 0);
+			}
+
+			return ret;
 		}
 
 		public static void WriteU8(Stream s, byte v)
@@ -304,6 +315,18 @@ namespace QuazalWV
 			for (int i = 0; i < len; i++)
 				result[i] = (byte)i;
 			return result;
+		}
+
+		public static byte[] ParseByteArray(string s)
+		{
+			s = s.Trim().Replace(" ", "");
+
+			var m = new MemoryStream();
+
+			for (int i = 0; i < s.Length / 2; i++)
+				m.WriteByte(Convert.ToByte(s.Substring(i * 2, 2), 16));
+
+			return m.ToArray();
 		}
 	}
 }

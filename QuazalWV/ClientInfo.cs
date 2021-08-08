@@ -12,9 +12,10 @@ namespace QuazalWV
 	public class ClientInfo
 	{
 		public uint PID;
+		public uint RVCID;
+
 		public IPEndPoint endpoint;
 
-		public byte sessionID;
 		public byte[] sessionKey;
 
 		public uint stationID;

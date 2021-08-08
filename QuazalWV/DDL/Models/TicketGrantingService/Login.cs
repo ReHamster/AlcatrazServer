@@ -26,7 +26,7 @@ namespace QuazalWV.DDL.Models
 		{
 		}
 
-		public Login(uint pid, uint sPID)
+		public Login(uint pid)
 		{
 			retVal =  0x10001;
 			pidPrincipal = pid;

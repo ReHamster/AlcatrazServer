@@ -48,7 +48,9 @@ namespace GROBackendWV
 
         private byte[] makeArray(string s)
         {
-            MemoryStream m = new MemoryStream();
+			s = s.Trim().Replace(" ", "");
+
+			MemoryStream m = new MemoryStream();
             for (int i = 0; i < s.Length / 2; i++)
                 m.WriteByte(Convert.ToByte(s.Substring(i * 2, 2), 16));
             return m.ToArray();
@@ -58,7 +60,7 @@ namespace GROBackendWV
         {
             try
             {
-                MessageBox.Show(QPacket.MakeChecksum(makeArray(toolStripTextBox1.Text.Trim().Replace(" ", ""))).ToString("X2"));
+                MessageBox.Show(QPacket.MakeChecksum(makeArray(toolStripTextBox1.Text)).ToString("X2"));
             }
             catch
             { }

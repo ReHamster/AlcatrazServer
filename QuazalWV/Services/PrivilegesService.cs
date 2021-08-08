@@ -2,6 +2,9 @@
 using QuazalWV.Interfaces;
 using QuazalWV.DDL.Models;
 using System.Collections.Generic;
+using System.IO;
+using System;
+using QuazalWV.DDL;
 
 namespace QuazalWV.Services
 {
@@ -11,17 +14,17 @@ namespace QuazalWV.Services
 	[RMCService(RMCProtocolId.PrivilegesService)]
 	public class PrivilegesService : RMCServiceBase
 	{
+
 		[RMCMethod(1)]
 		public RMCResult GetPrivileges(string localeCode)
 		{
-			// return bytes:
-			//2D 00 00 00 23 01 16 00 00 00 01 80 00 00 01 00 00 00 01 00 00 00 01 00 00 00 15 00 41 6C 6C 6F 77 20 74 6F 20 70 6C 61 79 20 6F 6E 6C 69 6E 65 00
-
 			var result = new Dictionary<uint, Privilege>();
 
-			// TODO: populate
-			//var response = new RMCPacketResponseGetPrivileges();
-			//SendResponseWithACK(response);
+			result.Add(1, new Privilege()
+			{
+				m_ID = 1,
+				m_description = "Allow to play online"
+			});
 
 			return Result(result);
 		}

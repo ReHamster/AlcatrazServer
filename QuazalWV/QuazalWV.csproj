@@ -189,6 +189,7 @@
     <Compile Include="DDL\Models\DriverG2WService\UnlockInputData.cs" />
     <Compile Include="DDL\Models\GameSessionService\GameSession.cs" />
     <Compile Include="DDL\Models\NotificationEventManager\NotificationEvent.cs" />
+    <Compile Include="DDL\Models\UPlayReward.cs" />
     <Compile Include="Interfaces\RMCResult.cs" />
     <Compile Include="DDL\Models\StatisticsService\StatisticData.cs" />
     <Compile Include="Connection\QPacketHandlerPRUDPReliable.cs" />
