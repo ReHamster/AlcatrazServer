@@ -134,15 +134,11 @@ namespace QuazalWV
 
 		private QPacket ProcessDISCONNECT(QClient client, QPacket p)
 		{
-			QPacket reply = new QPacket();
-			reply.m_oSourceVPort = p.m_oDestinationVPort;
-			reply.m_oDestinationVPort = p.m_oSourceVPort;
-			reply.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK };
-			reply.type = QPacket.PACKETTYPE.DISCONNECT;
-			reply.m_bySessionID = p.m_bySessionID;
-			reply.m_uiSignature = client.IDsend - 0x10000;
-			reply.uiSeqId = p.uiSeqId;
-			reply.payload = new byte[0];
+			QPacket reply = MakeACK(p, client);
+			reply.m_uiSignature = client.IDsend;
+
+			Log.WriteLine(2, $"[{ SourceName }] Got DISCONNECT packet");
+
 			return reply;
 		}
 
