@@ -1,16 +1,24 @@
-# Driver San Francisco Online backend
+# Alcatraz
 
-This work is based on [**Ghost Recon Online Backend by Warranty Voider**](https://github.com/zeroKilo/GROBackendWV)
+**Driver San Francisco PC custom Online backend**
 
-this is an experimental implementation of the quazal packet protocol to emulate a backend for GRO
+This server mimics the behaviour of Quazal Rendez-Vous server and protocols used by Driver San Francisco.
 
-to make the game use this backend make sure following lines are set in Orbit.json (which comes with DriverNGHook)
+To make the game use this backend make sure following lines are set in Orbit.json (which comes with DriverNGHook):
 
-> OnlineConfigServiceUrl localhost
-> OnlineConfigKey 23ad683803a0457cabce83f905811dbc
-> OnlineAccessKey 8dtRv2oj
+```
+OnlineConfigServiceUrl "localhost"
+OnlineConfigKey "23ad683803a0457cabce83f905811dbc"
+OnlineAccessKey "8dtRv2oj"
+```
 
-- GROBackendWV : experimental backend for DSF
+Main projects
+- BackendDebugServer : local debug server application
+- - QNetZ : implementation of Quazal Net-Z protocol and RMC (Remote Method Calls)
+- - RDVServices : Rendez-Vous authentication services
+- - DSFSErvices : Driver SF game servcies
+
+The tools:
 - DareDebuggerWV : tool to interface the daredebug port of the game
 - DareParserWV : Extracts custom RTTI information found in different exe and dll
 - DTBReaderWV : converts .dtb files to .csv
@@ -19,3 +27,8 @@ to make the game use this backend make sure following lines are set in Orbit.jso
 # Helpful information
 
 [Protocol/Service information](https://github.com/kinnay/NintendoClients/wiki/NEX-Protocols)
+
+# Credits
+
+- SoapyMan - project lead
+- Warranty Voider - [**original Ghost Recon Online Backend**](https://github.com/zeroKilo/GROBackendWV)
