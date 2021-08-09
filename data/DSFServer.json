@@ -1,7 +1,13 @@
 {
-	ServerBindAddress: "37.77.104.232",
-	RDVServerPort: 21005,
-	BackendServiceServerPort: 21006,
-	ServerFilesPath: "./serverFiles/",
-	SandboxAccessKey: "8dtRv2oj"
+	PacketLogging: false,
+	LogLevel: 2,
+
+	Services: {
+		ServerBindAddress: "37.77.104.232",
+		RDVServerPort: 21005,
+		BackendServiceServerPort: 21006,
+		ServerFilesPath: "./serverFiles/",
+		SandboxAccessKey: "8dtRv2oj"
+	}
 }
+

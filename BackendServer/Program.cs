@@ -9,6 +9,13 @@ using System.Threading;
 
 namespace BackendServer
 {
+	class Configuration
+	{
+		public QConfiguration Services { get; set; }
+		public bool PacketLogging { get; set; }
+		public int LogLevel { get; set; }
+	}
+
 	class Program
 	{
 		static readonly string ConfigFileName = "./DSFServer.json";
@@ -21,20 +28,22 @@ namespace BackendServer
 
 			Console.WriteLine("Alcatraz backend starting...");
 
+			// load config
+			var configContents = File.ReadAllText(ConfigFileName);
+			var config = JsonConvert.DeserializeObject<Configuration>(configContents);
+			QConfiguration.Instance = config.Services;
+
 			Console.CancelKeyPress += new ConsoleCancelEventHandler(cancelHandler);
 
+			Log.enablePacketLogging = config.PacketLogging;
 			Log.LogFunction = (int priority, string s, Color color) =>
 			{
-				if (priority > 2)
+				if (priority > config.LogLevel)
 					return;
 
 				Console.ForegroundColor = (color.R == 255 && color.G == 0 && color.B == 0) ? ConsoleColor.Red : ConsoleColor.White;
 				Console.WriteLine(s);
 			};
-
-			// load config
-			var configContents = File.ReadAllText("./DSFServer.json");
-			QConfiguration.Instance = JsonConvert.DeserializeObject<QConfiguration>(configContents);
 
 			// register service
 			ServiceFactoryDSF.RegisterDSFServices();
