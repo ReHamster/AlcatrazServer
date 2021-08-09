@@ -4,6 +4,9 @@
 *.ipch
 */obj/*
 *.pdb
-*.exe
+*.exe*
+*.deps.json
 *.dll
+*.config.xml
+**/net5.0-*
 packages/*
