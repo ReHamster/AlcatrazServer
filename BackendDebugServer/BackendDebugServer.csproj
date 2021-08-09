@@ -1,0 +1,78 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Be.Windows.Forms.HexBox" Version="1.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DSFServices\DSFServices.csproj" />
+    <ProjectReference Include="..\QNetZ\QNetZ.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="DecryptTool.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="DecryptTool.Designer.cs">
+      <DependentUpon>DecryptTool.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Update="LogFilter.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="LogFilter.Designer.cs">
+      <DependentUpon>LogFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Update="PacketGenerator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="PacketGenerator.Designer.cs">
+      <DependentUpon>PacketGenerator.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SendNotification.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="SendNotification.Designer.cs">
+      <DependentUpon>SendNotification.cs</DependentUpon>
+    </Compile>
+    <Compile Update="UDPProcessor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UDPProcessor.Designer.cs">
+      <DependentUpon>UDPProcessor.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="DecryptTool.resx">
+      <DependentUpon>DecryptTool.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="LogFilter.resx">
+      <DependentUpon>LogFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="PacketGenerator.resx">
+      <DependentUpon>PacketGenerator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="SendNotification.resx">
+      <DependentUpon>SendNotification.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="UDPProcessor.resx">
+      <DependentUpon>UDPProcessor.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
