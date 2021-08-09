@@ -1,14 +1,17 @@
 ﻿using DSFServices;
+using Newtonsoft.Json;
 using QNetZ;
 using RDVServices;
 using System;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 
 namespace BackendServer
 {
 	class Program
 	{
+		static readonly string ConfigFileName = "./DSFServer.json";
 		static bool cancelPressed = false;
 
 		static void Main(string[] args)
@@ -29,18 +32,17 @@ namespace BackendServer
 				Console.WriteLine(s);
 			};
 
-			ServiceFactoryDSF.RegisterDSFServices();
-			QConfiguration.Instance = new QConfiguration()
-			{
-				ServerBindAddress = "37.77.104.232",
-				RDVServerPort = 21005,
-				BackendServiceServerPort = 21006,
-				ServerFilesPath = "/root/BackendServer/serverFiles/",
-				SandboxAccessKey = "8dtRv2oj"            // Server access key. Affects packet checksum;
-			};
+			// load config
+			var configContents = File.ReadAllText("./DSFServer.json");
+			QConfiguration.Instance = JsonConvert.DeserializeObject<QConfiguration>(configContents);
 
+			// register service
+			ServiceFactoryDSF.RegisterDSFServices();
+
+			// start DB
 			DBHelper.Init();
 
+			// start UDP & HTTP listeners
 			TCPServer.Start();
 			BackendServicesServer.Start();
 			RDVServer.Start();
