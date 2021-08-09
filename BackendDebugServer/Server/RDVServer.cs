@@ -40,7 +40,7 @@ namespace BackendDebugServer
 
 			listener = new UdpClient(listenPort);
             IPEndPoint ep = new IPEndPoint(IPAddress.Any, 0);
-			packetHandler = new QPacketHandlerPRUDP(listener, BackendServicesServer.serverPID, QConfiguration.Instance.BackendServiceServerPort /* FIXME: this is not correct!*/, "RendezVous");
+			packetHandler = new QPacketHandlerPRUDP(listener, BackendServicesServer.serverPID, listenPort, "RendezVous");
 
 			WriteLog(1, $"Server started at port { listenPort }");
 

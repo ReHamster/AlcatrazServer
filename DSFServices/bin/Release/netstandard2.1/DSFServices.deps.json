@@ -10,6 +10,7 @@
       "DSFServices/1.0.0": {
         "dependencies": {
           "QNetZ": "1.0.0",
+          "RDVServices": "1.0.0",
           "System.Data.SQLite": "1.0.114.4"
         },
         "runtime": {
@@ -266,6 +267,15 @@
         "runtime": {
           "QNetZ.dll": {}
         }
+      },
+      "RDVServices/1.0.0": {
+        "dependencies": {
+          "QNetZ": "1.0.0",
+          "System.Data.SQLite": "1.0.114.4"
+        },
+        "runtime": {
+          "RDVServices.dll": {}
+        }
       }
     }
   },
@@ -465,6 +475,11 @@
       "hashPath": "system.text.encoding.codepages.4.7.0.nupkg.sha512"
     },
     "QNetZ/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "RDVServices/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

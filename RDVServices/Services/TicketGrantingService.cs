@@ -94,7 +94,7 @@ namespace RDVServices.Services
 
 			rendezVousConnString = rendezVousConnString
 				.Replace("#ADDRESS#", QConfiguration.Instance.ServerBindAddress)
-				.Replace("#PORT#", Context.Client.sPort.ToString() )
+				.Replace("#PORT#", QConfiguration.Instance.BackendServiceServerPort.ToString())
 				.Replace("#SERVERID#", Context.Client.sPID.ToString());
 
 			if(oExtraData.data != null)
