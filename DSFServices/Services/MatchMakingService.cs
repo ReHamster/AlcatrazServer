@@ -292,14 +292,14 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(38)]
-		public RMCResult RegisterLocalURL(uint gid, string url)
+		public RMCResult RegisterLocalURL(uint gid, StationURL url)
 		{
 			UNIMPLEMENTED($"uint gid = {gid}, string url = {url}");
 			return Error(0);
 		}
 
 		[RMCMethod(39)]
-		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<string> urls)
+		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<StationURL> urls)
 		{
 
 			UNIMPLEMENTED($"uint gid = {gid}");
