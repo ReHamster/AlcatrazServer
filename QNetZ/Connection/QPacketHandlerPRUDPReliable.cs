@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace QNetZ
 {
-	public class QPacketState
+	class QPacketState
 	{
 		public QPacketState(QPacket p)
 		{
@@ -19,30 +19,30 @@ namespace QNetZ
 		public bool GotAck;                // if true it won't be sent again
 	}
 
-	public class QReliableResponse
+	class QReliableResponse
 	{
 		public QReliableResponse(QPacket srcPacket)
 		{
 			SrcPacket = srcPacket;
 			ResponseList = new List<QPacketState>();
-			Timeout = DateTime.UtcNow.AddMinutes(1);
+			DropTime = DateTime.UtcNow.AddMinutes(1);
+			ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
 		}
 
 		public QPacket SrcPacket;
 		public List<QPacketState> ResponseList;
-		public DateTime Timeout;
-	}
 
-	public class QFragmentedPacket
-	{
-		public List<QPacket> Fragmets;
+		public DateTime DropTime;		// if ACKs not recieved, in this time it will be dropped
+		public DateTime ResendTime;
 	}
 
 	//-----------------------------------------------------
 
 	public partial class QPacketHandlerPRUDP
 	{
-		public bool Defrag(QClient client, QPacket packet)
+		
+
+		bool Defrag(QClient client, QPacket packet)
 		{
 			if (packet.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 				return true;
@@ -138,7 +138,7 @@ namespace QNetZ
 		}
 
 		// acknowledges packet
-		public void OnGotAck(QPacket ackPacket)
+		void OnGotAck(QPacket ackPacket)
 		{
 			var (cr, ack) = GetCachedResponseByAckPacket(ackPacket);
 			if (cr == null)
@@ -155,7 +155,7 @@ namespace QNetZ
 		}
 
 		// returns response cache list by request packet
-		public (QReliableResponse, QPacketState) GetCachedResponseByAckPacket(QPacket packet)
+		(QReliableResponse, QPacketState) GetCachedResponseByAckPacket(QPacket packet)
 		{
 			foreach (var cr in CachedResponses)
 			{
@@ -170,7 +170,7 @@ namespace QNetZ
 		}
 
 		// returns response cache list by request packet
-		public QReliableResponse GetCachedResponseByRequestPacket(QPacket packet)
+		QReliableResponse GetCachedResponseByRequestPacket(QPacket packet)
 		{
 			// FIXME: check packet type?
 			return CachedResponses.FirstOrDefault(cr =>
@@ -185,7 +185,7 @@ namespace QNetZ
 		}
 
 		// Caches the response which is going to be sent
-		public void CacheResponse(QPacket requestPacket, QPacket responsePacket)
+		void CacheResponse(QPacket requestPacket, QPacket responsePacket)
 		{
 			// only DATA can be reliable
 			if (responsePacket.type != QPacket.PACKETTYPE.DATA)
@@ -210,6 +210,41 @@ namespace QNetZ
 			}
 
 			cache.ResponseList.Add(new QPacketState(responsePacket));
+		}
+
+		private void RetrySend(QReliableResponse cache, QClient client)
+		{
+			Log.WriteLine(5, "Re-sending reliable packets...");
+
+			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
+			{
+				var data = crp.Packet.toBuffer();
+				UDP.Send(data, data.Length, client.endpoint);
+			}
+		}
+
+		private void CheckResendPackets(QClient client)
+		{
+			for(int i = 0; i < CachedResponses.Count; i++)
+			{
+				var crp = CachedResponses[i];
+
+				if (crp.SrcPacket.m_uiSignature == client.IDsend)
+				{
+					if (DateTime.UtcNow > crp.ResendTime)
+					{
+						RetrySend(crp, client);
+						crp.ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
+					}
+
+					if (DateTime.UtcNow > crp.DropTime)
+					{
+						CachedResponses.RemoveAt(i);
+						i--;
+						continue;
+					}
+				}
+			}
 		}
 	}
 }

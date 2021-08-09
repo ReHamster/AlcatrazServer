@@ -271,17 +271,6 @@ namespace QNetZ
 			Log.WriteLine(10, $"[{ SourceName }] sent { numFragments } packets");
 		}
 
-		public void RetrySend(QReliableResponse cache, QClient client)
-		{
-			Log.WriteLine(5, "Re-sending reliable packets...");
-
-			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
-			{
-				var data = crp.Packet.toBuffer();
-				UDP.Send(data, data.Length, client.endpoint);
-			}
-		}
-
 		//-------------------------------------------------------------------------------------------
 
 		public void ProcessPacket(byte[] data, IPEndPoint from, bool removeConnectPayload = false)
@@ -414,6 +403,9 @@ namespace QNetZ
 
 				if (reply != null)
 					Send(packetIn, reply, from);
+
+				// retry sending reliable packets
+				CheckResendPackets(client);
 
 				// more packets in data stream?
 				if (packetIn.realSize != data.Length)
