@@ -28,6 +28,7 @@ namespace DareDebuggerWV
         private void Form1_Load(object sender, EventArgs e)
         {
             Log.box = rtb1;
+
             new Thread(tServer).Start();
             toolStripComboBox1.Items.Clear();
             toolStripComboBox1.Items.AddRange(new string[] { 

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using QuazalWV;
+using QNetZ;
 using Be.Windows.Forms;
 
 namespace QuazalSharkWV
