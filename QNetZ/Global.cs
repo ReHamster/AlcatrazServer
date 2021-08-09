@@ -64,5 +64,10 @@ namespace QNetZ
 		{
 			clients.Clear();
 		}
+
+		public static void DropClient(ClientInfo client)
+		{
+			clients.Remove(client);
+		}
 	}
 }

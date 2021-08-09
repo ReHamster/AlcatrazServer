@@ -15,6 +15,7 @@ namespace QNetZ
 		public uint RVCID;
 
 		public IPEndPoint endpoint;
+		public DateTime lastRecv;
 
 		public byte[] sessionKey;
 
