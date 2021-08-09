@@ -18,7 +18,7 @@ namespace QNetZ.DDL
 
 		public StationURL(string urlStringText) : this()
 		{
-			_urlString = urlStringText;
+			urlString = urlStringText;
 		}
 
 		public StationURL(string scheme, string address, IDictionary<string, int> parameters) : this()
