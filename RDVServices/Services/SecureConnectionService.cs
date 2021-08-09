@@ -17,13 +17,16 @@ namespace RDVServices.Services
 		[RMCMethod(1)]
 		public RMCResult Register(List<string> vecMyURLs)
 		{
-			var rdvConnectionString = $"prudp:/address={ Context.Client.endpoint.Address };port={ Context.Client.endpoint.Port };sid=14;type=3";
+			// change address
+			var rdvConnectionUrl = new StationURL(vecMyURLs.Last().ToString());
+			rdvConnectionUrl.Address = Context.Client.endpoint.Address.ToString();
+			rdvConnectionUrl.Parameters["type"] = 3;
 
 			var result = new RegisterResult()
 			{
 				pidConnectionID = Context.Client.info.RVCID,
 				retval = (int)RMCErrorCode.Core_NoError,
-				urlPublic = vecMyURLs.Last() + ";type=3" // rdvConnectionString
+				urlPublic = rdvConnectionUrl
 			};
 
 			return Result(result);
@@ -42,17 +45,20 @@ namespace RDVServices.Services
 		}
 
 		[RMCMethod(4)]
-		public RMCResult RegisterEx(ICollection<string> vecMyURLs, AnyData<UbiAuthenticationLoginCustomData> hCustomData)
+		public RMCResult RegisterEx(ICollection<StationURL> vecMyURLs, AnyData<UbiAuthenticationLoginCustomData> hCustomData)
 		{
 			if(hCustomData.data != null)
 			{
-				var rdvConnectionString = $"prudp:/address={ Context.Client.endpoint.Address };port={ Context.Client.endpoint.Port };sid=14;type=3";
+				// change address
+				var rdvConnectionUrl = new StationURL(vecMyURLs.Last().ToString());
+				rdvConnectionUrl.Address = Context.Client.endpoint.Address.ToString();
+				rdvConnectionUrl.Parameters["type"] = 3;
 
 				var result = new RegisterResult()
 				{
 					pidConnectionID = Context.Client.info.RVCID,
 					retval = (int)RMCErrorCode.Core_NoError,
-					urlPublic = vecMyURLs.Last() + ";type=3" // rdvConnectionString
+					urlPublic = rdvConnectionUrl
 				};
 
 				return Result(result);
