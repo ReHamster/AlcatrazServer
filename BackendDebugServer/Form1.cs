@@ -56,7 +56,9 @@ namespace BackendDebugServer
 			TCPServer.Stop();
             BackendServicesServer.Stop();
             RDVServer.Stop();
-            toolStripButton1.Enabled = true;
+			Global.PurgeAllClients();
+
+			toolStripButton1.Enabled = true;
             toolStripButton2.Enabled = false;
         }
 
