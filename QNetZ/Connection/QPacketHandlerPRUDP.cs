@@ -302,6 +302,10 @@ namespace QNetZ
 				if (packetIn.type != QPacket.PACKETTYPE.SYN && packetIn.type != QPacket.PACKETTYPE.NATPING)
 					client = GetQClientByIDrecv(packetIn.m_uiSignature);
 
+				// update client to not time out him
+				if (client != null && client.info != null)
+					client.info.lastRecv = DateTime.UtcNow;
+
 				switch (packetIn.type)
 				{
 					case QPacket.PACKETTYPE.SYN:

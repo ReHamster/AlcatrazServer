@@ -225,24 +225,28 @@ namespace QNetZ
 
 		private void CheckResendPackets(QClient client)
 		{
+			if (client == null)
+				return;
+
 			for(int i = 0; i < CachedResponses.Count; i++)
 			{
 				var crp = CachedResponses[i];
 
-				if (crp.SrcPacket.m_uiSignature == client.IDsend)
+				if (client != null && crp.SrcPacket.m_uiSignature == client.IDsend)
 				{
 					if (DateTime.UtcNow > crp.ResendTime)
 					{
 						RetrySend(crp, client);
 						crp.ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
 					}
+				}
 
-					if (DateTime.UtcNow > crp.DropTime)
-					{
-						CachedResponses.RemoveAt(i);
-						i--;
-						continue;
-					}
+				// still drop packets
+				if (DateTime.UtcNow > crp.DropTime)
+				{
+					CachedResponses.RemoveAt(i);
+					i--;
+					continue;
 				}
 			}
 		}
