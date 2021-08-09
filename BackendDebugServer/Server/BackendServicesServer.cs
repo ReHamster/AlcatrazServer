@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BackendDebugServer
 {
@@ -15,6 +16,7 @@ namespace BackendDebugServer
         public static ushort _skipNextNAT = 0xFFFF;
 		public static QPacketHandlerPRUDP packetHandler;
 
+		static Task<UdpReceiveResult> CurrentRecvTask = null;
 
 		public static void Start()
         {
@@ -28,8 +30,6 @@ namespace BackendDebugServer
             {
                 _exit = true;
             }
-            if (listener != null)
-                listener.Close();
         }
 
         public static void tMainThread(object obj)
@@ -37,11 +37,9 @@ namespace BackendDebugServer
 			var listenPort = QConfiguration.Instance.BackendServiceServerPort;
 
 			listener = new UdpClient(listenPort);
-            IPEndPoint ep = new IPEndPoint(IPAddress.Any, 0);
-
 			packetHandler = new QPacketHandlerPRUDP(listener, serverPID, listenPort, "BackendServices");
 
-			WriteLog(1, $"Server started at port { listenPort }");
+			WriteLog(1, $"Listening at port { listenPort }");
 
 			while (true)
             {
@@ -50,18 +48,39 @@ namespace BackendDebugServer
                     if (_exit)
                         break;
                 }
+
                 try
                 {
-                    byte[] bytes = listener.Receive(ref ep);
-                    ProcessPacket(bytes, ep);
-                }
+					// use non-blocking recieve
+					if (CurrentRecvTask != null)
+					{
+						if(CurrentRecvTask.IsCompleted)
+						{
+							var result = CurrentRecvTask.Result;
+							CurrentRecvTask = null;
+							packetHandler.ProcessPacket(result.Buffer, result.RemoteEndPoint);
+						}
+						else if (CurrentRecvTask.IsCanceled || CurrentRecvTask.IsFaulted)
+						{
+							CurrentRecvTask = null;
+						}
+					}
+
+					if (CurrentRecvTask == null)
+						CurrentRecvTask = listener.ReceiveAsync();
+
+					Thread.Sleep(1);
+				}
                 catch (Exception ex)
                 {
                     WriteLog(1, "error - exception occured! " + ex.Message);
                 }
             }
             WriteLog(1, "Server stopped");
-        }
+
+			CurrentRecvTask = null;
+			listener.Close();
+		}
 
         public static void ProcessPacket(byte[] data, IPEndPoint ep)
         {
