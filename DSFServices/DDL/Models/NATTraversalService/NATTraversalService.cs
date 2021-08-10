@@ -20,7 +20,7 @@ namespace DSFServices.DDL.Models
                     //RMC.SendResponseWithACK(client.udp, p, rmc, client, reply);
                     break;
                 default:
-                    Log.WriteLine(1, "[RMC NATTraversalService] Error: Unknown Method 0x" + rmc.methodID.ToString("X"));
+                    QLog.WriteLine(1, "[RMC NATTraversalService] Error: Unknown Method 0x" + rmc.methodID.ToString("X"));
                     break;
             }
         }

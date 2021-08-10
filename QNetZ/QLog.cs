@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace QNetZ
 {
-	public static class Log
+	public static class QLog
 	{
 		public delegate void LogPrintDelegate(int priority, string s, Color color);
 

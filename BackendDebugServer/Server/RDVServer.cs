@@ -88,7 +88,7 @@ namespace BackendDebugServer
 
         private static void WriteLog(int priority, string s)
         {
-            Log.WriteLine(priority, "[RendezVous] " + s);
+            QLog.WriteLine(priority, "[RendezVous] " + s);
         }
     }
 }

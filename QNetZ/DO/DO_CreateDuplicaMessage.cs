@@ -11,19 +11,19 @@ namespace QNetZ
     {        
         public static byte[] HandleMessage(QClient client, byte[] data)
         {
-            Log.WriteLine(2, "[DO] Handling DO_CreateDuplicaMessage...");
+            QLog.WriteLine(2, "[DO] Handling DO_CreateDuplicaMessage...");
             MemoryStream m = new MemoryStream(data);
             m.Seek(1, 0);
             DupObj obj = new DupObj(Helper.ReadU32(m));
             obj.Master = new DupObj(Helper.ReadU32(m));
             DO_Session.DupObjs.Add(obj);
-            Log.WriteLine(1, "[DO] Adding DupObj " + obj.getDesc());
+            QLog.WriteLine(1, "[DO] Adding DupObj " + obj.getDesc());
             return null;
         }
 
         public static byte[] Create(DupObj obj, byte version)
         {
-            Log.WriteLine(2, "[DO] Creating DO_CreateDuplicaMessage");
+            QLog.WriteLine(2, "[DO] Creating DO_CreateDuplicaMessage");
             MemoryStream m = new MemoryStream();
             m.WriteByte(0x12);
             Helper.WriteU32(m, obj);

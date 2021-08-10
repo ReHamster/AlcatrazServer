@@ -11,13 +11,13 @@ namespace QNetZ
     {
         public static byte[] HandleMessage(ClientInfo client, byte[] data)
         {
-            Log.WriteLine(2, "[DO] Handling DO_RMCResponseMessage... TODO!");
+            QLog.WriteLine(2, "[DO] Handling DO_RMCResponseMessage... TODO!");
             return new byte[0];
         }
 
         public static byte[] Create(ushort callID, uint outcome, byte[] payload)
         {
-            Log.WriteLine(2, "[DO] Creating DO_RMCResponseMessage");
+            QLog.WriteLine(2, "[DO] Creating DO_RMCResponseMessage");
             MemoryStream m = new MemoryStream();
             Helper.WriteU8(m, 0xB);
             Helper.WriteU16(m, callID);

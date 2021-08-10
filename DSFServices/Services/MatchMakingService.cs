@@ -19,24 +19,24 @@ namespace DSFServices.Services
 			uint result = 39704;
 			if(anyGathering.data != null)
 			{
-				Log.WriteLine(1, "RegisterGathering : HermesPartySession:Gathering {");
-				Log.WriteLine(1, $"    m_freePublicSlots = {anyGathering.data.m_freePublicSlots }");
-				Log.WriteLine(1, $"    m_freePrivateSlots = { anyGathering.data.m_freePrivateSlots }");
-				Log.WriteLine(1, $"    m_maxPrivateSlots = {anyGathering.data. m_maxPrivateSlots }");
-				Log.WriteLine(1, $"    m_privacySettings = { anyGathering.data.m_privacySettings }");
-				Log.WriteLine(1, $"    m_name = { anyGathering.data.m_name }");
-				Log.WriteLine(1, $"    m_buffurizedOwnerId = { anyGathering.data.m_buffurizedOwnerId }");
-				Log.WriteLine(1, $"    base.m_idMyself = {anyGathering.data.m_idMyself}");
-				Log.WriteLine(1, $"    base.m_pidOwner = {anyGathering.data.m_pidOwner}");
-				Log.WriteLine(1, $"    base.m_pidHost = {anyGathering.data.m_pidHost}");
-				Log.WriteLine(1, $"    base.m_uiMinParticipants = {anyGathering.data.m_uiMinParticipants}");
-				Log.WriteLine(1, $"    base.m_uiMaxParticipants = {anyGathering.data.m_uiMaxParticipants}");
-				Log.WriteLine(1, $"    base.m_uiParticipationPolicy = {anyGathering.data.m_uiParticipationPolicy}");
-				Log.WriteLine(1, $"    base.m_uiPolicyArgument = {anyGathering.data.m_uiPolicyArgument}");
-				Log.WriteLine(1, $"    base.m_uiFlags = {anyGathering.data.m_uiFlags}");
-				Log.WriteLine(1, $"    base.m_uiState = {anyGathering.data.m_uiState}");
-				Log.WriteLine(1, $"    base.m_strDescription = {anyGathering.data.m_strDescription}");
-				Log.WriteLine(1, "}");
+				QLog.WriteLine(1, "RegisterGathering : HermesPartySession:Gathering {");
+				QLog.WriteLine(1, $"    m_freePublicSlots = {anyGathering.data.m_freePublicSlots }");
+				QLog.WriteLine(1, $"    m_freePrivateSlots = { anyGathering.data.m_freePrivateSlots }");
+				QLog.WriteLine(1, $"    m_maxPrivateSlots = {anyGathering.data. m_maxPrivateSlots }");
+				QLog.WriteLine(1, $"    m_privacySettings = { anyGathering.data.m_privacySettings }");
+				QLog.WriteLine(1, $"    m_name = { anyGathering.data.m_name }");
+				QLog.WriteLine(1, $"    m_buffurizedOwnerId = { anyGathering.data.m_buffurizedOwnerId }");
+				QLog.WriteLine(1, $"    base.m_idMyself = {anyGathering.data.m_idMyself}");
+				QLog.WriteLine(1, $"    base.m_pidOwner = {anyGathering.data.m_pidOwner}");
+				QLog.WriteLine(1, $"    base.m_pidHost = {anyGathering.data.m_pidHost}");
+				QLog.WriteLine(1, $"    base.m_uiMinParticipants = {anyGathering.data.m_uiMinParticipants}");
+				QLog.WriteLine(1, $"    base.m_uiMaxParticipants = {anyGathering.data.m_uiMaxParticipants}");
+				QLog.WriteLine(1, $"    base.m_uiParticipationPolicy = {anyGathering.data.m_uiParticipationPolicy}");
+				QLog.WriteLine(1, $"    base.m_uiPolicyArgument = {anyGathering.data.m_uiPolicyArgument}");
+				QLog.WriteLine(1, $"    base.m_uiFlags = {anyGathering.data.m_uiFlags}");
+				QLog.WriteLine(1, $"    base.m_uiState = {anyGathering.data.m_uiState}");
+				QLog.WriteLine(1, $"    base.m_strDescription = {anyGathering.data.m_strDescription}");
+				QLog.WriteLine(1, "}");
 			}
 
 			// return 39704
@@ -65,24 +65,24 @@ namespace DSFServices.Services
 
 			if (anyGathering.data != null)
 			{
-				Log.WriteLine(1, "UpdateGathering : HermesPartySession:Gathering {");
-				Log.WriteLine(1, $"    m_freePublicSlots = {anyGathering.data.m_freePublicSlots }");
-				Log.WriteLine(1, $"    m_freePrivateSlots = { anyGathering.data.m_freePrivateSlots }");
-				Log.WriteLine(1, $"    m_maxPrivateSlots = {anyGathering.data.m_maxPrivateSlots }");
-				Log.WriteLine(1, $"    m_privacySettings = { anyGathering.data.m_privacySettings }");
-				Log.WriteLine(1, $"    m_name = { anyGathering.data.m_name }");
-				Log.WriteLine(1, $"    m_buffurizedOwnerId = { anyGathering.data.m_buffurizedOwnerId }");
-				Log.WriteLine(1, $"    base.m_idMyself = {anyGathering.data.m_idMyself}");
-				Log.WriteLine(1, $"    base.m_pidOwner = {anyGathering.data.m_pidOwner}");
-				Log.WriteLine(1, $"    base.m_pidHost = {anyGathering.data.m_pidHost}");
-				Log.WriteLine(1, $"    base.m_uiMinParticipants = {anyGathering.data.m_uiMinParticipants}");
-				Log.WriteLine(1, $"    base.m_uiMaxParticipants = {anyGathering.data.m_uiMaxParticipants}");
-				Log.WriteLine(1, $"    base.m_uiParticipationPolicy = {anyGathering.data.m_uiParticipationPolicy}");
-				Log.WriteLine(1, $"    base.m_uiPolicyArgument = {anyGathering.data.m_uiPolicyArgument}");
-				Log.WriteLine(1, $"    base.m_uiFlags = {anyGathering.data.m_uiFlags}");
-				Log.WriteLine(1, $"    base.m_uiState = {anyGathering.data.m_uiState}");
-				Log.WriteLine(1, $"    base.m_strDescription = {anyGathering.data.m_strDescription}");
-				Log.WriteLine(1, "}");
+				QLog.WriteLine(1, "UpdateGathering : HermesPartySession:Gathering {");
+				QLog.WriteLine(1, $"    m_freePublicSlots = {anyGathering.data.m_freePublicSlots }");
+				QLog.WriteLine(1, $"    m_freePrivateSlots = { anyGathering.data.m_freePrivateSlots }");
+				QLog.WriteLine(1, $"    m_maxPrivateSlots = {anyGathering.data.m_maxPrivateSlots }");
+				QLog.WriteLine(1, $"    m_privacySettings = { anyGathering.data.m_privacySettings }");
+				QLog.WriteLine(1, $"    m_name = { anyGathering.data.m_name }");
+				QLog.WriteLine(1, $"    m_buffurizedOwnerId = { anyGathering.data.m_buffurizedOwnerId }");
+				QLog.WriteLine(1, $"    base.m_idMyself = {anyGathering.data.m_idMyself}");
+				QLog.WriteLine(1, $"    base.m_pidOwner = {anyGathering.data.m_pidOwner}");
+				QLog.WriteLine(1, $"    base.m_pidHost = {anyGathering.data.m_pidHost}");
+				QLog.WriteLine(1, $"    base.m_uiMinParticipants = {anyGathering.data.m_uiMinParticipants}");
+				QLog.WriteLine(1, $"    base.m_uiMaxParticipants = {anyGathering.data.m_uiMaxParticipants}");
+				QLog.WriteLine(1, $"    base.m_uiParticipationPolicy = {anyGathering.data.m_uiParticipationPolicy}");
+				QLog.WriteLine(1, $"    base.m_uiPolicyArgument = {anyGathering.data.m_uiPolicyArgument}");
+				QLog.WriteLine(1, $"    base.m_uiFlags = {anyGathering.data.m_uiFlags}");
+				QLog.WriteLine(1, $"    base.m_uiState = {anyGathering.data.m_uiState}");
+				QLog.WriteLine(1, $"    base.m_strDescription = {anyGathering.data.m_strDescription}");
+				QLog.WriteLine(1, "}");
 			}
 
 			// return True

@@ -11,13 +11,13 @@ namespace QNetZ
     {
         public static byte[] HandleMessage(ClientInfo client, byte[] data)
         {
-            Log.WriteLine(2, "[DO] Handling DO_JoinResponseMessage... TODO!");
+            QLog.WriteLine(2, "[DO] Handling DO_JoinResponseMessage... TODO!");
             return new byte[0];
         }
 
         public static byte[] Create(byte successByte, DupObj clientStation)
         {
-            Log.WriteLine(2, "[DO] Creating DO_JoinResponseMessage");
+            QLog.WriteLine(2, "[DO] Creating DO_JoinResponseMessage");
             MemoryStream m = new MemoryStream();
             m.WriteByte(1);
             m.WriteByte(successByte);
@@ -28,7 +28,7 @@ namespace QNetZ
                 Helper.WriteU16(m, 0);
             }
             else
-                Log.WriteLine(1, "[DO] Creating negative DO_JoinResponseMessage failed, TODO!");
+                QLog.WriteLine(1, "[DO] Creating negative DO_JoinResponseMessage failed, TODO!");
             return m.ToArray();
         }
     }

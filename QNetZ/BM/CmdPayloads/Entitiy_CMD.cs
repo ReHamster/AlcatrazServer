@@ -53,7 +53,7 @@ namespace QNetZ
             long pos = s.Position;
             byte[] raw = GetRawPayload(s);
             s.Seek(pos, 0);
-            Log.WriteLine(2, "Received CMD 0x" + cmd.ToString("X8") + " (" + (CMDs)cmd + ") for Handle 0x" + handle.ToString("X8"), Color.Red);
+            QLog.WriteLine(2, "Received CMD 0x" + cmd.ToString("X8") + " (" + (CMDs)cmd + ") for Handle 0x" + handle.ToString("X8"), Color.Red);
             switch ((CMDs)cmd)
             {
                 case CMDs.FallingDamage:

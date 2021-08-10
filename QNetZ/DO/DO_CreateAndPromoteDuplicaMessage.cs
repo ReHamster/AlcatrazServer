@@ -11,13 +11,13 @@ namespace QNetZ
     {
         public static byte[] HandleMessage(ClientInfo client, byte[] data)
         {
-            Log.WriteLine(2, "[DO] Handling DO_CreateAndPromoteDuplicaMessage... TODO!");
+            QLog.WriteLine(2, "[DO] Handling DO_CreateAndPromoteDuplicaMessage... TODO!");
             return new byte[0];
         }
 
         public static byte[] Create(ushort callID, DupObj obj, byte version)
         {
-            Log.WriteLine(2, "[DO] Creating DO_CreateAndPromoteDuplicaMessage");
+            QLog.WriteLine(2, "[DO] Creating DO_CreateAndPromoteDuplicaMessage");
             MemoryStream m = new MemoryStream();
             m.WriteByte(0x13);
             Helper.WriteU16(m, callID);

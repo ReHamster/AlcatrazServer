@@ -41,14 +41,14 @@ namespace QNetZ
             if (p.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
                 return;
 
-            Log.WriteLine(10, "[DO] Handling packet...");
+            QLog.WriteLine(10, "[DO] Handling packet...");
             MemoryStream m = new MemoryStream(p.payload);
             uint packetSize = Helper.ReadU32(m);
             byte[] data = new byte[packetSize];
             m.Read(data, 0, (int)packetSize);
             StringBuilder sb = new StringBuilder();
             UnpackMessage(data, 0, sb);
-            Log.WriteLine(10, "[DO] Unpacking request...\n" + sb.ToString());
+            QLog.WriteLine(10, "[DO] Unpacking request...\n" + sb.ToString());
             byte[] replyPayload = ProcessMessage(client, p, data);
             p.m_uiSignature = client.IDsend;
 
@@ -60,7 +60,7 @@ namespace QNetZ
                 SendMessage(handler, client, p, replyPayload);
                 sb = new StringBuilder();
                 UnpackMessage(replyPayload, 0, sb);
-                Log.WriteLine(10, "[DO] Unpacking response...\n" + sb.ToString());
+                QLog.WriteLine(10, "[DO] Unpacking response...\n" + sb.ToString());
             }
         }
 
@@ -76,7 +76,7 @@ namespace QNetZ
                     replyPayload = DO_JoinRequestMessage.HandleMessage(client, data, p.m_bySessionID);
                     break;
                 case METHOD.JoinResponse:
-                    Log.WriteLine(1, "[DO] Received JoinResponse");
+                    QLog.WriteLine(1, "[DO] Received JoinResponse");
                     break;
                 case METHOD.GetParticipantsRequest:
 					client.callCounterRMC = 1;
@@ -105,7 +105,7 @@ namespace QNetZ
                     replyPayload = DO_DeleteMessage.HandleMessage(client, data);
                     break;
                 default:
-                    Log.WriteLine(1, "[DO] Error: Unknown Method 0x" + data[0].ToString("X2") + " (" + method +")", Color.Red);
+                    QLog.WriteLine(1, "[DO] Error: Unknown Method 0x" + data[0].ToString("X2") + " (" + method +")", Color.Red);
                     break;
             }
             return replyPayload;
@@ -118,10 +118,10 @@ namespace QNetZ
             DupObj obj = DO_Session.FindObj(handle);
             if (obj == null)
             {
-                Log.WriteLine(1, "[DO] Update error: Can't find DupObj 0x" + handle.ToString("X") + " (" + new DupObj(handle).getDesc() + ")", Color.Red);
+                QLog.WriteLine(1, "[DO] Update error: Can't find DupObj 0x" + handle.ToString("X") + " (" + new DupObj(handle).getDesc() + ")", Color.Red);
                 return null;
             }            
-            Log.WriteLine(1, "[DO] Received Update for " + obj.getDesc() +  " DataSet=" + dataset);
+            QLog.WriteLine(1, "[DO] Received Update for " + obj.getDesc() +  " DataSet=" + dataset);
             MemoryStream m = new MemoryStream();
             m.Write(data, 6, data.Length - 6);
             m.Seek(0, 0);
@@ -160,7 +160,7 @@ namespace QNetZ
             Helper.WriteU32(m, (uint)data.Length);
             m.Write(data, 0, data.Length);
             m.WriteByte((byte)QPacket.MakeChecksum(m.ToArray(), 0));
-            Log.WriteLine(10, "sending DO message packet");
+            QLog.WriteLine(10, "sending DO message packet");
 
 			handler.MakeAndSend(client, p, np, m.ToArray());
         }

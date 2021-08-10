@@ -11,13 +11,13 @@ namespace QNetZ
     {
         public static byte[] HandleMessage(ClientInfo client, byte[] data)
         {
-            Log.WriteLine(1, "[DO] Handling DO_BundleMessage... TODO!");
+            QLog.WriteLine(1, "[DO] Handling DO_BundleMessage... TODO!");
             return new byte[0];
         }
 
         public static byte[] Create(ClientInfo client, List<byte[]> data)
         {
-            Log.WriteLine(2, "[DO] Creating DO_BundleMessage");
+            QLog.WriteLine(2, "[DO] Creating DO_BundleMessage");
             MemoryStream m = new MemoryStream();
             m.WriteByte(0xF);
             foreach (byte[] buff in data)

@@ -40,7 +40,7 @@ namespace BackendDebugServer
 
 			listener = new TcpListener(IPAddress.Parse(ip), listenPort);
             listener.Start();
-            Log.WriteLine(1, "[TCP Webserver] Server started");
+            QLog.WriteLine(1, "[TCP Webserver] Server started");
             while (true)
             {
                 lock (_sync)
@@ -51,15 +51,15 @@ namespace BackendDebugServer
                 try
                 {
                     TcpClient client = listener.AcceptTcpClient();
-                    Log.WriteLine(1, "[TCP] Client connected");
+                    QLog.WriteLine(1, "[TCP] Client connected");
                     new Thread(tClientHandler).Start(client);
                 }
                 catch (Exception ex) 
                 {
-                    Log.WriteLine(1, "[TCP] error - exception occured! " + ex.Message );
+                    QLog.WriteLine(1, "[TCP] error - exception occured! " + ex.Message );
                 }
             }
-            Log.WriteLine(1, "[TCP Webserver] Server stopped");
+            QLog.WriteLine(1, "[TCP Webserver] Server stopped");
         }
 
         public static void tClientHandler(object obj)
@@ -74,7 +74,7 @@ namespace BackendDebugServer
             //Read Content
             while (ns.DataAvailable)
                 m.WriteByte((byte)ns.ReadByte());
-            Log.WriteLine(2, "[TCP Webserver] Received " + m.Length + " bytes");
+            QLog.WriteLine(2, "[TCP Webserver] Received " + m.Length + " bytes");
             //Create Response
             StringBuilder sb = new StringBuilder();
             sb.Append("[");
@@ -96,7 +96,7 @@ namespace BackendDebugServer
             ns.Write(buff, 0, buff.Length);
             ns.Flush();
             ns.Close();
-            Log.WriteLine(2, "[TCP Webserver] Send " + buff.Length + " bytes");
+            QLog.WriteLine(2, "[TCP Webserver] Send " + buff.Length + " bytes");
         }
 
         private static void AddHttpHeader(StringBuilder sb, int contentlen)
