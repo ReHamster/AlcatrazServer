@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AlcatrazDbContext\AlcatrazDbContext.csproj" />
+    <ProjectReference Include="..\AlcatrazDbContext\AlcatrazContext.csproj" />
     <ProjectReference Include="..\QNetZ\QNetZ.csproj" />
   </ItemGroup>
 

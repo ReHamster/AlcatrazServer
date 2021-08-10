@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AlcatrazDbContext\AlcatrazDbContext.csproj" />
+    <ProjectReference Include="..\AlcatrazDbContext\AlcatrazContext.csproj" />
     <ProjectReference Include="..\DSFServices\DSFServices.csproj" />
   </ItemGroup>
 

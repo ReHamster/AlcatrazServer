@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Alcatraz.Context.Entities
+{
+	// Friends
+	public class Relationship
+	{
+		public uint User1Id { get; set; }
+		public User User1 { get; set; }
+
+		public uint User2Id { get; set; }
+		public User User2 { get; set; }
+
+		public uint Status { get; set; }
+		public uint ByRelationShip { get; set; }
+	}
+}

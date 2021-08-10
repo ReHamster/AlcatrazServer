@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlcatrazGameServices", "Alc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{3947A504-2857-4133-9A1A-AF401544252D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlcatrazDbContext", "AlcatrazDbContext\AlcatrazDbContext.csproj", "{63237AD4-1792-48B7-B345-884DC51240C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlcatrazContext", "AlcatrazDbContext\AlcatrazContext.csproj", "{63237AD4-1792-48B7-B345-884DC51240C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

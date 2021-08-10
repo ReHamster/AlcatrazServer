@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace AlcatrazDbContext.Migrations
+namespace Alcatraz.Context.Migrations
 {
     public partial class InitialSqLite : Migration
     {
