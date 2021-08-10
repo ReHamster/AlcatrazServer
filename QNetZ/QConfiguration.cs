@@ -7,16 +7,21 @@ namespace QNetZ
 {
 	public class QConfiguration
 	{
-		public string ServerBindAddress;
-		public ushort RDVServerPort;
-		public ushort BackendServiceServerPort;
-		public string ServerFilesPath;
-		public string SandboxAccessKey;            // Server access key. Affects packet checksum;
+		public string ServerBindAddress { get; set; }
+		public ushort RDVServerPort { get; set; }
+		public ushort BackendServiceServerPort { get; set; }
+		public string ServerFilesPath { get; set; }
+		public string SandboxAccessKey { get; set; }            // Server access key. Affects packet checksum;
+		public string DbConnectionString { get; set; }
+		public int DbType { get; set; }
 
 		public byte SandboxAccessKeyCheckSum
 		{
 			get
 			{
+				if (SandboxAccessKey == null)
+					return 0;
+
 				return (byte)Encoding.ASCII.GetBytes(SandboxAccessKey).Sum(b => b);
 			}
 		}
@@ -44,6 +49,9 @@ namespace QNetZ
 			cfg.ServerFilesPath = "ServerFiles/";
 
 			cfg.SandboxAccessKey = "8dtRv2oj";            // Server access key. Affects packet checksum;
+
+			cfg.DbType = 0;
+			cfg.DbConnectionString = "Data Source=database.sqlite";
 
 			return cfg;
 		}

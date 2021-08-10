@@ -104,7 +104,7 @@ namespace DSFServices.Services
 				var scoreListRead = new ScoreListRead()
 				{
 					pid = playerId,
-					pname = player.name
+					pname = player.Username
 				};
 				playerStats.Add(scoreListRead);
 

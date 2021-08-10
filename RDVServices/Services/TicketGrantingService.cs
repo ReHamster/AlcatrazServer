@@ -38,7 +38,7 @@ namespace RDVServices.Services
 				.Replace("#PORT#", Context.Client.sPort.ToString())
 				.Replace("#SERVERID#", Context.Client.sPID.ToString());
 
-			ClientInfo user = DBHelper.GetUserByName(userName);
+			var user = DBHelper.GetUserByName(userName);
 
 			if (user != null)
 			{
@@ -65,9 +65,9 @@ namespace RDVServices.Services
 
 				client = Global.CreateClient(Context.Client);
 
-				client.PID = user.PID;
-				client.accountId = userName;
-				client.name = userName;
+				client.PID = user.Id;
+				client.accountId = user.Username;
+				client.name = user.Username;
 
 				var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, sessionKey, ticket);
 
@@ -116,18 +116,18 @@ namespace RDVServices.Services
 
 				Global.DropClient(client);
 
-				ClientInfo user = DBHelper.GetUserByName(oExtraData.data.username);
+				var user = DBHelper.GetUserByName(oExtraData.data.username);
 
 				if (user != null)
 				{
-					if (user.pass == oExtraData.data.password)
+					if (user.Password == oExtraData.data.password)
 					{
 						Log.WriteLine(1, $"User login request {userName}");
 						client = Global.CreateClient(Context.Client);
 
 						Context.Client.info = client;   // TEMPORARY
 
-						client.PID = user.PID;
+						client.PID = user.Id;
 						client.sessionKey = sessionKey;
 						client.accountId = userName;
 						client.name = oExtraData.data.username;
