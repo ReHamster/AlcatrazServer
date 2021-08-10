@@ -33,9 +33,11 @@ namespace Alcatraz.GameServices.Services
 			// register service
 			ServiceFactoryDSF.RegisterDSFServices();
 
+			Log.EnablePacketLogging = false;
+			Log.EnableFileLogging = false;
 			Log.LogFunction = (int priority, string s, Color color) =>
 			{
-				if (priority <= 2)
+				if (priority <= 1)
 				{
 					if (color.R == 255 && color.G == 0)
 						_logger.LogError(s);
@@ -64,23 +66,30 @@ namespace Alcatraz.GameServices.Services
 
 		protected override async Task Process()
 		{
-			// use non-blocking recieve
-			if (CurrentRecvTask != null)
+			try
 			{
-				if (CurrentRecvTask.IsCompleted)
+				// use non-blocking recieve
+				if (CurrentRecvTask != null)
 				{
-					var result = CurrentRecvTask.Result;
-					CurrentRecvTask = null;
-					packetHandler.ProcessPacket(result.Buffer, result.RemoteEndPoint);
+					if (CurrentRecvTask.IsCompleted)
+					{
+						var result = CurrentRecvTask.Result;
+						CurrentRecvTask = null;
+						packetHandler.ProcessPacket(result.Buffer, result.RemoteEndPoint);
+					}
+					else if (CurrentRecvTask.IsCanceled || CurrentRecvTask.IsFaulted)
+					{
+						CurrentRecvTask = null;
+					}
 				}
-				else if (CurrentRecvTask.IsCanceled || CurrentRecvTask.IsFaulted)
-				{
-					CurrentRecvTask = null;
-				}
-			}
 
-			if (CurrentRecvTask == null)
-				CurrentRecvTask = listener.ReceiveAsync();
+				if (CurrentRecvTask == null)
+					CurrentRecvTask = listener.ReceiveAsync();
+			}
+			catch(Exception ex)
+			{
+				_logger.LogError(ex.Message + ex.StackTrace);
+			}
 		}
 	}
 }

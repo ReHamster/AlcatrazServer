@@ -126,7 +126,7 @@ namespace BackendDebugServer
 
         private void toolStripButton9_Click(object sender, EventArgs e)
         {
-            Log.enablePacketLogging = toolStripButton9.Checked;
+            Log.EnablePacketLogging = toolStripButton9.Checked;
         }
     }
 }
