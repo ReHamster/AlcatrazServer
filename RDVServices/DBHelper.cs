@@ -13,7 +13,11 @@ namespace RDVServices
 			var contextOptions = new DbContextOptionsBuilder<MainDbContext>();
 			var opts = MainDbContext.OnContextBuilding(contextOptions, (DBType)QConfiguration.Instance.DbType, QConfiguration.Instance.DbConnectionString);
 
-			return new MainDbContext(opts.Options);
+			var retCtx = new MainDbContext(opts.Options);
+
+			retCtx.Database.Migrate();
+
+			return retCtx;
 		}
 
 		public static User GetUserByName(string name)

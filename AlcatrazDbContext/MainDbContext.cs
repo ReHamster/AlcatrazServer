@@ -49,10 +49,12 @@ namespace Alcatraz.Context
 		//------------------------------------------------------------------------------------------
 		// Model relations comes here
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder builder)
 		{
+			builder.Entity<Relationship>()
+					.HasKey(t => new { t.User1Id, t.User2Id });
 
-			base.OnModelCreating(modelBuilder);
+			base.OnModelCreating(builder);
 		}
 
 		//------------------------------------------------------------------------------------------
@@ -60,6 +62,6 @@ namespace Alcatraz.Context
 
 		// USERS
 		public DbSet<User> Users { get; set; }
-
+		public DbSet<Relationship> UserRelationships { get; set; }
 	}
 }

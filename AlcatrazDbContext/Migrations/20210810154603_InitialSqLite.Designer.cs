@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace AlcatrazDbContext.Migrations
+namespace Alcatraz.Context.Migrations
 {
     [DbContext(typeof(MainDbContext))]
     [Migration("20210810154603_InitialSqLite")]
