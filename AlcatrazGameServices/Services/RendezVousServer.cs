@@ -12,30 +12,27 @@ using System.Threading.Tasks;
 
 namespace Alcatraz.GameServices.Services
 {
-	public class RendezVousServer : BaseBackgroundService
+	public class RendezVousServer : QPRUDPServiceBase
 	{
-		public static readonly string ServiceName = "RendezVous";
-		public static readonly uint ServerPID = 2;
-		public override int StartIntervalMilliseconds => 1;
+		public override string ServiceName => "RendezVous";
+		public override ushort ListenPort => _serverConfig.Value.RDVServerPort;
+		public override uint ServerPID => 2;
 
 		private readonly IOptions<QConfiguration> _serverConfig;
-
-		public static UdpClient listener;
-		public static QPacketHandlerPRUDP packetHandler;
 
 		public RendezVousServer(ILogger<RendezVousServer> logger, IOptions<QConfiguration> serverConfig) : base(logger)
 		{
 			_serverConfig = serverConfig;
-		}
 
-		public override Task StartAsync(CancellationToken cancellationToken)
-		{
+			QConfiguration.Instance = serverConfig.Value;
+
 			// register service
 			ServiceFactoryDSF.RegisterDSFServices();
 
-			Log.EnablePacketLogging = false;
-			Log.EnableFileLogging = false;
-			Log.LogFunction = (int priority, string s, Color color) =>
+			// configure logging
+			QLog.EnablePacketLogging = false;
+			QLog.EnableFileLogging = false;
+			QLog.LogFunction = (int priority, string s, Color color) =>
 			{
 				if (priority <= 1)
 				{
@@ -45,51 +42,6 @@ namespace Alcatraz.GameServices.Services
 						_logger.LogInformation(s);
 				}
 			};
-
-			QConfiguration.Instance = _serverConfig.Value;
-			var listenPort = QConfiguration.Instance.RDVServerPort;
-
-			listener = new UdpClient(listenPort);
-			packetHandler = new QPacketHandlerPRUDP(listener, ServerPID, listenPort, ServiceName);
-
-			return base.StartAsync(cancellationToken);
-		}
-
-		public override Task StopAsync(CancellationToken cancellationToken)
-		{
-			listener.Close();
-
-			return base.StopAsync(cancellationToken);
-		}
-
-		static Task<UdpReceiveResult> CurrentRecvTask = null;
-
-		protected override async Task Process()
-		{
-			try
-			{
-				// use non-blocking recieve
-				if (CurrentRecvTask != null)
-				{
-					if (CurrentRecvTask.IsCompleted)
-					{
-						var result = CurrentRecvTask.Result;
-						CurrentRecvTask = null;
-						packetHandler.ProcessPacket(result.Buffer, result.RemoteEndPoint);
-					}
-					else if (CurrentRecvTask.IsCanceled || CurrentRecvTask.IsFaulted)
-					{
-						CurrentRecvTask = null;
-					}
-				}
-
-				if (CurrentRecvTask == null)
-					CurrentRecvTask = listener.ReceiveAsync();
-			}
-			catch(Exception ex)
-			{
-				_logger.LogError(ex.Message + ex.StackTrace);
-			}
 		}
 	}
 }

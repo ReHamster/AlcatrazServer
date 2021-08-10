@@ -50,8 +50,11 @@ namespace Alcatraz.GameServices
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, MainDbContext dbContext)
 		{
+			// update database if haven't
+			dbContext.Database.Migrate();
+
 			// global cors policy
 			app.UseCors(x => x
 				.AllowAnyOrigin()
