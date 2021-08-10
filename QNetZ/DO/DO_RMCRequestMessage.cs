@@ -47,7 +47,7 @@ namespace QNetZ
         public static byte[] HandleMessage(QClient client, QPacket p, byte[] data)
         {
 			ClientInfo ci = client.info;
-			Log.WriteLine(2, "[DO] Handling DO_RMCRequestMessage...");
+			QLog.WriteLine(2, "[DO] Handling DO_RMCRequestMessage...");
             MemoryStream m = new MemoryStream(data);
             m.Seek(1, 0);
             ushort callID = Helper.ReadU16(m);
@@ -55,17 +55,17 @@ namespace QNetZ
             uint station = Helper.ReadU32(m);
             uint targetObject = Helper.ReadU32(m);
             DOC_METHOD method = (DOC_METHOD)Helper.ReadU16(m);
-            Log.WriteLine(2, "[DO] RMC Call ID      : 0x" + callID.ToString("X4"));
-            Log.WriteLine(2, "[DO] RMC Call Flags   : 0x" + flags.ToString("X8"));
-            Log.WriteLine(2, "[DO] RMC Call Station : 0x" + station.ToString("X8"));
-            Log.WriteLine(2, "[DO] RMC Call DupObj  : 0x" + targetObject.ToString("X8") + " " + new DupObj(targetObject).getDesc());
+            QLog.WriteLine(2, "[DO] RMC Call ID      : 0x" + callID.ToString("X4"));
+            QLog.WriteLine(2, "[DO] RMC Call Flags   : 0x" + flags.ToString("X8"));
+            QLog.WriteLine(2, "[DO] RMC Call Station : 0x" + station.ToString("X8"));
+            QLog.WriteLine(2, "[DO] RMC Call DupObj  : 0x" + targetObject.ToString("X8") + " " + new DupObj(targetObject).getDesc());
             byte[] buff;
             MemoryStream m2;
             List<byte[]> msgs;
             switch (method)
             {
                 case DOC_METHOD.SyncRequest:
-                    Log.WriteLine(2, "[DO] Handling SyncRequest...");
+                    QLog.WriteLine(2, "[DO] Handling SyncRequest...");
                     ulong time = Helper.ReadU64(m);
                     buff = Create(client.seqCounterOut++, 0x83C, new DupObj(DupObjClass.Station, 1), new DupObj(DupObjClass.SessionClock, 1), 6, new Payload_SyncResponse(time).toBuffer());
                     m2 = new MemoryStream();
@@ -78,16 +78,16 @@ namespace QNetZ
                     //DO.Send(p, client);
                     return null;
                 case DOC_METHOD.RequestIDRangeFromMaster:
-                    Log.WriteLine(1, "[DO] Handling RequestIDRangeFromMaster...");
+                    QLog.WriteLine(1, "[DO] Handling RequestIDRangeFromMaster...");
                     return DO_RMCResponseMessage.Create(callID, 0x60001, new byte[] { 0x01, 0x01, 0x00, 0x00, 0x01, 0x02, 0x00, 0x00 });
                 case DOC_METHOD.IncreasePlayerNb:
-                    Log.WriteLine(1, "[DO] Handling IncreasePlayerNb...");
+                    QLog.WriteLine(1, "[DO] Handling IncreasePlayerNb...");
                     msgs = new List<byte[]>();
                     msgs.Add(new byte[] { 0x02, 0x02, 0x00, 0x40, 0x05, 0x01, 0x01, 0x00, 0x00, 0x00 });
                     msgs.Add(DO_RMCResponseMessage.Create(callID, 0x60001, new byte[] { 0x00 }));                    
                     return DO_BundleMessage.Create(ci, msgs);
                 case DOC_METHOD.AskForSettingPlayerParameters:
-                    Log.WriteLine(1, "[DO] Handling AskForSettingPlayerParameters...");
+                    QLog.WriteLine(1, "[DO] Handling AskForSettingPlayerParameters...");
                     int len = (int)(data.Length - m.Position);
                     buff = new byte[len];
                     m.Read(buff, 0, len);
@@ -115,7 +115,7 @@ namespace QNetZ
                     msgs.Add(DO_RMCResponseMessage.Create(callID, 0x60001, new byte[] { 0x00 }));
                     return DO_BundleMessage.Create(ci, msgs);
                 case DOC_METHOD.AskForSettingPlayerState:
-                    Log.WriteLine(1, "[DO] Handling AskForSettingPlayerState...");
+                    QLog.WriteLine(1, "[DO] Handling AskForSettingPlayerState...");
                     msgs = new List<byte[]>();
                     msgs.Add(DO_RMCRequestMessage.Create(client.seqCounterOut++,
                         0x1006,
@@ -127,7 +127,7 @@ namespace QNetZ
                     msgs.Add(DO_RMCResponseMessage.Create(callID, 0x60001, new byte[] { 0x00 }));
                     return DO_BundleMessage.Create(ci, msgs);
                 case DOC_METHOD.AskForSettingSessionParameters:
-                    Log.WriteLine(1, "[DO] Handling AskForSettingSessionParameters...");
+                    QLog.WriteLine(1, "[DO] Handling AskForSettingSessionParameters...");
                     len = (int)(data.Length - m.Position);
                     buff = new byte[len];
                     m.Read(buff, 0, len);
@@ -144,10 +144,10 @@ namespace QNetZ
                     msgs.Add(DO_RMCResponseMessage.Create(callID, 0x60001, new byte[] { 0x00 }));
                     return DO_BundleMessage.Create(ci, msgs);
                 case DOC_METHOD.ProcessMessage:
-                    Log.WriteLine(2, "[DO] Handling ProcessMessage...");
+                    QLog.WriteLine(2, "[DO] Handling ProcessMessage...");
                     return BM_Message.HandleMessage(client, m);
                 default:
-                    Log.WriteLine(1, "[DO] Error: Unhandled DOC method: " + method + "!");
+                    QLog.WriteLine(1, "[DO] Error: Unhandled DOC method: " + method + "!");
                     return null;
             }
         }

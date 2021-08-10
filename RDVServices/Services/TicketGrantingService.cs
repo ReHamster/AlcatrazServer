@@ -55,13 +55,13 @@ namespace RDVServices.Services
 					client.endpoint != Context.Client.endpoint &&
 					(DateTime.UtcNow - client.lastRecv).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
-					Log.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
+					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
 				Global.DropClient(client);
 
-				Log.WriteLine(1, $"User login request {userName}");
+				QLog.WriteLine(1, $"User login request {userName}");
 
 				client = Global.CreateClient(Context.Client);
 
@@ -110,7 +110,7 @@ namespace RDVServices.Services
 					client.endpoint != Context.Client.endpoint &&
 					(DateTime.UtcNow - client.lastRecv).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
-					Log.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
+					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
@@ -122,7 +122,7 @@ namespace RDVServices.Services
 				{
 					if (user.Password == oExtraData.data.password)
 					{
-						Log.WriteLine(1, $"User login request {userName}");
+						QLog.WriteLine(1, $"User login request {userName}");
 						client = Global.CreateClient(Context.Client);
 
 						Context.Client.info = client;   // TEMPORARY
@@ -150,19 +150,19 @@ namespace RDVServices.Services
 					}
 					else
 					{
-						Log.WriteLine(1, $"User login request {userName} DENIED - invalid password");
+						QLog.WriteLine(1, $"User login request {userName} DENIED - invalid password");
 						return Error((int)RMCErrorCode.RendezVous_InvalidPassword);
 					}
 				}
 				else
 				{
-					Log.WriteLine(1, $"User login request {userName} DENIED - invalid user name");
+					QLog.WriteLine(1, $"User login request {userName} DENIED - invalid user name");
 					return Error((int)RMCErrorCode.RendezVous_InvalidUsername);
 				}
 			}
 			else
 			{
-				Log.WriteLine(1, $"[RMC Authentication] Error: Unknown Custom Data class '{oExtraData.className}'");
+				QLog.WriteLine(1, $"[RMC Authentication] Error: Unknown Custom Data class '{oExtraData.className}'");
 			}
 
 			return Error((int)RMCErrorCode.RendezVous_ClassNotFound);

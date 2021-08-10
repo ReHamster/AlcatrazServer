@@ -162,7 +162,7 @@ namespace QNetZ
 
         private static void WriteLog(int priority, string s)
         {
-            Log.WriteLine(priority, "[RMC] " + s);
+            QLog.WriteLine(priority, "[RMC] " + s);
         }
 
     }

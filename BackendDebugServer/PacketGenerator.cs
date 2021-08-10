@@ -56,7 +56,7 @@ namespace BackendDebugServer
             for (long i = 0; i < hb1.ByteProvider.Length; i++)
                 m.WriteByte(hb1.ByteProvider.ReadByte(i));
 
-			Log.WriteLine(1, "ERROR - unimplemented packet generator");
+			QLog.WriteLine(1, "ERROR - unimplemented packet generator");
 #if false
 			byte[] payload = m.ToArray();
             foreach (ClientInfo client in Global.clients)

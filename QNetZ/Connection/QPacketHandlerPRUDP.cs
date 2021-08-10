@@ -20,6 +20,11 @@ namespace QNetZ
 			AccumulatedPackets = new List<QPacket>();
 			CachedResponses = new List<QReliableResponse>();
 			Clients = new List<QClient>();
+
+			if(QConfiguration.Instance == null)
+			{
+				throw new Exception("QConfiguration.Instance is null! You need to configure it first!");
+			}
 		}
 
 		private readonly UdpClient UDP;
@@ -42,7 +47,7 @@ namespace QNetZ
 					return c;
 			}
 
-			Log.WriteLine(1, $"[{ SourceName }] Error : Cant find client for id : 0x" + id.ToString("X8"));
+			QLog.WriteLine(1, $"[{ SourceName }] Error : Cant find client for id : 0x" + id.ToString("X8"));
 			return null;
 		}
 
@@ -63,7 +68,7 @@ namespace QNetZ
 			var qclient = GetQClientByEndPoint(from);
 			if(qclient == null)
 			{
-				Log.WriteLine(2, $"[{ SourceName }] [QUAZAL] New client { from.Address }:{ from.Port } registered at server PID={PID}");
+				QLog.WriteLine(2, $"[{ SourceName }] [QUAZAL] New client { from.Address }:{ from.Port } registered at server PID={PID}");
 				qclient = new QClient();
 				qclient.endpoint = from;
 				qclient.IDrecv = ClientIdCounter++;
@@ -80,7 +85,7 @@ namespace QNetZ
 			if (qclient.info == null)
 				qclient.info = Global.GetClientByConnection(qclient);
 
-			Log.WriteLine(2, $"[{ SourceName }] Got SYN packet");
+			QLog.WriteLine(2, $"[{ SourceName }] Got SYN packet");
 			qclient.seqCounterOut = 0;
 
 			p.m_uiConnectionSignature = qclient.IDrecv;
@@ -92,7 +97,7 @@ namespace QNetZ
 		{
 			client.IDsend = p.m_uiConnectionSignature;
 
-			Log.WriteLine(2, $"[{ SourceName }] Got CONNECT packet");
+			QLog.WriteLine(2, $"[{ SourceName }] Got CONNECT packet");
 
 			var reply = MakeACK(p, client);
 
@@ -137,7 +142,7 @@ namespace QNetZ
 			QPacket reply = MakeACK(p, client);
 			reply.m_uiSignature = client.IDsend;
 
-			Log.WriteLine(2, $"[{ SourceName }] Got DISCONNECT packet");
+			QLog.WriteLine(2, $"[{ SourceName }] Got DISCONNECT packet");
 
 			return reply;
 		}
@@ -167,13 +172,13 @@ namespace QNetZ
 			foreach (byte b in data)
 				sb.Append(b.ToString("X2") + " ");
 
-			Log.WriteLine(5,  $"[{ SourceName }] send : { sendPacket.ToStringShort()}");
-			Log.WriteLine(10, $"[{ SourceName }] send : { sb.ToString()}");
-			Log.WriteLine(10, $"[{ SourceName }] send : { sendPacket.ToStringDetailed() }");
+			QLog.WriteLine(5,  $"[{ SourceName }] send : { sendPacket.ToStringShort()}");
+			QLog.WriteLine(10, $"[{ SourceName }] send : { sb.ToString()}");
+			QLog.WriteLine(10, $"[{ SourceName }] send : { sendPacket.ToStringDetailed() }");
 
 			UDP.Send(data, data.Length, ep);
 
-			Log.LogPacket(true, data);
+			QLog.LogPacket(true, data);
 		}
 
 		public QPacket MakeACK(QPacket p, QClient client)
@@ -268,7 +273,7 @@ namespace QNetZ
 			//    client.udp.Send(fragmentBytes.GetBuffer(), (int)fragmentBytes.Length, client.ep);
 
 			
-			Log.WriteLine(10, $"[{ SourceName }] sent { numFragments } packets");
+			QLog.WriteLine(10, $"[{ SourceName }] sent { numFragments } packets");
 		}
 
 		//-------------------------------------------------------------------------------------------
@@ -290,10 +295,10 @@ namespace QNetZ
 					byte[] buff = new byte[(int)packetIn.realSize];
 					m.Read(buff, 0, buff.Length);
 
-					Log.LogPacket(false, buff);
-					Log.WriteLine(5, $"[{ SourceName }] received : { packetIn.ToStringShort() }" );
-					Log.WriteLine(10,$"[{ SourceName }] received : { sb }" );
-					Log.WriteLine(10,$"[{ SourceName }] received : { packetIn.ToStringDetailed() }");
+					QLog.LogPacket(false, buff);
+					QLog.WriteLine(5, $"[{ SourceName }] received : { packetIn.ToStringShort() }" );
+					QLog.WriteLine(10,$"[{ SourceName }] received : { sb }" );
+					QLog.WriteLine(10,$"[{ SourceName }] received : { packetIn.ToStringDetailed() }");
 				}
 
 				QPacket reply = null;

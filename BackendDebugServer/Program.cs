@@ -16,8 +16,8 @@ namespace BackendDebugServer
 		[STAThread]
 		static void Main()
 		{
-			Log.EnableFileLogging = true;
-			Log.EnablePacketLogging = true;
+			QLog.EnableFileLogging = true;
+			QLog.EnablePacketLogging = true;
 
 			ServiceFactoryDSF.RegisterDSFServices();
 			QConfiguration.Instance = QConfiguration.MakeDevelopmentConfiguration();

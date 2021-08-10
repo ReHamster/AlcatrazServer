@@ -12,16 +12,16 @@ namespace DSFServices.Services
 		[RMCMethod(1)]
 		public RMCResult CreateSession(GameSession gameSession)
 		{
-			Log.WriteLine(1, "CreateSession : GameSession {");
-			Log.WriteLine(1, $"    m_typeID = {gameSession.m_typeID}");
-			Log.WriteLine(1, $"    m_attributes = ");
+			QLog.WriteLine(1, "CreateSession : GameSession {");
+			QLog.WriteLine(1, $"    m_typeID = {gameSession.m_typeID}");
+			QLog.WriteLine(1, $"    m_attributes = ");
 			int n = 0;
 			foreach(var attr in gameSession.m_attributes)
 			{
-				Log.WriteLine(1, $"        [{n}] = ID { attr.ID }, Value = { attr.Value }");
+				QLog.WriteLine(1, $"        [{n}] = ID { attr.ID }, Value = { attr.Value }");
 				n++;
 			}
-			Log.WriteLine(1, "}");
+			QLog.WriteLine(1, "}");
 
 			var result = new GameSessionKey();
 			result.m_sessionID = 22046;
@@ -34,16 +34,16 @@ namespace DSFServices.Services
 		[RMCMethod(2)]
 		public RMCResult UpdateSession(GameSessionUpdate gameSessionUpdate)
 		{
-			Log.WriteLine(1, "UpdateSession : GameSessionUpdate {");
-			Log.WriteLine(1, $"    m_sessionKey = {gameSessionUpdate.m_sessionKey.m_sessionID}");
-			Log.WriteLine(1, $"    m_attributes = ");
+			QLog.WriteLine(1, "UpdateSession : GameSessionUpdate {");
+			QLog.WriteLine(1, $"    m_sessionKey = {gameSessionUpdate.m_sessionKey.m_sessionID}");
+			QLog.WriteLine(1, $"    m_attributes = ");
 			int n = 0;
 			foreach (var attr in gameSessionUpdate.m_attributes)
 			{
-				Log.WriteLine(1, $"        [{n}] = ID { attr.ID }, Value = { attr.Value }");
+				QLog.WriteLine(1, $"        [{n}] = ID { attr.ID }, Value = { attr.Value }");
 				n++;
 			}
-			Log.WriteLine(1, "}");
+			QLog.WriteLine(1, "}");
 
 			UNIMPLEMENTED();
 			return Error(0);
@@ -88,23 +88,23 @@ namespace DSFServices.Services
 		[RMCMethod(8)]
 		public RMCResult AddParticipants(GameSessionKey gameSessionKey, IEnumerable<uint> publicParticipantIDs, IEnumerable<uint> privateParticipantIDs)
 		{
-			Log.WriteLine(1, "AddParticipants : gameSessionKey, publicParticipantIDs, privateParticipantIDs {");
-			Log.WriteLine(1, $"    gameSessionKey = {gameSessionKey.m_sessionID}");
-			Log.WriteLine(1, $"    publicParticipantIDs = ");
+			QLog.WriteLine(1, "AddParticipants : gameSessionKey, publicParticipantIDs, privateParticipantIDs {");
+			QLog.WriteLine(1, $"    gameSessionKey = {gameSessionKey.m_sessionID}");
+			QLog.WriteLine(1, $"    publicParticipantIDs = ");
 			int n = 0;
 			foreach (var p in publicParticipantIDs)
 			{
-				Log.WriteLine(1, $"        [{n}] = {p}");
+				QLog.WriteLine(1, $"        [{n}] = {p}");
 				n++;
 			}
-			Log.WriteLine(1, $"    privateParticipantIDs = ");
+			QLog.WriteLine(1, $"    privateParticipantIDs = ");
 			n = 0;
 			foreach (var p in privateParticipantIDs)
 			{
-				Log.WriteLine(1, $"        [{n}] = {p}");
+				QLog.WriteLine(1, $"        [{n}] = {p}");
 				n++;
 			}
-			Log.WriteLine(1, "}");
+			QLog.WriteLine(1, "}");
 
 			UNIMPLEMENTED();
 			return Error(0);
@@ -198,12 +198,12 @@ namespace DSFServices.Services
 		[RMCMethod(21)]
 		public RMCResult RegisterURLs(IEnumerable<string> stationURLs)
 		{
-			Log.WriteLine(1, "RegisterURLs : stationURLs {");
+			QLog.WriteLine(1, "RegisterURLs : stationURLs {");
 			foreach (var url in stationURLs)
 			{
-				Log.WriteLine(1, $"    {url}");
+				QLog.WriteLine(1, $"    {url}");
 			}
-			Log.WriteLine(1, "}");
+			QLog.WriteLine(1, "}");
 			// TODO:
 			UNIMPLEMENTED();
 			return Error(0);

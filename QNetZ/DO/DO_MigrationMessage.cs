@@ -13,7 +13,7 @@ namespace QNetZ
         public static byte[] HandleMessage(QClient client, byte[] data)
         {
 			ClientInfo ci = client.info;
-			Log.WriteLine(2, "[DO] Handling DO_MigrationMessage");
+			QLog.WriteLine(2, "[DO] Handling DO_MigrationMessage");
             MemoryStream m = new MemoryStream(data);
             m.Seek(1, 0);
             ushort callID = Helper.ReadU16(m);
@@ -23,9 +23,9 @@ namespace QNetZ
             DupObj to = new DupObj(Helper.ReadU32(m));
             DupObj fobj = DO_Session.FindObj(obj);
             if (fobj == null)
-                Log.WriteLine(1, "[DO] DupObj " + obj.getDesc() + " not found!", Color.Red);
+                QLog.WriteLine(1, "[DO] DupObj " + obj.getDesc() + " not found!", Color.Red);
             else if (fobj.Master == (uint)to)
-                Log.WriteLine(1, "[DO] Master of DupObj " + fobj.getDesc() + " alread set, ignored!", Color.Orange);
+                QLog.WriteLine(1, "[DO] Master of DupObj " + fobj.getDesc() + " alread set, ignored!", Color.Orange);
             else
                 fobj.Master = to;
             List<byte[]> msgs = new List<byte[]>();
@@ -63,7 +63,7 @@ namespace QNetZ
 
         public static byte[] Create(ushort callID, uint fromStationID, uint dupObj, uint toStationID, byte version, List<uint> handles)
         {
-            Log.WriteLine(2, "[DO] Creating DO_MigrationMessage");
+            QLog.WriteLine(2, "[DO] Creating DO_MigrationMessage");
             MemoryStream m = new MemoryStream();
             m.WriteByte(0x11);
             Helper.WriteU16(m, callID);

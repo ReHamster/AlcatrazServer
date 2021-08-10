@@ -12,7 +12,7 @@ namespace QNetZ
         public static byte[] HandleMessage(QClient client, byte[] data, byte sessionID)
         {
 			ClientInfo ci = client.info;
-			Log.WriteLine(2, "[DO] Handling DO_JoinRequestMessage...");
+			QLog.WriteLine(2, "[DO] Handling DO_JoinRequestMessage...");
             SendConnectionRequest(client, sessionID);
             List<byte[]> msgs = new List<byte[]>();
             InitSession(client);

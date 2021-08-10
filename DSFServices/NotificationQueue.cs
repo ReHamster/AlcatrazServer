@@ -75,8 +75,8 @@ namespace DSFServices
 			rmc.proto = RMCProtocolId.NotificationEventManager;
 			rmc.methodID = 1;
 
-			Log.WriteLine(1, "Sending NotificationEvent");
-			Log.WriteLine(1, DDLSerializer.ObjectToString(eventData));
+			QLog.WriteLine(1, "Sending NotificationEvent");
+			QLog.WriteLine(1, DDLSerializer.ObjectToString(eventData));
 
 			RMC.SendRequestPacket(handler, packet, rmc, client, new RMCPRequestDDL<NotificationEvent>(eventData), true, 0);
 		}

@@ -56,10 +56,10 @@ namespace QNetZ.Interfaces
 			if(rmcMethodAttr != null && !string.IsNullOrWhiteSpace(rmcMethodAttr.Name))
 				methodName = rmcMethodAttr.Name;
 
-			Log.WriteLine(1, $"[RMC] Error: Method '{ _context.RMC.proto }.{ methodName }' is unimplemented");
+			QLog.WriteLine(1, $"[RMC] Error: Method '{ _context.RMC.proto }.{ methodName }' is unimplemented");
 
 			if(!string.IsNullOrWhiteSpace(additionalMessage))
-				Log.WriteLine(1, $"[RMC] error info: { additionalMessage } ");
+				QLog.WriteLine(1, $"[RMC] error info: { additionalMessage } ");
 		}
 	}
 }

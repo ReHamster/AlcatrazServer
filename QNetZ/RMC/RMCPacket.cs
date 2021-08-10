@@ -44,7 +44,7 @@ namespace QNetZ
 			}
 			catch
 			{
-				Log.WriteLine(1, "[RMC Packet] Error: Unknown RMC packet protocol 0x" + b.ToString("X2"));
+				QLog.WriteLine(1, "[RMC Packet] Error: Unknown RMC packet protocol 0x" + b.ToString("X2"));
 				return;
 			}
 

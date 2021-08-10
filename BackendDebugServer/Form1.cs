@@ -29,8 +29,8 @@ namespace BackendDebugServer
         {
             InitializeComponent();
 
-			Log.ClearLog();
-			Log.LogFunction = (int priority, string s, Color color) =>
+			QLog.ClearLog();
+			QLog.LogFunction = (int priority, string s, Color color) =>
 			{
 				LogPrintFunc(priority, s, color);
 			};
@@ -90,16 +90,16 @@ namespace BackendDebugServer
             {
                 default:
                 case 0:
-                    Log.MinPriority = 1;
+                    QLog.MinPriority = 1;
                     break;
                 case 1:
-                    Log.MinPriority = 2;
+                    QLog.MinPriority = 2;
                     break;
                 case 2:
-                    Log.MinPriority = 5;
+                    QLog.MinPriority = 5;
                     break;
                 case 3:
-                    Log.MinPriority = 10;
+                    QLog.MinPriority = 10;
                     break;
             }
         }
@@ -126,7 +126,7 @@ namespace BackendDebugServer
 
         private void toolStripButton9_Click(object sender, EventArgs e)
         {
-            Log.EnablePacketLogging = toolStripButton9.Checked;
+            QLog.EnablePacketLogging = toolStripButton9.Checked;
         }
     }
 }

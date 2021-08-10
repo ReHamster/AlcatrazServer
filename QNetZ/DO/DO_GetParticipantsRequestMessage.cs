@@ -11,7 +11,7 @@ namespace QNetZ
     {
         public static byte[] HandleMessage(QClient client, byte[] data)
         {
-            Log.WriteLine(2, "[DO] Handling DO_GetParticipantsRequestMessage...");
+            QLog.WriteLine(2, "[DO] Handling DO_GetParticipantsRequestMessage...");
             return DO_GetParticipantsResponseMessage.Create(data);
         }
     }

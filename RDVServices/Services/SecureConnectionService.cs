@@ -65,7 +65,7 @@ namespace RDVServices.Services
 			}
 			else
 			{
-				Log.WriteLine(1, $"[RMC Secure] Error: Unknown Custom Data class {hCustomData.className}");
+				QLog.WriteLine(1, $"[RMC Secure] Error: Unknown Custom Data class {hCustomData.className}");
 			}
 
 			return Error((int)RMCErrorCode.RendezVous_ClassNotFound);

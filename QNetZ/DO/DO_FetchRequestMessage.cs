@@ -13,7 +13,7 @@ namespace QNetZ
         {
 			ClientInfo ci = client.info;
 			List<byte[]> msgs;
-            Log.WriteLine(2, "[DO] Handling DO_FetchRequestMessage...");
+            QLog.WriteLine(2, "[DO] Handling DO_FetchRequestMessage...");
             MemoryStream m = new MemoryStream(data);
             m.Seek(3, 0);
             uint dupObj = Helper.ReadU32(m);
@@ -34,14 +34,14 @@ namespace QNetZ
 						new List<uint>() { new DupObj(DupObjClass.Station, ci.stationID) }));
                     return DO_BundleMessage.Create(ci, msgs);
                 default:
-                    Log.WriteLine(1, "[DO] Handling DO_FetchRequest unknown dupObj 0x" + dupObj.ToString("X8") + "!");
+                    QLog.WriteLine(1, "[DO] Handling DO_FetchRequest unknown dupObj 0x" + dupObj.ToString("X8") + "!");
                     return new byte[0];
             }
         }
 
         public static byte[] Create(ushort callID, DupObj obj)
         {
-            Log.WriteLine(2, "[DO] Creating DO_FetchRequestMessage");
+            QLog.WriteLine(2, "[DO] Creating DO_FetchRequestMessage");
             MemoryStream m = new MemoryStream();
             m.WriteByte(0xD);
             Helper.WriteU16(m, callID);

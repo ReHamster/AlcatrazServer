@@ -99,7 +99,7 @@ namespace QNetZ
 
 					if (fragments.Length == nfrag && fragPacket.m_byPartNumber != 0)
 					{
-						Log.WriteLine(1, "ERROR : packet sequence does not end with 0 - call a programmer!");
+						QLog.WriteLine(1, "ERROR : packet sequence does not end with 0 - call a programmer!");
 						return false;
 					}
 
@@ -107,7 +107,7 @@ namespace QNetZ
 					{
 						if (fragPacket.m_byPartNumber != nfrag)
 						{
-							Log.WriteLine(1, "ERROR : insufficient packet fragments - call a programmer!");
+							QLog.WriteLine(1, "ERROR : insufficient packet fragments - call a programmer!");
 							return false;
 						}
 					}
@@ -131,7 +131,7 @@ namespace QNetZ
 				packet.payload = fullPacketData.ToArray();
 				packet.payloadSize = (ushort)fullPacketData.Length;
 
-				Log.WriteLine(10, $"Defragmented sequence of {numPackets} packets !\n");
+				QLog.WriteLine(10, $"Defragmented sequence of {numPackets} packets !\n");
 			}
 
 			return true;
@@ -149,7 +149,7 @@ namespace QNetZ
 			// can safely remove cache?
 			if (cr.ResponseList.All(x => x.GotAck))
 			{
-				Log.WriteLine(10, "[QPacketReliable] sequence completed!");
+				QLog.WriteLine(10, "[QPacketReliable] sequence completed!");
 				CachedResponses.Remove(cr);
 			}
 		}
@@ -206,7 +206,7 @@ namespace QNetZ
 			}
 			else
 			{
-				Log.WriteLine(10, "[QPacketReliable] Found cached request");
+				QLog.WriteLine(10, "[QPacketReliable] Found cached request");
 			}
 
 			cache.ResponseList.Add(new QPacketState(responsePacket));
@@ -214,7 +214,7 @@ namespace QNetZ
 
 		private void RetrySend(QReliableResponse cache, QClient client)
 		{
-			Log.WriteLine(5, "Re-sending reliable packets...");
+			QLog.WriteLine(5, "Re-sending reliable packets...");
 
 			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
 			{
