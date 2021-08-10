@@ -18,20 +18,27 @@ namespace QNetZ
 		public static LogPrintDelegate LogFunction;
 
 		public static int MinPriority = 10; //1..10 1=less, 10=all
-		public static string logFileName = "log.txt";
-		public static string logPacketsFileName = "packetLog.bin";
-		public static readonly object _sync = new object();
-		public static readonly object _filesync = new object();
-		public static StringBuilder logBuffer = new StringBuilder();
-		public static List<byte[]> logPackets = new List<byte[]>();
-		public static bool enablePacketLogging = true;
+
+		public static string LogFileName = "_RDV_log.txt";
+		public static string LogPacketsFileName = "packetLog.bin";
+
+		public static bool EnablePacketLogging = false;
+		public static bool EnableFileLogging = true;
+
+		private static readonly object _sync = new object();
+		private static readonly object _filesync = new object();
+
+		private static StringBuilder logBuffer = new StringBuilder();
+		private static List<byte[]> logPackets = new List<byte[]>();
 
 		public static void ClearLog()
 		{
-			if (File.Exists(logFileName))
-				File.Delete(logFileName);
-			if (File.Exists(logPacketsFileName))
-				File.Delete(logPacketsFileName);
+			if (File.Exists(LogFileName))
+				File.Delete(LogFileName);
+
+			if (File.Exists(LogPacketsFileName))
+				File.Delete(LogPacketsFileName);
+
 			lock (_sync)
 			{
 				logBuffer = new StringBuilder();
@@ -65,8 +72,13 @@ namespace QNetZ
 
 				lock (_sync)
 				{
-					logBuffer.Append(logstr + "\n");
-					new Thread(tSaveLog).Start();
+					if(EnableFileLogging)
+						logBuffer.Append(logstr + "\n");
+
+					if(logBuffer.Length > 0 || logPackets.Count > 0)
+					{
+						new Thread(tSaveLog).Start();
+					}
 				}
 			}
 			catch { }
@@ -204,13 +216,15 @@ namespace QNetZ
 
 		public static void LogPacket(bool sent, byte[] data)
 		{
-			if (!enablePacketLogging)
+			if (!EnablePacketLogging)
 				return;
+
 			MemoryStream m = new MemoryStream();
 			m.WriteByte(1);//version
 			m.WriteByte((byte)(sent ? 1 : 0));
 			Helper.WriteU32(m, (uint)data.Length);
 			m.Write(data, 0, data.Length);
+
 			lock (_sync)
 			{
 				logPackets.Add(m.ToArray());
@@ -227,8 +241,10 @@ namespace QNetZ
 					buffer = logBuffer.ToString();
 					logBuffer.Clear();
 				}
+
 				if (buffer != null && buffer.Length > 0)
-					File.AppendAllText(logFileName, buffer);
+					File.AppendAllText(LogFileName, buffer);
+
 				byte[] packet = null;
 				lock (_sync)
 				{
@@ -240,7 +256,7 @@ namespace QNetZ
 				}
 				if (packet != null)
 				{
-					FileStream fs = new FileStream(logPacketsFileName, FileMode.Append, FileAccess.Write);
+					FileStream fs = new FileStream(LogPacketsFileName, FileMode.Append, FileAccess.Write);
 					fs.Write(packet, 0, packet.Length);
 					fs.Flush();
 					fs.Close();
