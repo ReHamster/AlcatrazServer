@@ -48,9 +48,6 @@ namespace BackendServer
 			// register service
 			ServiceFactoryDSF.RegisterDSFServices();
 
-			// start DB
-			DBHelper.Init();
-
 			// start UDP & HTTP listeners
 			TCPServer.Start();
 			BackendServicesServer.Start();
@@ -66,7 +63,6 @@ namespace BackendServer
 			TCPServer.Stop();
 			BackendServicesServer.Stop();
 			RDVServer.Stop();
-			DBHelper.Close();
 		}
 
 		protected static void cancelHandler(object sender, ConsoleCancelEventArgs args)

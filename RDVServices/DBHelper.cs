@@ -1,70 +1,39 @@
-﻿using QNetZ;
-using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
+﻿using Alcatraz.Context;
+using Alcatraz.Context.Entities;
+using Microsoft.EntityFrameworkCore;
+using QNetZ;
+using System.Linq;
 
 namespace RDVServices
 {
 	public static class DBHelper
 	{
-		public static SQLiteConnection connection = new SQLiteConnection();
-
-		public static void Init()
+		public static MainDbContext GetDbContext()
 		{
-			connection.ConnectionString = "Data Source=database.sqlite";
-			connection.Open();
-			Log.WriteLine(1, "DB loaded...");
+			var contextOptions = new DbContextOptionsBuilder<MainDbContext>();
+			var opts = MainDbContext.OnContextBuilding(contextOptions, (DBType)QConfiguration.Instance.DbType, QConfiguration.Instance.DbConnectionString);
+
+			return new MainDbContext(opts.Options);
 		}
 
-		public static void Close()
+		public static User GetUserByName(string name)
 		{
-			connection.Close();
-		}
-
-		public static List<List<string>> GetQueryResults(string query)
-		{
-			List<List<string>> result = new List<List<string>>();
-			SQLiteCommand command = new SQLiteCommand(query, connection);
-			SQLiteDataReader reader = command.ExecuteReader();
-			while (reader.Read())
+			using(var context = GetDbContext())
 			{
-				List<string> entry = new List<string>();
-				for (int i = 0; i < reader.FieldCount; i++)
-					entry.Add(reader[i].ToString());
-				result.Add(entry);
+				return context.Users
+					.AsNoTracking()
+					.SingleOrDefault(x => x.GameNickName == name);
 			}
-			reader.Close();
-			reader.Dispose();
-			command.Dispose();
-			return result;
 		}
 
-		public static ClientInfo GetUserByName(string name)
+		public static User GetUserByPID(uint PID)
 		{
-			ClientInfo result = null;
-			var results = GetQueryResults("SELECT * FROM users WHERE name='" + name + "'");
-			foreach (var entry in results)
+			using (var context = GetDbContext())
 			{
-				result = new ClientInfo();
-				result.PID = Convert.ToUInt32(entry[1]);
-				result.name = entry[2];
-				result.pass = entry[3];
+				return context.Users
+					.AsNoTracking()
+					.SingleOrDefault(x => x.Id == PID);
 			}
-			return result;
-		}
-
-		public static ClientInfo GetUserByPID(uint PID)
-		{
-			ClientInfo result = null;
-			var results = GetQueryResults("SELECT * FROM users WHERE PID='" + PID + "'");
-			foreach (var entry in results)
-			{
-				result = new ClientInfo();
-				result.PID = Convert.ToUInt32(entry[1]);
-				result.name = entry[2];
-				result.pass = entry[3];
-			}
-			return result;
 		}
 	}
 }

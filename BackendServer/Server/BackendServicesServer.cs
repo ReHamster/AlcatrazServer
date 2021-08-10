@@ -13,7 +13,6 @@ namespace BackendServer
 		public static readonly object _sync = new object();
 		public static bool _exit = false;
 		public static UdpClient listener;
-		public static ushort _skipNextNAT = 0xFFFF;
 		public static QPacketHandlerPRUDP packetHandler;
 
 		static Task<UdpReceiveResult> CurrentRecvTask = null;

@@ -41,7 +41,7 @@ namespace BackendDebugServer
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             timer1.Enabled = true;
-			DBHelper.Init();
+
 			TCPServer.Start();
             BackendServicesServer.Start();
             RDVServer.Start();           
@@ -52,7 +52,7 @@ namespace BackendDebugServer
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
             timer1.Enabled = false;
-			DBHelper.Close();
+
 			TCPServer.Stop();
             BackendServicesServer.Stop();
             RDVServer.Stop();
