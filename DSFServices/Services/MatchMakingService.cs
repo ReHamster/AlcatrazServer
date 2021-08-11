@@ -126,9 +126,24 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(6)]
-		public void AcceptInvitation()
+		public RMCResult AcceptInvitation(uint idGathering, string strMessage)
 		{
+			/*
+			var notification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 1)
+			{
+				m_pidSource = Context.Client.info.PID,
+				m_uiParam1 = idGathering,
+				m_uiParam2 = joinedPid,
+				m_strParam = $"OK",
+				m_uiParam3 = 0
+			};
+
+			NotificationQueue.SendNotification(Context.Handler, Context.Client, notification);
+			*/
+
 			UNIMPLEMENTED();
+
+			return Error(0);
 		}
 
 		[RMCMethod(7)]

@@ -1,18 +1,32 @@
-﻿using QNetZ.Attributes;
+﻿using QNetZ;
+using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
 using RDVServices.DDL.Models;
 using System.Collections.Generic;
+using System.Net;
 
 namespace RDVServices.Services
 {
-	[RMCService(QNetZ.RMCProtocolId.NATTraversalService)]
+	[RMCService(RMCProtocolId.NATTraversalService)]
 	public class NATTraversalService : RMCServiceBase
 	{
 		[RMCMethod(1)] 
 		public RMCResult RequestProbeInitiation(IEnumerable<StationURL> urlTargetList)
 		{
 			UNIMPLEMENTED();
+
+			// IDK how it works...
+			foreach(var urlTarget in urlTargetList)
+			{
+				var endp = new IPEndPoint(IPAddress.Parse(urlTarget.Address), urlTarget.Parameters["port"]);
+				var qclient = Context.Handler.GetQClientByEndPoint(endp);
+
+				// send InitiateProbe
+				if(qclient != null)
+					SendRMCCall(qclient, RMCProtocolId.NATTraversalService, 2, urlTarget);
+			}
+
 			return Error(0);
 		}
 

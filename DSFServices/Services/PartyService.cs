@@ -52,13 +52,13 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(2)]
-		public void SendGameIdToPlayerByName(string playerName, uint toJoinId, int gameType, string msgRequest)
+		public void SendGameIdToPlayerByName(string playerName, uint toJoinId, byte gameType, string msgRequest)
 		{
 			UNIMPLEMENTED();
 		}
 
 		[RMCMethod(3)]
-		public void SendGameIdToPlayerByID(uint pid, uint toJoinId, int gameType, string msgRequest)
+		public void SendGameIdToPlayerByID(uint pid, uint toJoinId, byte gameType, string msgRequest)
 		{
 			UNIMPLEMENTED();
 		}

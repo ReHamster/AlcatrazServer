@@ -1,4 +1,5 @@
 ﻿using QNetZ.Attributes;
+using QNetZ.DDL;
 using QNetZ.Factory;
 using System;
 using System.Collections.Generic;
@@ -29,14 +30,14 @@ namespace QNetZ.Interfaces
 			return RMCServiceFactory.GetServiceMethodById(GetType(), methodId);
 		}
 
-		protected void SendResponseWithACK(RMCPResponse reply, bool useCompression = true, uint error = 0)
+		protected void SendRMCCall<T>(QClient client, RMCProtocolId protoId, uint methodId, T requestData) where T : class
 		{
-			RMC.SendResponseWithACK(_context.Handler, _context.Packet, _context.RMC, _context.Client, reply, useCompression, error);
+			RMC.SendRMCCall(Context.Handler, client, protoId, methodId, new RMCPRequestDDL<T>(requestData));
 		}
 
-		protected RMCResult Result<T>(T reply) where T: class
+		protected RMCResult Result<T>(T replyData) where T: class
 		{
-			return new RMCResult(new RMCPResponseDDL<T>(reply));
+			return new RMCResult(new RMCPResponseDDL<T>(replyData));
 		}
 
 		protected RMCResult Error(uint code)
