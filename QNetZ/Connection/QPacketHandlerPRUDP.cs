@@ -62,6 +62,24 @@ namespace QNetZ
 			return null;
 		}
 
+		public QClient GetQClientByClientPID(uint userPID)
+		{
+			foreach (var c in Clients)
+			{
+				if (c.info == null)
+					continue;
+
+				// also check if timed out
+				if ((DateTime.UtcNow - c.info.lastRecv).TotalSeconds > Constants.ClientTimeoutSeconds)
+					continue;
+
+				if (c.info.PID == userPID)
+					return c;
+			}
+
+			return null;
+		}
+
 		private QPacket ProcessSYN(QPacket p, IPEndPoint from)
 		{
 			// create protocol client
@@ -75,15 +93,9 @@ namespace QNetZ
 
 				Clients.Add(qclient);
 			}
-			/*
-			// create client
-			if(qclient.info == null)
-			{
-				qclient.info = Global.GetOrCreateClient(from);
-			}*/
 
-			if (qclient.info == null)
-				qclient.info = Global.GetClientByConnection(qclient);
+			//if (qclient.info == null)
+			//	qclient.info = Global.GetClientByConnection(qclient);
 
 			QLog.WriteLine(2, $"[{ SourceName }] Got SYN packet");
 			qclient.seqCounterOut = 0;
@@ -113,19 +125,21 @@ namespace QNetZ
 
 			// read kerberos ticket
 			uint size = Helper.ReadU32(m);
-			byte[] buff = new byte[size];
-			m.Read(buff, 0, (int)size);
+			byte[] kerberosTicket = new byte[size];
+			m.Read(kerberosTicket, 0, (int)size);
 
 			// read encrypted data
 			size = Helper.ReadU32(m) - 16;
-			buff = new byte[size];
+			byte[] buff = new byte[size];
 			m.Read(buff, 0, (int)size);
 
-			buff = Helper.Decrypt(client.info.sessionKey, buff);
+			buff = Helper.Decrypt(Constants.SessionKey, buff);
 
 			m = new MemoryStream(buff);
 			uint userPrincipalID = Helper.ReadU32(m);
 			uint connectionId = Helper.ReadU32(m);
+
+			client.info = Global.GetClientByPID(userPrincipalID);
 
 			uint responseCode = Helper.ReadU32(m);
 
