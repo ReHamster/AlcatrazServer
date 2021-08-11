@@ -14,12 +14,6 @@ namespace RDVServices.Services
 	[RMCService(RMCProtocolId.TicketGrantingService)]
 	public class TicketGrantingService : RMCServiceBase
 	{
-		private byte[] sessionKey = new byte[] {
-			0x9C, 0xB0, 0x1D, 0x7A, 0x2C, 0x5A,
-			0x6C, 0x5B, 0xED, 0x12, 0x68, 0x45,
-			0x69, 0xAE, 0x09, 0x0D
-		};
-
 		private byte[] ticket = new byte[] {
 			0x76, 0x21, 0x4B, 0xA6, 0x21, 0x96, 0xD3, 0xF3, 0x9A,
 			0x8C, 0x7A, 0x27, 0x0D, 0xD9, 0xB3, 0xFA, 0x21, 0x0E,
@@ -65,11 +59,13 @@ namespace RDVServices.Services
 
 				client = Global.CreateClient(Context.Client);
 
+				Context.Client.info = client;   // TEMPORARY
+
 				client.PID = user.Id;
 				client.accountId = user.Username;
 				client.name = user.Username;
 
-				var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, sessionKey, ticket);
+				var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, Constants.SessionKey, ticket);
 
 				var reply = new Login(client.PID)
 				{
@@ -128,12 +124,11 @@ namespace RDVServices.Services
 						Context.Client.info = client;   // TEMPORARY
 
 						client.PID = user.Id;
-						client.sessionKey = sessionKey;
 						client.accountId = userName;
 						client.name = oExtraData.data.username;
 						client.pass = oExtraData.data.password;
 
-						var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, sessionKey, ticket);
+						var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, Constants.SessionKey, ticket);
 
 						var loginData = new Login(client.PID)
 						{
@@ -175,7 +170,7 @@ namespace RDVServices.Services
 			// var m = new MemoryStream(Helper.ParseByteArray(requestTicketData));
 			// var retModel = DDLSerializer.ReadObject<TicketData>(m);
 
-			var kerberos = new KerberosTicket(sourcePID, targetPID, sessionKey, ticket);
+			var kerberos = new KerberosTicket(sourcePID, targetPID, Constants.SessionKey, ticket);
 
 			var ticketData = new TicketData()
 			{

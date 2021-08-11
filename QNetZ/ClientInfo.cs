@@ -17,8 +17,6 @@ namespace QNetZ
 		public IPEndPoint endpoint;
 		public DateTime lastRecv;
 
-		public byte[] sessionKey;
-
 		public uint stationID;
 		public string accountId;
 		public string name;
