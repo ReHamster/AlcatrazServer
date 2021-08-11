@@ -37,6 +37,11 @@ namespace QNetZ.DDL
 			className = typeof(T).Name; // that's for writing
 		}
 
+		public AnyData(T _data) : this()
+		{
+			data = _data;
+		}
+
 		public string className;
 		public T data;
 
