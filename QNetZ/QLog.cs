@@ -46,6 +46,14 @@ namespace QNetZ
 			}
 		}
 
+		public static void WriteLine(int priority, Func<string> resolve, object color = null)
+		{
+			if (priority <= MinPriority)
+			{
+				WriteLine(priority, resolve.Invoke(), color);
+			}
+		}
+
 		public static void WriteLine(int priority, string s, object color = null)
 		{
 			if (LogFunction == null)

@@ -27,7 +27,7 @@ namespace DSFServices.Services
 				gathering.m_idMyself = ++GatheringIdCounter;
 				GatheringList.Add(new PartySessionGathering(gathering));
 
-				QLog.WriteLine(5, $"RegisterGathering : HermesPartySession:Gathering {DDLSerializer.ObjectToString(gathering)}");
+				QLog.WriteLine(5, () => $"RegisterGathering : HermesPartySession:Gathering {DDLSerializer.ObjectToString(gathering)}");
 
 				return Result(new { gatheringId = gathering.m_idMyself });
 			}
@@ -64,7 +64,7 @@ namespace DSFServices.Services
 			if (anyGathering.data != null)
 			{
 
-				QLog.WriteLine(5, $"UpdateGathering : HermesPartySession:Gathering {DDLSerializer.ObjectToString(anyGathering.data)}");
+				QLog.WriteLine(5, () => $"UpdateGathering : HermesPartySession:Gathering {DDLSerializer.ObjectToString(anyGathering.data)}");
 
 				var srcGathering = anyGathering.data;
 				var gathering = GatheringList.Find(x => x.Session.m_idMyself == srcGathering.m_idMyself);

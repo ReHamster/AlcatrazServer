@@ -44,7 +44,7 @@ namespace QNetZ
 
 		public override string PayloadToString()
 		{
-			return "";
+			return DDLSerializer.ObjectToString(objectData);
 		}
 
 		public override byte[] ToBuffer()

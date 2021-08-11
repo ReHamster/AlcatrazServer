@@ -1,4 +1,8 @@
-﻿using System.IO;
+﻿using QNetZ.DDL;
+using QNetZ.Factory;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace QNetZ
@@ -75,7 +79,20 @@ namespace QNetZ
 
 		public override string ToString()
 		{
-			return "[RMC Packet : Proto = " + proto + " CallID=" + callID + " MethodID=" + methodID + "]";
+			string methodName = methodID.ToString();
+
+			var serviceFactory = RMCServiceFactory.GetServiceFactory(proto);
+			MethodInfo bestMethod = null;
+			if (serviceFactory != null)
+			{
+				var service = serviceFactory();
+
+				bestMethod = service.GetServiceMethodById(methodID);
+				if (bestMethod != null)
+					methodName = bestMethod.Name;
+			}
+
+			return $"[CallID={ callID } { proto }.{ methodName }]";
 		}
 
 		public string PayLoadToString()
@@ -83,7 +100,9 @@ namespace QNetZ
 			StringBuilder sb = new StringBuilder();
 
 			if (request != null)
+			{
 				sb.Append(request);
+			}
 
 			return sb.ToString();
 		}

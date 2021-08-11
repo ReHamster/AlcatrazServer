@@ -17,8 +17,6 @@ namespace QNetZ
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
 
-            WriteLog(10, "Handling packet...");
-
             var rmc = new RMCPacket(p);
             if (rmc.isRequest)
                 HandleRequest(handler, client, p, rmc);
@@ -51,15 +49,10 @@ namespace QNetZ
 
 			m.Seek(rmc._afterProtocolOffset, SeekOrigin.Begin);
 
-            if (rmc.callID > client.callCounterRMC)
+			if (rmc.callID > client.callCounterRMC)
                 client.callCounterRMC = rmc.callID;
 
-            WriteLog(2, "Request to handle : " + rmc.ToString());
-
-            string payload = rmc.PayLoadToString();
-
-            if (payload != "")
-                WriteLog(5, payload);
+            WriteLog(2, "Request : " + rmc.ToString());
 
 			var rmcContext = new RMCContext(rmc, handler, client, p);
 
@@ -78,6 +71,9 @@ namespace QNetZ
 
 					// call method
 					var parameters = HandleMethodParameters(bestMethod, m);
+
+					QLog.WriteLine(5, () => "[RMC] Request parameters: " + DDLSerializer.ObjectToString(parameters));
+
 					var returnValue = bestMethod.Invoke(serviceInstance, parameters);
 
 					if (returnValue != null)
@@ -119,7 +115,7 @@ namespace QNetZ
             string payload = reply.PayloadToString();
 
             if (payload != "")
-                WriteLog(5, "Response Data Content : \n" + payload);
+				QLog.WriteLine(5, () => "[RMC] Response data : \n" + payload);
 
 			handler.SendACK(p, client);
             SendResponsePacket(handler, p, rmc, client, reply, useCompression, error);
@@ -162,8 +158,7 @@ namespace QNetZ
 
         private static void WriteLog(int priority, string s)
         {
-            QLog.WriteLine(priority, "[RMC] " + s);
+            QLog.WriteLine(priority, $"[RMC] {s}");
         }
-
-    }
+	}
 }
