@@ -1,4 +1,6 @@
 ﻿using DSFServices.DDL.Models;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.Interfaces;
@@ -14,7 +16,7 @@ namespace DSFServices.Services
 	[RMCService(RMCProtocolId.PlayerStatsService)]
 	public class PlayerStatisticsService : RMCServiceBase
 	{
-		public static List<StatisticsBoard> StatisticsBoards = new List<StatisticsBoard>();
+		//public static List<StatisticsBoard> StatisticsBoards = new List<StatisticsBoard>();
 
 		[RMCMethod(1)]
 		public void PostTwitterMessage(string message)
@@ -27,32 +29,53 @@ namespace DSFServices.Services
 		{
 			var playerId = Context.Client.info.PID;
 
-			foreach(var board in playerStats)
+			using (var db = DBHelper.GetDbContext())
 			{
-				var playerBoard = StatisticsBoards.Find(x => x.playerId == playerId && x.boardId == board.boardId);
-
-				if (playerBoard == null)
+				foreach (var writeBoard in playerStats)
 				{
-					playerBoard = SeedStatistics.GeneratePlayerBoard(board.boardId, playerId);
-					StatisticsBoards.Add(playerBoard);
-				}
+					var playerBoard = db.PlayerStatisticBoards
+						.FirstOrDefault(x => x.PlayerId == playerId && x.BoardId == writeBoard.boardId);
 
-				foreach (var stat in board.statisticList)
-				{
-					StatisticsBoardValue variant;
-
-					if(playerBoard.properties.TryGetValue(stat.propertyId, out variant))
+					if (playerBoard == null)
 					{
-						// TODO: utilize stat.friendComparison
-
-						variant.UpdateValueWithPolicy(stat.value, (StatisticPolicy)stat.writePolicy);
+						playerBoard = SeedStatistics.GeneratePlayerBoard(writeBoard.boardId, playerId);
+						db.Add(playerBoard);
+						db.SaveChanges();
 					}
-					else
-						playerBoard.properties[stat.propertyId] = new StatisticsBoardValue(stat.value);
+
+					// avoid Client evaluation simply by converting it into int array
+					var propertyIdsOnly = writeBoard.statisticList.Select(ws => (int)ws.propertyId).ToArray();
+
+					var properties = db.PlayerStatisticBoardValues
+						.Where(x => propertyIdsOnly.Contains(x.PropertyId) && x.PlayerBoardId == playerBoard.Id)
+						.ToArray();
+
+					foreach (var writeStat in writeBoard.statisticList)
+					{
+						var variantJSON = properties.FirstOrDefault(x => x.PropertyId == writeStat.propertyId);
+
+						var variant = new StatisticsBoardValue()
+						{
+							value = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.ValueJSON),
+							rankingCriterionIndex = (byte)variantJSON.RankingCriterionIndex,
+							scoreLostForNextSlice = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.ScoreLostForNextSliceJSON),
+							sliceScore = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.SliceScoreJSON)
+						};
+
+						// Update variant value
+						variant.UpdateValueWithPolicy(writeStat.value, (StatisticPolicy)writeStat.writePolicy);
+
+						// put back the values
+						variantJSON.RankingCriterionIndex = variant.rankingCriterionIndex;
+						variantJSON.ValueJSON = JsonConvert.SerializeObject(variant.value);
+						variantJSON.ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(variant.scoreLostForNextSlice);
+						variantJSON.SliceScoreJSON = JsonConvert.SerializeObject(variant.sliceScore);
+					}
 				}
+
+				db.SaveChanges();
 			}
 
-			UNIMPLEMENTED();
 			return Error(0);
 		}
 
@@ -108,30 +131,41 @@ namespace DSFServices.Services
 				};
 				playerStats.Add(scoreListRead);
 
-				foreach (var statReqData in data)
+				using (var db = DBHelper.GetDbContext())
 				{
-					var playerBoard = StatisticsBoards.Find(x => x.playerId == playerId && x.boardId == statReqData.boardId);
-
-					// create empty one
-					if(playerBoard == null )
+					foreach (var statReqData in data)
 					{
-						playerBoard = SeedStatistics.GeneratePlayerBoard(statReqData.boardId, playerId);
-						StatisticsBoards.Add(playerBoard);
+						var playerBoard = db.PlayerStatisticBoards
+							.Include(x => x.Values)
+							.FirstOrDefault(x => x.PlayerId == playerId && x.BoardId == statReqData.boardId);
+
+						// create empty one
+						if (playerBoard == null)
+						{
+							playerBoard = SeedStatistics.GeneratePlayerBoard(statReqData.boardId, playerId);
+							db.Add(playerBoard);
+							db.SaveChanges();
+						}
+
+						var readBoardValue = new StatisticReadValueByBoard()
+						{
+							boardId = playerBoard.BoardId,
+							lastUpdate = playerBoard.LastUpdate,
+							rank = playerBoard.Rank,
+							score = playerBoard.Score
+						};
+
+						readBoardValue.scores = playerBoard.Values.Select(x => new StatisticReadValue()
+						{
+							propertyId = (byte)x.PropertyId,
+							value = JsonConvert.DeserializeObject<StatisticValueVariant>(x.ValueJSON),
+							rankingCriterionIndex = (byte)x.RankingCriterionIndex,
+							scoreLostForNextSlice = JsonConvert.DeserializeObject<StatisticValueVariant>(x.ScoreLostForNextSliceJSON),
+							sliceScore = JsonConvert.DeserializeObject<StatisticValueVariant>(x.SliceScoreJSON)
+						}).ToArray();
+
+						scoreListRead.scoresByBoard.Add(readBoardValue);
 					}
-
-					var readBoardValue = new StatisticReadValueByBoard()
-					{
-						boardId = playerBoard.boardId,
-						lastUpdate = playerBoard.lastUpdate,
-						rank = playerBoard.rank,
-						score = playerBoard.score
-					};
-
-					readBoardValue.scores = playerBoard.properties
-						.Where(kv => statReqData.propertyIds.Contains(kv.Key))
-						.Select(kv => new StatisticReadValue((byte)kv.Key, kv.Value)).ToArray();
-
-					scoreListRead.scoresByBoard.Add(readBoardValue);
 				}
 			}
 

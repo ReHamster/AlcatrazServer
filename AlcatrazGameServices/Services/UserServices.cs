@@ -66,11 +66,11 @@ namespace Alcatraz.GameServices.Services
 			var newUser = new User()
 			{
 				Username = model.Username,
-				GameNickName = model.GameNickName,
+				PlayerNickName = model.PlayerNickName,
 				Password = model.Password,
 			};
 
-			if (_dbContext.Users.Any(x => x.Username == model.Username || x.GameNickName == model.GameNickName))
+			if (_dbContext.Users.Any(x => x.Username == model.Username || x.PlayerNickName == model.PlayerNickName))
 				return 0;
 
 			try

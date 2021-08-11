@@ -26,7 +26,7 @@ namespace RDVServices
 			{
 				return context.Users
 					.AsNoTracking()
-					.SingleOrDefault(x => x.GameNickName == name);
+					.SingleOrDefault(x => x.PlayerNickName == name);
 			}
 		}
 
