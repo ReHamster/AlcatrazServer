@@ -54,10 +54,11 @@
 			// 
 			this.richTextBox1.DetectUrls = false;
 			this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.richTextBox1.Font = new System.Drawing.Font("Courier New", 8.25F);
+			this.richTextBox1.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
 			this.richTextBox1.Location = new System.Drawing.Point(0, 25);
+			this.richTextBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.richTextBox1.Name = "richTextBox1";
-			this.richTextBox1.Size = new System.Drawing.Size(853, 366);
+			this.richTextBox1.Size = new System.Drawing.Size(995, 426);
 			this.richTextBox1.TabIndex = 0;
 			this.richTextBox1.Text = "";
 			this.richTextBox1.WordWrap = false;
@@ -81,7 +82,7 @@
             this.toolStripButton7});
 			this.toolStrip1.Location = new System.Drawing.Point(0, 0);
 			this.toolStrip1.Name = "toolStrip1";
-			this.toolStrip1.Size = new System.Drawing.Size(853, 25);
+			this.toolStrip1.Size = new System.Drawing.Size(995, 25);
 			this.toolStrip1.TabIndex = 1;
 			this.toolStrip1.Text = "toolStrip1";
 			// 
@@ -106,7 +107,7 @@
             "Log Level 5",
             "Log Level 10"});
 			this.toolStripComboBox1.Name = "toolStripComboBox1";
-			this.toolStripComboBox1.Size = new System.Drawing.Size(121, 25);
+			this.toolStripComboBox1.Size = new System.Drawing.Size(140, 25);
 			this.toolStripComboBox1.SelectedIndexChanged += new System.EventHandler(this.toolStripComboBox1_SelectedIndexChanged);
 			// 
 			// toolStripSeparator2
@@ -141,8 +142,8 @@
 			this.toolStripButton6.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton6.Image")));
 			this.toolStripButton6.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this.toolStripButton6.Name = "toolStripButton6";
-			this.toolStripButton6.Size = new System.Drawing.Size(38, 22);
-			this.toolStripButton6.Text = "Clear";
+			this.toolStripButton6.Size = new System.Drawing.Size(58, 22);
+			this.toolStripButton6.Text = "Clear log";
 			this.toolStripButton6.Click += new System.EventHandler(this.toolStripButton6_Click);
 			// 
 			// toolStripSeparator1
@@ -216,14 +217,16 @@
 			// 
 			// Form1
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(853, 391);
+			this.ClientSize = new System.Drawing.Size(995, 451);
 			this.Controls.Add(this.richTextBox1);
 			this.Controls.Add(this.toolStrip1);
+			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.Name = "Form1";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-			this.Text = "Driver San Francisco - Online backend";
+			this.Text = "Driver San Francisco - Online debug backend";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();

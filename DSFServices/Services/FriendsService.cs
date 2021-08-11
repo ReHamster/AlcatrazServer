@@ -33,7 +33,7 @@ namespace DSFServices.Services
 				var foundUser = db.Users
 					.AsNoTracking()
 					.Where(x => x.Id != myUserPid)
-					.FirstOrDefault(x => x.GameNickName == strPlayerName);
+					.FirstOrDefault(x => x.PlayerNickName == strPlayerName);
 
 				if (foundUser != null)
 					result = true;
@@ -154,7 +154,7 @@ namespace DSFServices.Services
 					new FriendData()
 					{
 						m_pid = x.User2Id,
-						m_strName = x.User2.GameNickName,
+						m_strName = x.User2.PlayerNickName,
 						m_strStatus = $"Status: {x.Status}",
 						m_uiDetails = 0,
 						m_byRelationship = (byte)x.ByRelationShip
@@ -193,7 +193,7 @@ namespace DSFServices.Services
 				result.lstRelationshipsList = relations.Select(x =>
 					new RelationshipData(){
 						m_pid = x.User2Id,
-						m_strName = x.User2.GameNickName,
+						m_strName = x.User2.PlayerNickName,
 						m_byStatus = (byte)x.Status,
 						m_uiDetails = 0,
 						m_byRelationship = (byte)x.ByRelationShip

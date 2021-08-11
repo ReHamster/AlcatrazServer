@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Alcatraz.Context.Entities;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,19 +30,29 @@ namespace DSFServices.DDL.Models
 	public static class SeedStatistics
 	{
 
-		public static StatisticsBoard GeneratePlayerBoard(int boardId, uint playerId)
+		public static PlayerStatisticsBoard GeneratePlayerBoard(int boardId, uint playerId)
 		{
-			var playerBoard = new StatisticsBoard()
+			var playerBoard = new PlayerStatisticsBoard()
 			{
-				boardId = boardId,
-				playerId = playerId,
-				rank = 0,
-				score = 0.0f,
+				BoardId = boardId,
+				PlayerId = playerId,
+				Rank = 0,
+				Score = 0.0f,
 			};
 
-			foreach(var statPropertyDesc in AllStatisticDescriptions.Where(x => x.statBoard == boardId))
+			playerBoard.Values = new List<PlayerStatisticsBoardValue>();
+
+			foreach (var statPropertyDesc in AllStatisticDescriptions.Where(x => x.statBoard == boardId))
 			{
-				playerBoard.properties[statPropertyDesc.statInBoardId] = new StatisticsBoardValue(statPropertyDesc);
+				var value = new StatisticsBoardValue(statPropertyDesc);
+				playerBoard.Values.Add(new PlayerStatisticsBoardValue()
+				{
+					PropertyId = statPropertyDesc.statInBoardId,
+					RankingCriterionIndex = value.rankingCriterionIndex,
+					ValueJSON = JsonConvert.SerializeObject(value.value),
+					ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(value.scoreLostForNextSlice),
+					SliceScoreJSON = JsonConvert.SerializeObject(value.sliceScore)
+				});
 			}
 
 			return playerBoard;

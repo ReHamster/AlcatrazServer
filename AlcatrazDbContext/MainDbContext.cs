@@ -54,6 +54,11 @@ namespace Alcatraz.Context
 			builder.Entity<Relationship>()
 					.HasKey(t => new { t.User1Id, t.User2Id });
 
+			builder.Entity<PlayerStatisticsBoardValue>()
+				.HasOne(rp => rp.PlayerBoard)
+				.WithMany(r => r.Values)
+				.HasForeignKey(rp => rp.PlayerBoardId);
+
 			base.OnModelCreating(builder);
 		}
 
@@ -63,5 +68,8 @@ namespace Alcatraz.Context
 		// USERS
 		public DbSet<User> Users { get; set; }
 		public DbSet<Relationship> UserRelationships { get; set; }
+
+		public DbSet<PlayerStatisticsBoard> PlayerStatisticBoards { get; set; }
+		public DbSet<PlayerStatisticsBoardValue> PlayerStatisticBoardValues { get; set; }
 	}
 }

@@ -174,6 +174,7 @@ namespace DSFServices.DDL.Models
 		public StatisticValueVariant scoreLostForNextSlice { get; set; }
 	}
 
+	/*
 	public class StatisticsBoard
 	{
 		public StatisticsBoard()
@@ -191,6 +192,6 @@ namespace DSFServices.DDL.Models
 		public DateTime lastUpdate { get; set; }
 
 		public IDictionary<int, StatisticsBoardValue> properties { get; set; }		// by propertyId
-	}
+	}*/
 
 }
