@@ -59,26 +59,7 @@ namespace DSFServices
 		}
 		public static void SendNotification(QPacketHandlerPRUDP handler, QClient client, NotificationEvent eventData)
 		{
-			var packet = new QPacket();
-
-			// FIXME: is this even valid?
-			packet.m_oSourceVPort = new QPacket.VPort(0x31);
-			packet.m_oDestinationVPort = new QPacket.VPort(0x3f);
-
-			packet.type = QPacket.PACKETTYPE.DATA;
-			packet.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_RELIABLE | QPacket.PACKETFLAG.FLAG_NEED_ACK };
-			packet.payload = new byte[0];
-			packet.m_bySessionID = client.sessionID;
-
-			var rmc = new RMCPacket();
-
-			rmc.proto = RMCProtocolId.NotificationEventManager;
-			rmc.methodID = 1;
-
-			QLog.WriteLine(1, "Sending NotificationEvent");
-			QLog.WriteLine(1, DDLSerializer.ObjectToString(eventData));
-
-			RMC.SendRequestPacket(handler, packet, rmc, client, new RMCPRequestDDL<NotificationEvent>(eventData), true, 0);
+			RMC.SendRMCCall(handler, client, RMCProtocolId.NotificationEventManager, 1, new RMCPRequestDDL<NotificationEvent>(eventData));
 		}
 	}
 }

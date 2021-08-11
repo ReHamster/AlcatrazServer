@@ -26,7 +26,8 @@ namespace QNetZ
 
         public static void HandleResponse(QPacketHandlerPRUDP handler, QClient client, QPacket p, RMCPacket rmc)
         {
-            ProcessResponse(client, p, rmc);
+			handler.SendACK(p, client);
+			ProcessResponse(client, p, rmc);
             WriteLog(1, "Received Response : " + rmc.ToString());
         }
 
@@ -120,6 +121,30 @@ namespace QNetZ
 			handler.SendACK(p, client);
             SendResponsePacket(handler, p, rmc, client, reply, useCompression, error);
         }
+
+		public static void SendRMCCall(QPacketHandlerPRUDP handler, QClient client, RMCProtocolId protoId, uint methodId, RMCPRequest requestData)
+		{
+			var packet = new QPacket();
+
+			// FIXME: is this even valid?
+			packet.m_oSourceVPort = new QPacket.VPort(0x31);
+			packet.m_oDestinationVPort = new QPacket.VPort(0x3f);
+
+			packet.type = QPacket.PACKETTYPE.DATA;
+			packet.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_RELIABLE | QPacket.PACKETFLAG.FLAG_NEED_ACK };
+			packet.payload = new byte[0];
+			packet.m_bySessionID = client.sessionID;
+
+			var rmc = new RMCPacket();
+
+			rmc.proto = protoId;
+			rmc.methodID = methodId;
+
+			QLog.WriteLine(2, $"[RMC] Sending call { protoId }.{ methodId }");
+			QLog.WriteLine(5, () => "[RMC] Call data : " + requestData.PayloadToString());
+
+			SendRequestPacket(handler, packet, rmc, client, requestData, true, 0);
+		}
 
         private static void SendResponsePacket(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, QClient client, RMCPResponse reply, bool useCompression, uint error)
         {
