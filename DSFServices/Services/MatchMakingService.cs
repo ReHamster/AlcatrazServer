@@ -4,6 +4,7 @@ using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DSFServices.Services
 {
@@ -13,47 +14,45 @@ namespace DSFServices.Services
 	[RMCService(RMCProtocolId.MatchMakingService)]
 	class MatchMakingService : RMCServiceBase
 	{
+		static uint GatheringIdCounter = 39000;
+		static List<PartySessionGathering> GatheringList = new List<PartySessionGathering>();
+		static List<Invitation> InvitationList = new List<Invitation>();
+
 		[RMCMethod(1)]
 		public RMCResult RegisterGathering(AnyData<HermesPartySession> anyGathering)
 		{
-			uint result = 39704;
 			if(anyGathering.data != null)
 			{
-				QLog.WriteLine(1, "RegisterGathering : HermesPartySession:Gathering {");
-				QLog.WriteLine(1, $"    m_freePublicSlots = {anyGathering.data.m_freePublicSlots }");
-				QLog.WriteLine(1, $"    m_freePrivateSlots = { anyGathering.data.m_freePrivateSlots }");
-				QLog.WriteLine(1, $"    m_maxPrivateSlots = {anyGathering.data. m_maxPrivateSlots }");
-				QLog.WriteLine(1, $"    m_privacySettings = { anyGathering.data.m_privacySettings }");
-				QLog.WriteLine(1, $"    m_name = { anyGathering.data.m_name }");
-				QLog.WriteLine(1, $"    m_buffurizedOwnerId = { anyGathering.data.m_buffurizedOwnerId }");
-				QLog.WriteLine(1, $"    base.m_idMyself = {anyGathering.data.m_idMyself}");
-				QLog.WriteLine(1, $"    base.m_pidOwner = {anyGathering.data.m_pidOwner}");
-				QLog.WriteLine(1, $"    base.m_pidHost = {anyGathering.data.m_pidHost}");
-				QLog.WriteLine(1, $"    base.m_uiMinParticipants = {anyGathering.data.m_uiMinParticipants}");
-				QLog.WriteLine(1, $"    base.m_uiMaxParticipants = {anyGathering.data.m_uiMaxParticipants}");
-				QLog.WriteLine(1, $"    base.m_uiParticipationPolicy = {anyGathering.data.m_uiParticipationPolicy}");
-				QLog.WriteLine(1, $"    base.m_uiPolicyArgument = {anyGathering.data.m_uiPolicyArgument}");
-				QLog.WriteLine(1, $"    base.m_uiFlags = {anyGathering.data.m_uiFlags}");
-				QLog.WriteLine(1, $"    base.m_uiState = {anyGathering.data.m_uiState}");
-				QLog.WriteLine(1, $"    base.m_strDescription = {anyGathering.data.m_strDescription}");
-				QLog.WriteLine(1, "}");
+				var gathering = anyGathering.data;
+				gathering.m_idMyself = ++GatheringIdCounter;
+				GatheringList.Add(new PartySessionGathering(gathering));
+
+				QLog.WriteLine(5, $"RegisterGathering : HermesPartySession:Gathering {DDLSerializer.ObjectToString(gathering)}");
+
+				return Result(new { gatheringId = gathering.m_idMyself });
 			}
 
-			// return 39704
-
-			UNIMPLEMENTED();
-
-			return Result(new { gatheringId = result });
+			return Error((uint)RMCErrorCode.RendezVous_DDLMismatch);
 		}
 
 		[RMCMethod(2)]
-		public void UnregisterGathering()
+		public RMCResult UnregisterGathering(uint idGathering)
 		{
-			UNIMPLEMENTED();
+			bool result = false;
+			var gathering = GatheringList.Find(x => x.Session.m_idMyself == idGathering);
+
+			if(gathering != null)
+			{
+				// FIXME: are notifications sent?
+				GatheringList.Remove(gathering);
+				result = true;
+			}
+
+			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(3)]
-		public void UnregisterGatherings()
+		public void UnregisterGatherings(ICollection<uint> lstGatherings)
 		{
 			UNIMPLEMENTED();
 		}
@@ -61,40 +60,69 @@ namespace DSFServices.Services
 		[RMCMethod(4)]
 		public RMCResult UpdateGathering(AnyData<HermesPartySession> anyGathering)
 		{
-			//m_idMyself = gathering ID 39704
-
+			bool result = false;
 			if (anyGathering.data != null)
 			{
-				QLog.WriteLine(1, "UpdateGathering : HermesPartySession:Gathering {");
-				QLog.WriteLine(1, $"    m_freePublicSlots = {anyGathering.data.m_freePublicSlots }");
-				QLog.WriteLine(1, $"    m_freePrivateSlots = { anyGathering.data.m_freePrivateSlots }");
-				QLog.WriteLine(1, $"    m_maxPrivateSlots = {anyGathering.data.m_maxPrivateSlots }");
-				QLog.WriteLine(1, $"    m_privacySettings = { anyGathering.data.m_privacySettings }");
-				QLog.WriteLine(1, $"    m_name = { anyGathering.data.m_name }");
-				QLog.WriteLine(1, $"    m_buffurizedOwnerId = { anyGathering.data.m_buffurizedOwnerId }");
-				QLog.WriteLine(1, $"    base.m_idMyself = {anyGathering.data.m_idMyself}");
-				QLog.WriteLine(1, $"    base.m_pidOwner = {anyGathering.data.m_pidOwner}");
-				QLog.WriteLine(1, $"    base.m_pidHost = {anyGathering.data.m_pidHost}");
-				QLog.WriteLine(1, $"    base.m_uiMinParticipants = {anyGathering.data.m_uiMinParticipants}");
-				QLog.WriteLine(1, $"    base.m_uiMaxParticipants = {anyGathering.data.m_uiMaxParticipants}");
-				QLog.WriteLine(1, $"    base.m_uiParticipationPolicy = {anyGathering.data.m_uiParticipationPolicy}");
-				QLog.WriteLine(1, $"    base.m_uiPolicyArgument = {anyGathering.data.m_uiPolicyArgument}");
-				QLog.WriteLine(1, $"    base.m_uiFlags = {anyGathering.data.m_uiFlags}");
-				QLog.WriteLine(1, $"    base.m_uiState = {anyGathering.data.m_uiState}");
-				QLog.WriteLine(1, $"    base.m_strDescription = {anyGathering.data.m_strDescription}");
-				QLog.WriteLine(1, "}");
+
+				QLog.WriteLine(5, $"UpdateGathering : HermesPartySession:Gathering {DDLSerializer.ObjectToString(anyGathering.data)}");
+
+				var srcGathering = anyGathering.data;
+				var gathering = GatheringList.Find(x => x.Session.m_idMyself == srcGathering.m_idMyself);
+
+				if (gathering != null)
+				{
+					gathering.Session.m_pidOwner = srcGathering.m_pidOwner;
+					gathering.Session.m_pidHost = srcGathering.m_pidHost;
+					gathering.Session.m_uiMinParticipants = srcGathering.m_uiMinParticipants;
+					gathering.Session.m_uiMaxParticipants = srcGathering.m_uiMaxParticipants;
+					gathering.Session.m_uiParticipationPolicy = srcGathering.m_uiParticipationPolicy;
+					gathering.Session.m_uiPolicyArgument = srcGathering.m_uiPolicyArgument;
+					gathering.Session.m_uiFlags = srcGathering.m_uiFlags;
+					gathering.Session.m_uiState = srcGathering.m_uiState;
+
+					gathering.Session.m_strDescription = srcGathering.m_strDescription;
+					gathering.Session.m_freePublicSlots = srcGathering.m_freePublicSlots;
+					gathering.Session.m_freePrivateSlots = srcGathering.m_freePrivateSlots;
+					gathering.Session.m_maxPrivateSlots = srcGathering.m_maxPrivateSlots;
+					gathering.Session.m_privacySettings = srcGathering.m_privacySettings;
+					gathering.Session.m_name = srcGathering.m_name;
+					gathering.Session.m_buffurizedOwnerId = srcGathering.m_buffurizedOwnerId;
+
+					// FIXME: are notifications sent?
+
+					result = true;
+				}
+
 			}
 
-			// return True
-
-			UNIMPLEMENTED();
-			return Result(new { result = true });
+			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(5)]
-		public void Invite()
+		public RMCResult Invite(uint idGathering, ICollection<uint> lstPrincipals, string strMessage)
 		{
-			UNIMPLEMENTED();
+			bool result = false;
+			var gathering = GatheringList.Find(x => x.Session.m_idMyself == idGathering);
+
+			if (gathering != null)
+			{
+				var invitations = lstPrincipals.Select(x => new Invitation
+				{
+					m_idGathering = idGathering,
+					m_idGuest = x,
+					m_strMessage = strMessage
+				}).ToList();
+
+				// remove old
+				InvitationList.RemoveAll(x => invitations.Any(y => x.m_idGathering == y.m_idGathering && x.m_idGuest == y.m_idGuest));
+
+				// add new
+				InvitationList.AddRange(invitations);
+
+				result = true;
+			}
+
+			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(6)]
@@ -116,29 +144,49 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(9)]
-		public void GetInvitationsSent()
+		public RMCResult GetInvitationsSent(uint idGathering)
 		{
-			UNIMPLEMENTED();
+			var myUserPid = Context.Client.info.PID;
+			var list = InvitationList.Where(x => x.m_idGathering == idGathering && x.m_idGuest != myUserPid);
+			return Result(list);
 		}
 
 		[RMCMethod(10)]
-		public void GetInvitationsReceived()
+		public RMCResult GetInvitationsReceived()
 		{
-			UNIMPLEMENTED();
+			var myUserPid = Context.Client.info.PID;
+			var list = InvitationList.Where(x => x.m_idGuest == myUserPid);
+			return Result(list);
 		}
 
 		[RMCMethod(11)]
 		public RMCResult Participate(uint idGathering, string strMessage)
 		{
-			UNIMPLEMENTED($"uint idGathering = { idGathering }, string strMessage = { strMessage }");
-			return Result(new { result = true });
+			bool result = false;
+			var gathering = GatheringList.Find(x => x.Session.m_idMyself == idGathering);
+
+			if (gathering != null)
+			{
+				gathering.Participants.Add(Context.Client.info.PID);
+				result = true;
+			}
+
+			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(12)]
-		public RMCResult CancelParticipation()
+		public RMCResult CancelParticipation(uint idGathering, string strMessage)
 		{
-			UNIMPLEMENTED();
-			return Result(new { result = true });
+			bool result = false;
+			var gathering = GatheringList.Find(x => x.Session.m_idMyself == idGathering);
+
+			if (gathering != null)
+			{
+				gathering.Participants.Remove(Context.Client.info.PID);
+				result = true;
+			}
+
+			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(13)]
@@ -190,9 +238,17 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(21)]
-		public void FindBySingleID()
+		public RMCResult FindBySingleID(uint id)
 		{
-			UNIMPLEMENTED();
+			bool result = false;
+			var gathering = GatheringList.Find(x => x.Session.m_idMyself == id);
+
+			if (gathering != null)
+				result = true;
+			else
+				gathering = new PartySessionGathering();
+
+			return Result(new { bResult = result, pGathering = new AnyData<HermesPartySession>(gathering.Session) });
 		}
 
 		[RMCMethod(22)]
@@ -301,8 +357,15 @@ namespace DSFServices.Services
 		[RMCMethod(39)]
 		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<StationURL> urls)
 		{
+			var gathering = GatheringList.Find(x => x.Session.m_idMyself == gid);
 
-			UNIMPLEMENTED($"uint gid = {gid}");
+			if (gathering != null)
+			{
+				var newUrls = urls.Where(x => !gathering.Urls.Any(u => u.urlString == x.urlString));
+
+				gathering.Urls.AddRange(newUrls);
+			}
+
 			return Error(0);
 		}
 
@@ -313,9 +376,16 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(41)]
-		public void GetSessionURLs()
+		public RMCResult GetSessionURLs(uint gid)
 		{
-			UNIMPLEMENTED();
+			var gathering = GatheringList.Find(x => x.Session.m_idMyself == gid);
+
+			if (gathering != null)
+			{
+				return Result(gathering.Urls);
+			}
+
+			return Error(0);
 		}
 
 		[RMCMethod(42)]

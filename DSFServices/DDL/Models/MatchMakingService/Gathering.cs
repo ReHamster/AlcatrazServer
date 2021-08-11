@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QNetZ.DDL;
 
 namespace DSFServices.DDL.Models
 {
@@ -29,5 +30,24 @@ namespace DSFServices.DDL.Models
 		public uint m_privacySettings { get; set; }
 		public string m_name { get; set; }
 		public string m_buffurizedOwnerId { get; set; }
+	}
+
+	public class PartySessionGathering
+	{
+		public PartySessionGathering()
+		{
+			Session = new HermesPartySession();
+		}
+
+		public PartySessionGathering(HermesPartySession session)
+		{
+			Session = session;
+			Urls = new List<StationURL>();
+			Participants = new HashSet<uint>();
+		}
+
+		public HermesPartySession Session { get; set; }
+		public List<StationURL> Urls { get; set; } // host and player URLs
+		public HashSet<uint> Participants { get; set; }
 	}
 }
