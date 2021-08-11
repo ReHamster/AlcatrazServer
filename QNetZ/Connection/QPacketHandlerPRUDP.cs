@@ -186,9 +186,9 @@ namespace QNetZ
 			foreach (byte b in data)
 				sb.Append(b.ToString("X2") + " ");
 
-			QLog.WriteLine(5,  $"[{ SourceName }] send : { sendPacket.ToStringShort()}");
-			QLog.WriteLine(10, $"[{ SourceName }] send : { sb.ToString()}");
-			QLog.WriteLine(10, $"[{ SourceName }] send : { sendPacket.ToStringDetailed() }");
+			QLog.WriteLine(5,  () => $"[{ SourceName }] send : { sendPacket.ToStringShort()}");
+			QLog.WriteLine(10, () => $"[{ SourceName }] send : { sb.ToString()}");
+			QLog.WriteLine(10, () => $"[{ SourceName }] send : { sendPacket.ToStringDetailed() }");
 
 			UDP.Send(data, data.Length, ep);
 
@@ -310,9 +310,9 @@ namespace QNetZ
 					m.Read(buff, 0, buff.Length);
 
 					QLog.LogPacket(false, buff);
-					QLog.WriteLine(5, $"[{ SourceName }] received : { packetIn.ToStringShort() }" );
-					QLog.WriteLine(10,$"[{ SourceName }] received : { sb }" );
-					QLog.WriteLine(10,$"[{ SourceName }] received : { packetIn.ToStringDetailed() }");
+					QLog.WriteLine(5,  ()=> $"[{ SourceName }] received : { packetIn.ToStringShort() }" );
+					QLog.WriteLine(10, ()=> $"[{ SourceName }] received : { sb }" );
+					QLog.WriteLine(10, ()=> $"[{ SourceName }] received : { packetIn.ToStringDetailed() }");
 				}
 
 				QPacket reply = null;
