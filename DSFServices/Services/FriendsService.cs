@@ -36,9 +36,24 @@ namespace DSFServices.Services
 					.FirstOrDefault(x => x.PlayerNickName == strPlayerName);
 
 				if (foundUser != null)
+				{
 					result = true;
 
-				// TODO: send notification???
+					// send notification
+					var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
+					{
+						m_pidSource = Context.Client.info.PID,
+						m_uiParam1 = Context.Client.info.PID,       // i'm just guessing
+						m_uiParam2 = 2
+					};
+
+					// send to proper client
+					// FIXME: save in db and send notification again in GetDetailedList???
+					var qClient = Context.Handler.GetQClientByClientPID(foundUser.Id);
+
+					if(qClient != null)
+						NotificationQueue.SendNotification(Context.Handler, qClient, notification);
+				}
 			}
 
 			return Result(new { retVal = result });
@@ -79,18 +94,48 @@ namespace DSFServices.Services
 					});
 
 					db.SaveChanges();
-				}
 
-				// TODO: send notification???
+					// send notification
+					var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
+					{
+						m_pidSource = Context.Client.info.PID,
+						m_uiParam1 = Context.Client.info.PID,		// i'm just guessing
+						m_uiParam2 = 1
+					};
+
+					// send to proper client
+					// FIXME: save in db and send notification again in GetDetailedList???
+					var qClient = Context.Handler.GetQClientByClientPID(foundUser.Id);
+
+					if (qClient != null)
+						NotificationQueue.SendNotification(Context.Handler, qClient, notification);
+				}
 			}
 
 			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(6)]
-		public void DeclineFriendship()
+		public RMCResult DeclineFriendship(uint uiPlayer)
 		{
-			UNIMPLEMENTED();
+			// send notification
+			var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
+			{
+				m_pidSource = Context.Client.info.PID,
+				m_uiParam1 = Context.Client.info.PID,       // i'm just guessing
+				m_uiParam2 = 3
+			};
+
+			// send to proper client
+			// FIXME: save in db and send notification again in GetDetailedList???
+			var qClient = Context.Handler.GetQClientByClientPID(uiPlayer);
+
+			if (qClient != null)
+			{
+				NotificationQueue.SendNotification(Context.Handler, qClient, notification);
+			}
+
+			return Result(new { retVal = true });
 		}
 
 		[RMCMethod(7)]
@@ -180,17 +225,41 @@ namespace DSFServices.Services
 
 				result.uiTotalCount = (uint)relations.Count();
 
-				relations = relations.Skip(offset).Take(size)	// apply pagination
+				var relationsPage = relations.Skip(offset).Take(size).ToList();   // apply pagination
+
+				result.lstRelationshipsList = relationsPage.Select(x =>
+
+					{
+						var swap = x.User1Id == myUserPid;
+						var res = new RelationshipData()
+						{
+							m_pid = swap ? x.User2Id : x.User1Id,
+							m_strName = swap ? x.User2.PlayerNickName : x.User1.PlayerNickName,
+							m_byStatus = (byte)x.Status,
+							m_uiDetails = 0,
+							m_byRelationship = (byte)x.ByRelationShip
+						};
+						return res;
+					});
+
+				/*
 					.Select(x => x.User2Id == myUserPid ?
-						new Relationship {  // swap list
+						new Relationship
+						{  // swap list
 							User1Id = x.User2Id,
 							User1 = x.User2,
 							User2Id = x.User1Id,
 							User2 = x.User1,
-						} : x);
+						} : x).ToArray();
+
+				var relationsList = relations.Where(x => x.User1Id == myUserPid);
+
+				result.uiTotalCount = (uint)relationsList.Count();
+
+				relationsList = relationsList.Skip(offset).Take(size);   // apply pagination
 
 				// complete the list
-				result.lstRelationshipsList = relations.Select(x =>
+				result.lstRelationshipsList = relationsList.Select(x =>
 					new RelationshipData(){
 						m_pid = x.User2Id,
 						m_strName = x.User2.PlayerNickName,
@@ -198,6 +267,7 @@ namespace DSFServices.Services
 						m_uiDetails = 0,
 						m_byRelationship = (byte)x.ByRelationShip
 					}).ToArray();
+				*/
 			}
 
 			return Result(result);
