@@ -8,34 +8,42 @@ namespace QNetZ.DDL
 {
 	public class StationURL : IAnyData
 	{
+		public string _urlString;	// cached string
+	
+		public string _urlScheme;
+		public string _address;
+		private Dictionary<string, int> _parameters;
+		private bool _dirty;
+
 		public StationURL()
 		{
-			UrlScheme = "";
-			Address = "";
-			Parameters = new Dictionary<string, int>();
+			_urlScheme = "";
+			_address = "";
+			_parameters = new Dictionary<string, int>();
+			_dirty = false;
+
 			Valid = false;
 		}
 
 		public StationURL(string urlStringText) : this()
 		{
-			urlString = urlStringText;
+			ParseStationUrl(urlStringText);
 		}
 
 		public StationURL(string scheme, string address, IDictionary<string, int> parameters) : this()
 		{
-			UrlScheme = scheme;
-			Address = address;
+			_urlScheme = scheme;
+			_address = address;
 
 			if(parameters != null)
 			{
 				foreach(var key in parameters.Keys)
 				{
-					Parameters.TryAdd(key, parameters[key]);
+					_parameters.TryAdd(key, parameters[key]);
 				}
 			}
+			_dirty = true;
 		}
-
-		string _urlString;
 
 		public string urlString {
 			get
@@ -45,39 +53,64 @@ namespace QNetZ.DDL
 			} 
 			set
 			{
-				_urlString = value;
-				ParseStationUrl();
+
+				ParseStationUrl(value);
 			}
 		}
 
-		public bool Valid;
+		public bool Valid { get; private set; }
 
-		public string UrlScheme;	// "prudp" or "prudps"
-		public string Address;
-		public Dictionary<string, int> Parameters;
+		public int this[string key]
+		{
+			get
+			{
+				return _parameters[key];
+			}
+			set
+			{
+				_parameters[key] = value;
+				_dirty = true;
+			}
+		}
+
+		public string UrlScheme { get => _urlScheme; set{ _urlScheme = value; _dirty = true; } }  // "prudp" or "prudps"
+
+		public string Address { get => _address; set { _address = value; _dirty = true; } }
+		public Dictionary<string, int> Parameters { get => _parameters; set { _parameters = value; _dirty = true; } }
 
 		void BuildUrlString()
 		{
-			// "prudp:/address=127.0.0.1;port=5004;sid=15;type=2;RVCID=4660"
+			if (!_dirty)
+				return;
 
-			var paramsString = string.Join(";", Parameters.Keys.Select(x => $"{x}={Parameters[x]}"));
+			_dirty = false;
+			Valid = false;
+
+			// check the data
+			if (string.IsNullOrWhiteSpace(_urlScheme) || string.IsNullOrWhiteSpace(_address))
+			{
+				_urlString = "";
+				return;
+			}
+
+			var paramsString = string.Join(";", _parameters.Keys.Select(x => $"{x}={_parameters[x]}"));
 
 			var strSep = paramsString.Length > 0 ? ";" : "";
 
-			_urlString = $"{ UrlScheme }:/address={ Address }{strSep}{ paramsString }";
-
+			_urlString = $"{ _urlScheme }:/address={ _address }{strSep}{ paramsString }";
 			Valid = true;
 		}
 
-		void ParseStationUrl()
+		public void ParseStationUrl(string newUrlValue)
 		{
+			_dirty = false;
 			Valid = false;
 
-			var urlParts = _urlString.Split(":/");
+			var urlParts = newUrlValue.Split(":/");
 			if (urlParts.Length != 2)
 				return;
 
-			UrlScheme = urlParts[0];
+			_urlScheme = urlParts[0];
 
 			var parameterList = urlParts[1].Split(";");
 			foreach(var param in parameterList)
@@ -87,11 +120,12 @@ namespace QNetZ.DDL
 					return;
 
 				if (key_value[0] == "address")
-					Address = key_value[1];
+					_address = key_value[1];
 				else
-					Parameters.TryAdd(key_value[0], Convert.ToInt32(key_value[1]));
+					_parameters.TryAdd(key_value[0], Convert.ToInt32(key_value[1]));
 			}
 
+			_urlString = newUrlValue;
 			Valid = true;
 		}
 
@@ -102,7 +136,8 @@ namespace QNetZ.DDL
 
 		public void Read(Stream s)
 		{
-			urlString = Helper.ReadString(s);
+			string value = Helper.ReadString(s);
+			ParseStationUrl(value);
 		}
 
 		public void Write(Stream s)
