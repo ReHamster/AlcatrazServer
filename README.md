@@ -13,6 +13,8 @@ OnlineAccessKey "8dtRv2oj"
 ```
 
 Main projects
+- AlcatrazGameServices : the Web API and game server
+- - AlcatrazDbContext : entities and database context
 - BackendDebugServer : local debug server application
 - - QNetZ : implementation of Quazal Net-Z protocol and RMC (Remote Method Calls)
 - - RDVServices : Rendez-Vous authentication services
