@@ -3,7 +3,7 @@ using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
-using System.IO;
+using System.Collections.Generic;
 using System;
 
 namespace RDVServices.Services
@@ -25,12 +25,17 @@ namespace RDVServices.Services
 		[RMCMethod(1)]
 		public RMCResult Login(string userName)
 		{
-			var rendezVousConnString = "prudps:/address=#ADDRESS#;port=#PORT#;CID=1;PID=#SERVERID#;sid=1;stream=3;type=2";
-
-			rendezVousConnString = rendezVousConnString
-				.Replace("#ADDRESS#", QConfiguration.Instance.ServerBindAddress)
-				.Replace("#PORT#", Context.Client.sPort.ToString())
-				.Replace("#SERVERID#", Context.Client.sPID.ToString());
+			var rdvConnectionString = new StationURL(
+				"prudps",
+				QConfiguration.Instance.ServerBindAddress,
+				new Dictionary<string, int>() {
+					{ "port", Context.Client.sPort },
+					{ "CID", 1 },
+					{ "PID", (int)Context.Client.sPID },
+					{ "sid", 1 },
+					{ "stream", 3 },
+					{ "type", 2 }
+				});
 
 			var user = DBHelper.GetUserByName(userName);
 
@@ -72,7 +77,7 @@ namespace RDVServices.Services
 					retVal = (int)RMCErrorCode.Core_NoError,
 					pConnectionData = new RVConnectionData()
 					{
-						m_urlRegularProtocols = rendezVousConnString,
+						m_urlRegularProtocols = rdvConnectionString,
 					},
 					strReturnMsg = "",
 					pbufResponse = kerberos.toBuffer()
@@ -91,14 +96,19 @@ namespace RDVServices.Services
 		[RMCMethod(2)]
 		public RMCResult LoginEx(string userName, AnyData<UbiAuthenticationLoginCustomData> oExtraData)
 		{
-			var rendezVousConnString = "prudps:/address=#ADDRESS#;port=#PORT#;CID=1;PID=#SERVERID#;sid=1;stream=3;type=2";
+			var rdvConnectionString = new StationURL(
+				"prudps", 
+				QConfiguration.Instance.ServerBindAddress,
+				new Dictionary<string, int>() {
+					{ "port", QConfiguration.Instance.BackendServiceServerPort },
+					{ "CID", 1 },
+					{ "PID", (int)Context.Client.sPID },
+					{ "sid", 1 },
+					{ "stream", 3 },
+					{ "type", 2 }
+				});
 
-			rendezVousConnString = rendezVousConnString
-				.Replace("#ADDRESS#", QConfiguration.Instance.ServerBindAddress)
-				.Replace("#PORT#", QConfiguration.Instance.BackendServiceServerPort.ToString())
-				.Replace("#SERVERID#", Context.Client.sPID.ToString());
-
-			if(oExtraData.data != null)
+			if (oExtraData.data != null)
 			{
 				var client = Global.GetClientByUsername(userName);
 
@@ -135,7 +145,7 @@ namespace RDVServices.Services
 							retVal = (int)RMCErrorCode.Core_NoError,
 							pConnectionData = new RVConnectionData()
 							{
-								m_urlRegularProtocols = rendezVousConnString
+								m_urlRegularProtocols = rdvConnectionString
 							},
 							strReturnMsg = "",
 							pbufResponse = kerberos.toBuffer()
