@@ -17,7 +17,9 @@ namespace QNetZ
             if (p.uiSeqId > client.seqCounter)
                 client.seqCounter = p.uiSeqId;
 
-            var rmc = new RMCPacket(p);
+			handler.SendACK(p, client);
+
+			var rmc = new RMCPacket(p);
             if (rmc.isRequest)
                 HandleRequest(handler, client, p, rmc);
             else
@@ -26,23 +28,9 @@ namespace QNetZ
 
         public static void HandleResponse(QPacketHandlerPRUDP handler, QClient client, QPacket p, RMCPacket rmc)
         {
-			handler.SendACK(p, client);
-			ProcessResponse(client, p, rmc);
-            WriteLog(1, "Received Response : " + rmc.ToString());
-        }
-
-        public static void ProcessResponse(QClient client, QPacket p, RMCPacket rmc)
-        {
-            WriteLog(1, "Got response for Protocol " + rmc.proto + " = " + (rmc.success ? "Success" : $"Fail : { rmc.error.ToString("X8") } for callID = { rmc.callID }"));
-        }
-
-        private static object[] HandleMethodParameters(MethodInfo method, Stream m)
-		{
-            // TODO: extended info
-            var typeList = method.GetParameters().Select(x => x.ParameterType);
-
-            return DDLSerializer.ReadPropertyValues(typeList.ToArray(), m);
-        }
+			WriteLog(1, "Received Response : " + rmc.ToString());
+			WriteLog(1, "Got response for Protocol " + rmc.proto + " = " + (rmc.success ? "Success" : $"Fail : { rmc.error.ToString("X8") } for callID = { rmc.callID }"));
+		}
 
         public static void HandleRequest(QPacketHandlerPRUDP handler, QClient client, QPacket p, RMCPacket rmc)
         {
@@ -71,7 +59,9 @@ namespace QNetZ
 					serviceInstance.Context = rmcContext;
 
 					// call method
-					var parameters = HandleMethodParameters(bestMethod, m);
+					// TODO: extended info
+					var typeList = bestMethod.GetParameters().Select(x => x.ParameterType);
+					var parameters = DDLSerializer.ReadPropertyValues(typeList.ToArray(), m);
 
 					QLog.WriteLine(5, () => "[RMC] Request parameters: " + DDLSerializer.ObjectToString(parameters));
 
@@ -118,7 +108,6 @@ namespace QNetZ
             if (payload != "")
 				QLog.WriteLine(5, () => "[RMC] Response data : \n" + payload);
 
-			handler.SendACK(p, client);
             SendResponsePacket(handler, p, rmc, client, reply, useCompression, error);
         }
 
