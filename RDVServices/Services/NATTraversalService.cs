@@ -14,17 +14,23 @@ namespace RDVServices.Services
 		[RMCMethod(1)] 
 		public RMCResult RequestProbeInitiation(IEnumerable<StationURL> urlTargetList)
 		{
-			UNIMPLEMENTED();
-
-			// IDK how it works...
-			foreach(var urlTarget in urlTargetList)
+			// urlTargetList contains all player urls (basicmcnally given by MatchMakingService.GetSessionURLs)
+			// Server sends InitiateProbe to all players in that url with those URLs
+			// Then clients communicate with each other...
+			foreach (var iUrlTarget in urlTargetList)
 			{
-				var endp = new IPEndPoint(IPAddress.Parse(urlTarget.Address), urlTarget.Parameters["port"]);
+				var endp = new IPEndPoint(IPAddress.Parse(iUrlTarget.Address), iUrlTarget.Parameters["port"]);
 				var qclient = Context.Handler.GetQClientByEndPoint(endp);
 
-				// send InitiateProbe
+				// FIXME: I suspect that this is valid but who knows
 				if(qclient != null)
-					SendRMCCall(qclient, RMCProtocolId.NATTraversalService, 2, urlTarget);
+				{
+					foreach (var jUrlTarget in urlTargetList)
+					{
+						if(jUrlTarget.Address != iUrlTarget.Address)
+							SendRMCCall(qclient, RMCProtocolId.NATTraversalService, 2, jUrlTarget);
+					}
+				}
 			}
 
 			return Error(0);
