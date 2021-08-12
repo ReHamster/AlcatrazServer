@@ -1,16 +1,18 @@
-﻿namespace RDVServices.DDL.Models
+﻿using QNetZ.DDL;
+
+namespace RDVServices.DDL.Models
 {
 	public class RVConnectionData
 	{
 		public RVConnectionData()
 		{
-			m_urlRegularProtocols = "";
+			m_urlRegularProtocols = new StationURL();
 			m_lstSpecialProtocols = new byte[] { };
-			m_urlSpecialProtocols = "";
+			m_urlSpecialProtocols = new StationURL();
 		}
-		public string m_urlRegularProtocols { get; set; }
+		public StationURL m_urlRegularProtocols { get; set; }
         public byte[] m_lstSpecialProtocols { get; set; }
-        public string m_urlSpecialProtocols { get; set; }
+        public StationURL m_urlSpecialProtocols { get; set; }
     }
 
     public class Login

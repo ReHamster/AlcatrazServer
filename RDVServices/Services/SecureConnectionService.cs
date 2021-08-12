@@ -20,7 +20,7 @@ namespace RDVServices.Services
 			// change address
 			var rdvConnectionUrl = new StationURL(vecMyURLs.Last().ToString());
 			rdvConnectionUrl.Address = Context.Client.endpoint.Address.ToString();
-			rdvConnectionUrl.Parameters["type"] = 3;
+			rdvConnectionUrl["type"] = 3;
 
 			var result = new RegisterResult()
 			{
@@ -52,7 +52,7 @@ namespace RDVServices.Services
 				// change address
 				var rdvConnectionUrl = new StationURL(vecMyURLs.Last().ToString());
 				rdvConnectionUrl.Address = Context.Client.endpoint.Address.ToString();
-				rdvConnectionUrl.Parameters["type"] = 3;
+				rdvConnectionUrl["type"] = 3;
 
 				var result = new RegisterResult()
 				{
