@@ -58,9 +58,27 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(3)]
-		public void SendGameIdToPlayerByID(uint pid, uint toJoinId, byte gameType, string msgRequest)
+		public RMCResult SendGameIdToPlayerByID(uint pid, uint toJoinId, byte gameType, string msgRequest)
 		{
+			// send to single client with PID only
+			var qclient = Context.Handler.GetQClientByClientPID(pid);
+
+			if(qclient != null)
+			{
+				var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 1)
+				{
+					m_pidSource = Context.Client.info.PID,
+					m_uiParam1 = toJoinId,
+					m_uiParam2 = gameType,
+					m_strParam = $"NetZHost:{msgRequest}",
+					m_uiParam3 = 0
+				};
+
+				NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+			}
+
 			UNIMPLEMENTED();
+			return Error(0);
 		}
 
 		[RMCMethod(4)]
