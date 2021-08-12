@@ -136,21 +136,21 @@ namespace DSFServices.Services
 			if (gathering != null && invitation != null)
 			{
 				// send notification to invitation sender
-					var qsender = Context.Handler.GetQClientByClientPID(invitation.SentById);
+				var qsender = Context.Handler.GetQClientByClientPID(invitation.SentById);
 
-					if(qsender != null)
+				if(qsender != null)
+				{
+					// accepted invitation event
+					var senderNotification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 4)
 					{
-						// accepted invitation event
-						var senderNotification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 4)
-						{
-							m_pidSource = Context.Client.info.PID,
-							m_uiParam1 = idGathering,
-							m_uiParam2 = invitation.GuestId,
-							m_strParam = strMessage,
-							m_uiParam3 = 0
-						};
+						m_pidSource = Context.Client.info.PID,
+						m_uiParam1 = idGathering,
+						m_uiParam2 = Context.Client.info.PID,
+						m_strParam = strMessage,
+						m_uiParam3 = 0
+					};
 
-						NotificationQueue.SendNotification(Context.Handler, qsender, senderNotification);
+					NotificationQueue.SendNotification(Context.Handler, qsender, senderNotification);
 				}
 
 				gathering.Participants.Add(Context.Client.info.PID);
@@ -164,9 +164,9 @@ namespace DSFServices.Services
 					{
 						var notification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 1)
 						{
-							m_pidSource = invitation.SentById,
+							m_pidSource = Context.Client.info.PID,
 							m_uiParam1 = idGathering,
-							m_uiParam2 = pid,
+							m_uiParam2 = Context.Client.info.PID,
 							m_strParam = strMessage,
 							m_uiParam3 = 0
 						};

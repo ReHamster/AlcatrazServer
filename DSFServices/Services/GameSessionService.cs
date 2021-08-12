@@ -9,6 +9,8 @@ namespace DSFServices.Services
 	[RMCService(RMCProtocolId.GameSessionService)]
 	public class GameSessionService : RMCServiceBase
 	{
+		static uint GameSessionCounter = 22000;
+
 		[RMCMethod(1)]
 		public RMCResult CreateSession(GameSession gameSession)
 		{
@@ -24,7 +26,7 @@ namespace DSFServices.Services
 			QLog.WriteLine(1, "}");
 
 			var result = new GameSessionKey();
-			result.m_sessionID = 22046;
+			result.m_sessionID = ++GameSessionCounter;
 			result.m_typeID = gameSession.m_typeID;
 
 			return Result(result);
@@ -72,9 +74,11 @@ namespace DSFServices.Services
 
 
 		[RMCMethod(6)]
-		public void GetSession()
+		public RMCResult GetSession(GameSessionKey gameSessionKey)
 		{
-			UNIMPLEMENTED();
+			var searchResult = new GameSessionSearchResult();
+
+			return Result(searchResult);
 		}
 
 
