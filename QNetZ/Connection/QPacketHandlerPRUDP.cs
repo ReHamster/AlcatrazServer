@@ -39,63 +39,14 @@ namespace QNetZ
 
 		public uint ClientIdCounter = 0x12345678;	// or client signature
 
-		public QClient GetQClientByIDrecv(uint id)
-		{
-			foreach (var c in Clients)
-			{
-				if (c.IDrecv == id)
-					return c;
-			}
-
-			QLog.WriteLine(1, $"[{ SourceName }] Error : Cant find client for id : 0x" + id.ToString("X8"));
-			return null;
-		}
-
-		public QClient GetQClientByEndPoint(IPEndPoint ep)
-		{
-			foreach (var c in Clients)
-			{
-				if (c.endpoint.Address.ToString() == ep.Address.ToString() && c.endpoint.Port == ep.Port)
-					return c;
-			}
-
-			return null;
-		}
-
-		public QClient GetQClientByClientPID(uint userPID)
-		{
-			foreach (var c in Clients)
-			{
-				if (c.info == null)
-					continue;
-
-				// also check if timed out
-				if ((DateTime.UtcNow - c.info.lastRecv).TotalSeconds > Constants.ClientTimeoutSeconds)
-					continue;
-
-				if (c.info.PID == userPID)
-					return c;
-			}
-
-			return null;
-		}
-
 		private QPacket ProcessSYN(QPacket p, IPEndPoint from)
 		{
 			// create protocol client
 			var qclient = GetQClientByEndPoint(from);
 			if(qclient == null)
 			{
-				QLog.WriteLine(2, $"[{ SourceName }] [QUAZAL] New client { from.Address }:{ from.Port } registered at server PID={PID}");
-				qclient = new QClient();
-				qclient.endpoint = from;
-				qclient.IDrecv = ClientIdCounter++;
-
-				Clients.Add(qclient);
+				qclient = NewQClient(from);
 			}
-
-			//if (qclient.info == null)
-			//	qclient.info = Global.GetClientByConnection(qclient);
 
 			QLog.WriteLine(2, $"[{ SourceName }] Got SYN packet");
 			qclient.seqCounterOut = 0;
@@ -124,6 +75,7 @@ namespace QNetZ
 			var m = new MemoryStream(p.payload);
 
 			// read kerberos ticket
+			// TODO: decrypt it and read session key instead of using Constants.SessionKey
 			uint size = Helper.ReadU32(m);
 			byte[] kerberosTicket = new byte[size];
 			m.Read(kerberosTicket, 0, (int)size);
@@ -137,9 +89,9 @@ namespace QNetZ
 
 			m = new MemoryStream(buff);
 			uint userPrincipalID = Helper.ReadU32(m);
-			uint connectionId = Helper.ReadU32(m);
+			uint connectionId = Helper.ReadU32(m);		// TODO: utilize
 
-			client.info = Global.GetClientByPID(userPrincipalID);
+			client.info = Global.GetPlayerInfoByPID(userPrincipalID);
 
 			uint responseCode = Helper.ReadU32(m);
 
@@ -163,17 +115,7 @@ namespace QNetZ
 
 		private QPacket ProcessPING(QClient client, QPacket p)
 		{
-			QPacket reply = new QPacket();
-			reply.m_oSourceVPort = p.m_oDestinationVPort;
-			reply.m_oDestinationVPort = p.m_oSourceVPort;
-			reply.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_ACK };
-			reply.type = QPacket.PACKETTYPE.PING;
-			reply.m_bySessionID = p.m_bySessionID;
-			reply.m_uiSignature = client.IDsend;
-			reply.uiSeqId = p.uiSeqId;
-			reply.m_uiConnectionSignature = client.IDrecv;
-			reply.payload = new byte[0];
-			return reply;
+			return MakeACK(p, client);
 		}
 
 		public void Send(QPacket reqPacket, QPacket sendPacket, IPEndPoint ep)
@@ -190,6 +132,7 @@ namespace QNetZ
 			QLog.WriteLine(10, () => $"[{ SourceName }] send : { sb.ToString()}");
 			QLog.WriteLine(10, () => $"[{ SourceName }] send : { sendPacket.ToStringDetailed() }");
 
+			// TODO: bufferize in queue then send, that's how Quazal does it
 			UDP.Send(data, data.Length, ep);
 
 			QLog.LogPacket(true, data);
@@ -222,13 +165,8 @@ namespace QNetZ
 
 			int numFragments = 0;
 
-			// Houston, we have a problem...
-			// BUG: Can't send lengthy messages through PRUDP, game simply doesn't accept them :(
-
 			if (stream.Length > Constants.PacketFragmentMaxSize)
 				newPacket.flags.AddRange(new[] { QPacket.PACKETFLAG.FLAG_HAS_SIZE });
-
-			// var fragmentBytes = new MemoryStream();
 
 			newPacket.uiSeqId = client.seqCounterOut;
 			newPacket.m_byPartNumber = 1;
@@ -250,30 +188,6 @@ namespace QNetZ
 				newPacket.payload = buff;
 				newPacket.payloadSize = (ushort)newPacket.payload.Length;
 
-				// send a fragment
-				/*{
-                    var packetBuf = np.toBuffer();
-
-                    // print debug stuff
-                    var sb = new StringBuilder();
-                    foreach (byte b in packetBuf)
-                        sb.Append(b.ToString("X2") + " ");
-
-                    WriteLog(5, "send : " + np.ToStringShort());
-                    WriteLog(10, "send : " + sb.ToString());
-                    WriteLog(10, "send : " + np.ToStringDetailed());
-
-                    Log.LogPacket(true, packetBuf);
-
-                    fragmentBytes.Write(packetBuf, 0, packetBuf.Length);
-
-                    if (numFragments % 2 == 1)
-                    {
-                        client.udp.Send(fragmentBytes.GetBuffer(), (int)fragmentBytes.Length, client.ep);
-                        fragmentBytes = new MemoryStream();
-                    }
-                }*/
-
 				Send(reqPacket, newPacket, client.endpoint);
 
 				newPacket.m_byPartNumber++;
@@ -282,11 +196,6 @@ namespace QNetZ
 
 			client.seqCounterOut = newPacket.uiSeqId;
 
-			// send last packets
-			//if(fragmentBytes.Length > 0)
-			//    client.udp.Send(fragmentBytes.GetBuffer(), (int)fragmentBytes.Length, client.ep);
-
-			
 			QLog.WriteLine(10, $"[{ SourceName }] sent { numFragments } packets");
 		}
 
@@ -294,11 +203,6 @@ namespace QNetZ
 
 		public void ProcessPacket(byte[] data, IPEndPoint from, bool removeConnectPayload = false)
 		{
-			var sb = new StringBuilder();
-
-			foreach (byte b in data)
-				sb.Append(b.ToString("X2") + " ");
-
 			while (true)
 			{
 				var packetIn = new QPacket(data);
@@ -308,6 +212,11 @@ namespace QNetZ
 
 					byte[] buff = new byte[(int)packetIn.realSize];
 					m.Read(buff, 0, buff.Length);
+
+					var sb = new StringBuilder();
+
+					foreach (byte b in data)
+						sb.Append(b.ToString("X2") + " ");
 
 					QLog.LogPacket(false, buff);
 					QLog.WriteLine(5,  ()=> $"[{ SourceName }] received : { packetIn.ToStringShort() }" );
@@ -323,7 +232,9 @@ namespace QNetZ
 
 				// update client to not time out him
 				if (client != null && client.info != null)
-					client.info.lastRecv = DateTime.UtcNow;
+				{
+					client.LastPacketTime = DateTime.UtcNow;
+				}
 
 				switch (packetIn.type)
 				{
@@ -378,7 +289,7 @@ namespace QNetZ
 						}
 						break;
 					case QPacket.PACKETTYPE.DISCONNECT:
-						if (client != null) // TODO: send three times
+						if (client != null)
 							reply = ProcessDISCONNECT(client, packetIn);
 						break;
 					case QPacket.PACKETTYPE.PING:
@@ -446,6 +357,70 @@ namespace QNetZ
 				else
 					break;
 			}
+
+			DropClients();
+		}
+		private void DropClients()
+		{
+			foreach (var c in Clients)
+			{
+				if((DateTime.UtcNow - c.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+				{
+					Clients.Remove(c);
+					return;
+				}
+			}
+		}
+
+		public QClient GetQClientByIDrecv(uint id)
+		{
+			foreach (var c in Clients)
+			{
+				if (c.IDrecv == id)
+					return c;
+			}
+
+			QLog.WriteLine(1, $"[{ SourceName }] Error : Cant find client for id : 0x" + id.ToString("X8"));
+			return null;
+		}
+
+		public QClient NewQClient(IPEndPoint from)
+		{
+			QLog.WriteLine(2, $"[{ SourceName }] [QUAZAL] New client { from.Address }:{ from.Port } registered at server PID={PID}");
+
+			var qclient = new QClient(++ClientIdCounter, from);
+
+			Clients.Add(qclient);
+			return qclient;
+		}
+
+		public QClient GetQClientByEndPoint(IPEndPoint ep)
+		{
+			foreach (var c in Clients)
+			{
+				if (c.endpoint.Address.ToString() == ep.Address.ToString() && c.endpoint.Port == ep.Port)
+					return c;
+			}
+
+			return null;
+		}
+
+		public QClient GetQClientByClientPID(uint userPID)
+		{
+			foreach (var c in Clients)
+			{
+				if (c.info == null)
+					continue;
+
+				// also check if timed out
+				if ((DateTime.UtcNow - c.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+					continue;
+
+				if (c.info.PID == userPID)
+					return c;
+			}
+
+			return null;
 		}
 	}
 }

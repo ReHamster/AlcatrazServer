@@ -48,31 +48,31 @@ namespace RDVServices.Services
 				// var retModel = DDLSerializer.ReadObject<Login>(m);
 
 				// create tracking client info
-				var client = Global.GetClientByUsername(userName);
+				var plInfo = Global.GetPlayerInfoByUsername(userName);
 
-				if (client != null &&
-					client.endpoint != Context.Client.endpoint &&
-					(DateTime.UtcNow - client.lastRecv).TotalSeconds < Constants.ClientTimeoutSeconds)
+				if (plInfo != null &&
+					plInfo.client.endpoint != Context.Client.endpoint &&
+					(DateTime.UtcNow - plInfo.client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
-				Global.DropClient(client);
+				Global.DropPlayerInfo(plInfo);
 
 				QLog.WriteLine(1, $"User login request {userName}");
 
-				client = Global.CreateClient(Context.Client);
+				plInfo = Global.CreatePlayerInfo(Context.Client);
 
-				Context.Client.info = client;   // TEMPORARY
+				Context.Client.info = plInfo;   // TEMPORARY
 
-				client.PID = user.Id;
-				client.accountId = user.Username;
-				client.name = user.Username;
+				plInfo.PID = user.Id;
+				plInfo.AccountId = user.Username;
+				plInfo.Name = user.Username;
 
-				var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, Constants.SessionKey, ticket);
+				var kerberos = new KerberosTicket(plInfo.PID, Context.Client.sPID, Constants.SessionKey, ticket);
 
-				var reply = new Login(client.PID)
+				var reply = new Login(plInfo.PID)
 				{
 					retVal = (int)RMCErrorCode.Core_NoError,
 					pConnectionData = new RVConnectionData()
@@ -110,17 +110,17 @@ namespace RDVServices.Services
 
 			if (oExtraData.data != null)
 			{
-				var client = Global.GetClientByUsername(userName);
+				var plInfo = Global.GetPlayerInfoByUsername(userName);
 
-				if (client != null &&
-					client.endpoint != Context.Client.endpoint &&
-					(DateTime.UtcNow - client.lastRecv).TotalSeconds < Constants.ClientTimeoutSeconds)
+				if (plInfo != null &&
+					plInfo.client.endpoint != Context.Client.endpoint &&
+					(DateTime.UtcNow - plInfo.client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
-				Global.DropClient(client);
+				Global.DropPlayerInfo(plInfo);
 
 				var user = DBHelper.GetUserByName(oExtraData.data.username);
 
@@ -129,18 +129,17 @@ namespace RDVServices.Services
 					if (user.Password == oExtraData.data.password)
 					{
 						QLog.WriteLine(1, $"User login request {userName}");
-						client = Global.CreateClient(Context.Client);
+						plInfo = Global.CreatePlayerInfo(Context.Client);
 
-						Context.Client.info = client;   // TEMPORARY
+						Context.Client.info = plInfo;   // TEMPORARY
 
-						client.PID = user.Id;
-						client.accountId = userName;
-						client.name = oExtraData.data.username;
-						client.pass = oExtraData.data.password;
+						plInfo.PID = user.Id;
+						plInfo.AccountId = userName;
+						plInfo.Name = oExtraData.data.username;
 
-						var kerberos = new KerberosTicket(client.PID, Context.Client.sPID, Constants.SessionKey, ticket);
+						var kerberos = new KerberosTicket(plInfo.PID, Context.Client.sPID, Constants.SessionKey, ticket);
 
-						var loginData = new Login(client.PID)
+						var loginData = new Login(plInfo.PID)
 						{
 							retVal = (int)RMCErrorCode.Core_NoError,
 							pConnectionData = new RVConnectionData()

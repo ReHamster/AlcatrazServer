@@ -1,24 +1,32 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace QNetZ
 {
 	// client connection info on particular server
 	public class QClient
 	{
-		public uint sPID;
-		public ushort sPort;
+		public QClient(uint recvId, IPEndPoint ep)
+		{
+			IDrecv = recvId;
+			LastPacketTime = DateTime.UtcNow;
+			endpoint = ep;
+		}
+
+		public uint sPID;				// server PID
+		public ushort sPort;			// server port
+		public IPEndPoint endpoint;     // client endpoint
+		public DateTime LastPacketTime;
 
 		public byte sessionID;
 
 		public uint IDrecv;		// connection signature for recieving
 		public uint IDsend;		// connection signature for sending
 
-		public IPEndPoint endpoint;
-
 		public ushort seqCounter;
 		public ushort seqCounterOut;
 		public uint callCounterRMC;
 
-		public ClientInfo info;      // unique client info instance FIXME: needs to be resolved differently!
+		public PlayerInfo info;      // unique player info instance
 	}
 }
