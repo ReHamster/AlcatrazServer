@@ -37,7 +37,7 @@ namespace DSFServices.Services
 
 			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 0)
 			{
-				m_pidSource = Context.Client.info.PID,
+				m_pidSource = Context.Client.Info.PID,
 				m_uiParam1 = toJoinId,
 				m_uiParam2 = gameType,
 				m_strParam = $"NetZHost:{msgRequest}",
@@ -67,7 +67,7 @@ namespace DSFServices.Services
 			{
 				var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 1)
 				{
-					m_pidSource = Context.Client.info.PID,
+					m_pidSource = Context.Client.Info.PID,
 					m_uiParam1 = toJoinId,
 					m_uiParam2 = gameType,
 					m_strParam = $"NetZHost:{msgRequest}",
@@ -98,7 +98,7 @@ namespace DSFServices.Services
 
 			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 2)
 			{
-				m_pidSource = Context.Client.info.PID,
+				m_pidSource = Context.Client.Info.PID,
 				m_uiParam1 = 0,
 				m_uiParam2 = 0,
 				m_strParam = "NotifyPartyToLeaveGame",
@@ -144,7 +144,7 @@ namespace DSFServices.Services
 		{
 			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 4)
 			{
-				m_pidSource = Context.Client.info.PID,
+				m_pidSource = Context.Client.Info.PID,
 				m_uiParam1 = (uint)param1,
 				m_uiParam2 = (uint)param2,
 				m_strParam = "PartyLeaderNetZIsValid",
@@ -220,7 +220,7 @@ namespace DSFServices.Services
 
 			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 6)
 			{
-				m_pidSource = Context.Client.info.PID,
+				m_pidSource = Context.Client.Info.PID,
 				m_uiParam1 = pid,
 				m_uiParam2 = 0xffffffff,
 				m_strParam = "",

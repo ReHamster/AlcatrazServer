@@ -9,6 +9,8 @@ namespace BackendDebugServer
 {
 	public partial class Form1 : Form
     {
+		int oldPlayerCount = 0;
+
 		private void LogPrintFunc(int priority, string s, Color color)
 		{
 			var box = richTextBox1;
@@ -28,6 +30,12 @@ namespace BackendDebugServer
 		public Form1()
         {
             InitializeComponent();
+
+			var bs = new BindingSource();
+
+			bs.DataSource = NetworkPlayers.Players;
+			dataGridView1.AutoGenerateColumns = false;
+			dataGridView1.DataSource = bs;
 
 			QLog.ClearLog();
 			QLog.LogFunction = (int priority, string s, Color color) =>
@@ -122,7 +130,12 @@ namespace BackendDebugServer
         private void timer1_Tick(object sender, EventArgs e)
         {
             NotificationQueue.Update(BackendServicesServer.packetHandler);
-        }
+			var bs = (BindingSource)dataGridView1.DataSource;
+
+			if(oldPlayerCount != NetworkPlayers.Players.Count)
+				bs.ResetBindings(true);
+			oldPlayerCount = NetworkPlayers.Players.Count;
+		}
 
         private void toolStripButton9_Click(object sender, EventArgs e)
         {

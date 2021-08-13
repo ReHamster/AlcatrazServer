@@ -219,7 +219,7 @@ namespace QNetZ
 			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
 			{
 				var data = crp.Packet.toBuffer();
-				UDP.Send(data, data.Length, client.endpoint);
+				UDP.Send(data, data.Length, client.Endpoint);
 			}
 		}
 

@@ -12,7 +12,7 @@ namespace QNetZ
 	{
 		public static uint RVCIDCounter = 0xBB98E;
 
-		static readonly List<PlayerInfo> Players = new List<PlayerInfo>();
+		public static readonly List<PlayerInfo> Players = new List<PlayerInfo>();
 
 		public static PlayerInfo GetPlayerInfoByPID(uint pid)
 		{
@@ -52,9 +52,27 @@ namespace QNetZ
 			Players.Clear();
 		}
 
-		public static void DropPlayerInfo(PlayerInfo client)
+		public static void DropPlayerInfo(PlayerInfo plInfo)
 		{
-			Players.Remove(client);
+			QLog.WriteLine(1, $"dropping player: {plInfo.Name}");
+			Players.Remove(plInfo);
+		}
+
+		public static void DropPlayers()
+		{
+			for (var i = 0; i < Players.Count; i++)
+			{
+				var plInfo = Players[i];
+				if (plInfo.client.State == QClient.StateType.Dropped &&
+					(DateTime.UtcNow - plInfo.client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+				{
+					QLog.WriteLine(1, $"dropping player: {plInfo.Name}");
+
+					// also drop network players
+					Players.RemoveAt(i);
+					i--;
+				}
+			}
 		}
 	}
 }

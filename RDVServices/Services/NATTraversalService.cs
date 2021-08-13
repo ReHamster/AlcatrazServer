@@ -51,10 +51,10 @@ namespace RDVServices.Services
 				{
 					var thisClientURL = new StationURL(
 						"prudp",
-						Context.Client.endpoint.Address.ToString(), 
+						Context.Client.Endpoint.Address.ToString(), 
 						new Dictionary<string, int>() {
-							{ "port", Context.Client.endpoint.Port },
-							{ "RVCID", (int)Context.Client.info.RVCID }
+							{ "port", Context.Client.Endpoint.Port },
+							{ "RVCID", (int)Context.Client.Info.RVCID }
 						});
 
 					SendRMCCall(qclient, RMCProtocolId.NATTraversalService, 2, thisClientURL);

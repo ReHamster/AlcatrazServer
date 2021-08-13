@@ -47,18 +47,26 @@
 			this.toolStripButton4 = new System.Windows.Forms.ToolStripButton();
 			this.toolStripButton7 = new System.Windows.Forms.ToolStripButton();
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
+			this.dataGridView1 = new System.Windows.Forms.DataGridView();
+			this.addressCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.pidCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.rvcidCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.label1 = new System.Windows.Forms.Label();
 			this.toolStrip1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// richTextBox1
 			// 
+			this.richTextBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.richTextBox1.DetectUrls = false;
-			this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.richTextBox1.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
 			this.richTextBox1.Location = new System.Drawing.Point(0, 25);
 			this.richTextBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.richTextBox1.Name = "richTextBox1";
-			this.richTextBox1.Size = new System.Drawing.Size(995, 426);
+			this.richTextBox1.Size = new System.Drawing.Size(744, 426);
 			this.richTextBox1.TabIndex = 0;
 			this.richTextBox1.Text = "";
 			this.richTextBox1.WordWrap = false;
@@ -215,11 +223,69 @@
 			// 
 			this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
 			// 
+			// dataGridView1
+			// 
+			this.dataGridView1.AllowUserToAddRows = false;
+			this.dataGridView1.AllowUserToDeleteRows = false;
+			this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.dataGridView1.BackgroundColor = System.Drawing.SystemColors.Control;
+			this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.addressCol,
+            this.pidCol,
+            this.rvcidCol});
+			this.dataGridView1.Location = new System.Drawing.Point(751, 43);
+			this.dataGridView1.Name = "dataGridView1";
+			this.dataGridView1.ReadOnly = true;
+			this.dataGridView1.RowHeadersVisible = false;
+			this.dataGridView1.RowTemplate.Height = 25;
+			this.dataGridView1.Size = new System.Drawing.Size(244, 408);
+			this.dataGridView1.TabIndex = 2;
+			// 
+			// addressCol
+			// 
+			this.addressCol.DataPropertyName = "Name";
+			this.addressCol.HeaderText = "Name";
+			this.addressCol.Name = "addressCol";
+			this.addressCol.ReadOnly = true;
+			this.addressCol.Width = 120;
+			// 
+			// pidCol
+			// 
+			this.pidCol.DataPropertyName = "PID";
+			this.pidCol.FillWeight = 50F;
+			this.pidCol.HeaderText = "PID";
+			this.pidCol.Name = "pidCol";
+			this.pidCol.ReadOnly = true;
+			this.pidCol.Width = 60;
+			// 
+			// rvcidCol
+			// 
+			this.rvcidCol.DataPropertyName = "RVCID";
+			this.rvcidCol.FillWeight = 50F;
+			this.rvcidCol.HeaderText = "RVCID";
+			this.rvcidCol.Name = "rvcidCol";
+			this.rvcidCol.ReadOnly = true;
+			this.rvcidCol.Width = 60;
+			// 
+			// label1
+			// 
+			this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(751, 25);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(102, 15);
+			this.label1.TabIndex = 3;
+			this.label1.Text = "Authorized clients";
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(995, 451);
+			this.Controls.Add(this.label1);
+			this.Controls.Add(this.dataGridView1);
 			this.Controls.Add(this.richTextBox1);
 			this.Controls.Add(this.toolStrip1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -230,6 +296,7 @@
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
 			this.toolStrip1.ResumeLayout(false);
 			this.toolStrip1.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -254,6 +321,11 @@
         private System.Windows.Forms.ToolStripButton toolStripButton8;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripButton toolStripButton9;
-    }
+		private System.Windows.Forms.DataGridView dataGridView1;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.DataGridViewTextBoxColumn addressCol;
+		private System.Windows.Forms.DataGridViewTextBoxColumn pidCol;
+		private System.Windows.Forms.DataGridViewTextBoxColumn rvcidCol;
+	}
 }
 
