@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace QNetZ
 {
-	public static class Global
+	public static class NetworkPlayers
 	{
 		public static uint RVCIDCounter = 0xBB98E;
 
