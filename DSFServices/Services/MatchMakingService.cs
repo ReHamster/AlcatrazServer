@@ -21,13 +21,16 @@ namespace DSFServices.Services
 		[RMCMethod(1)]
 		public RMCResult RegisterGathering(AnyData<HermesPartySession> anyGathering)
 		{
+			var playerPid = Context.Client.Info.PID;
+
 			if(anyGathering.data != null)
 			{
 				var gathering = anyGathering.data;
 				gathering.m_idMyself = ++GatheringIdCounter;
-				GatheringList.Add(new PartySessionGathering(gathering));
+				gathering.m_pidOwner = playerPid;
+				gathering.m_pidHost = playerPid;
 
-				QLog.WriteLine(5, () => $"RegisterGathering : HermesPartySession:Gathering {DDLSerializer.ObjectToString(gathering)}");
+				GatheringList.Add(new PartySessionGathering(gathering));
 
 				return Result(new { gatheringId = gathering.m_idMyself });
 			}
@@ -63,16 +66,15 @@ namespace DSFServices.Services
 			bool result = false;
 			if (anyGathering.data != null)
 			{
-
-				QLog.WriteLine(5, () => $"UpdateGathering : HermesPartySession:Gathering {DDLSerializer.ObjectToString(anyGathering.data)}");
-
 				var srcGathering = anyGathering.data;
 				var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == srcGathering.m_idMyself);
 
 				if (gathering != null)
 				{
+					// FIXME: check this
 					gathering.Session.m_pidOwner = srcGathering.m_pidOwner;
 					gathering.Session.m_pidHost = srcGathering.m_pidHost;
+
 					gathering.Session.m_uiMinParticipants = srcGathering.m_uiMinParticipants;
 					gathering.Session.m_uiMaxParticipants = srcGathering.m_uiMaxParticipants;
 					gathering.Session.m_uiParticipationPolicy = srcGathering.m_uiParticipationPolicy;
@@ -250,6 +252,11 @@ namespace DSFServices.Services
 				result = true;
 			}
 
+			if(gathering.Participants.Count == 0)
+			{
+				GatheringList.Remove(gathering);
+			}
+
 			return Result(new { retVal = result });
 		}
 
@@ -400,9 +407,11 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(36)]
-		public void MigrateGatheringOwnershipV1()
+		public RMCResult MigrateGatheringOwnership(uint gid, IEnumerable<uint> lstPotentialNewOwnersID)
 		{
+			bool result = false;
 			UNIMPLEMENTED();
+			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(37)]
@@ -414,18 +423,18 @@ namespace DSFServices.Services
 		[RMCMethod(38)]
 		public RMCResult RegisterLocalURL(uint gid, StationURL url)
 		{
-			UNIMPLEMENTED($"uint gid = {gid}, string url = {url}");
+			UNIMPLEMENTED();
 			return Error(0);
 		}
 
 		[RMCMethod(39)]
-		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<StationURL> urls)
+		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<StationURL> lstUrls)
 		{
 			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
 
 			if (gathering != null)
 			{
-				var newUrls = urls.Where(x => !gathering.Urls.Any(u => u.urlString == x.urlString));
+				var newUrls = lstUrls.Where(x => !gathering.Urls.Any(u => u.urlString == x.urlString));
 
 				gathering.Urls.AddRange(newUrls);
 			}
@@ -434,8 +443,9 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(40)]
-		public RMCResult UpdateSessionHostV1(uint gid)
+		public RMCResult UpdateSessionHost(uint gid)
 		{
+			UNIMPLEMENTED();
 			return Error(0);
 		}
 
