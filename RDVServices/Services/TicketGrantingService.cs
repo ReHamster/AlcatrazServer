@@ -62,8 +62,6 @@ namespace RDVServices.Services
 
 				plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
 
-				Context.Client.Info = plInfo;   // TEMPORARY
-
 				plInfo.PID = user.Id;
 				plInfo.AccountId = user.Username;
 				plInfo.Name = user.Username;
@@ -126,8 +124,6 @@ namespace RDVServices.Services
 					{
 						QLog.WriteLine(1, $"User login request {userName}");
 						plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
-
-						Context.Client.Info = plInfo;   // TEMPORARY
 
 						plInfo.PID = user.Id;
 						plInfo.AccountId = userName;
