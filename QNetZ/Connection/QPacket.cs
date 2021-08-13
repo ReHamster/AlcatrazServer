@@ -100,38 +100,41 @@ namespace QNetZ
 		{
 		}
 
-		public QPacket(byte[] data)
+		public QPacket(byte[] data) 
+			: this(new MemoryStream(data))
 		{
-			MemoryStream m = new MemoryStream(data);
+		}
 
-			m_oSourceVPort = new VPort(Helper.ReadU8(m));
-			m_oDestinationVPort = new VPort(Helper.ReadU8(m));
-			m_byPacketTypeFlags = Helper.ReadU8(m);
+		public QPacket(Stream stream)
+		{
+			m_oSourceVPort = new VPort(Helper.ReadU8(stream));
+			m_oDestinationVPort = new VPort(Helper.ReadU8(stream));
+			m_byPacketTypeFlags = Helper.ReadU8(stream);
 			type = (PACKETTYPE)(m_byPacketTypeFlags & 0x7);
 			flags = new List<PACKETFLAG>();
 
 			ExtractFlags();
 
-			m_bySessionID = Helper.ReadU8(m);
-			m_uiSignature = Helper.ReadU32(m);
-			uiSeqId = Helper.ReadU16(m);
+			m_bySessionID = Helper.ReadU8(stream);
+			m_uiSignature = Helper.ReadU32(stream);
+			uiSeqId = Helper.ReadU16(stream);
 
 			if (type == PACKETTYPE.SYN || type == PACKETTYPE.CONNECT)
-				m_uiConnectionSignature = Helper.ReadU32(m);
+				m_uiConnectionSignature = Helper.ReadU32(stream);
 
 			if (type == PACKETTYPE.DATA)
-				m_byPartNumber = Helper.ReadU8(m);
+				m_byPartNumber = Helper.ReadU8(stream);
 
 			if (flags.Contains(PACKETFLAG.FLAG_HAS_SIZE))
-				payloadSize = Helper.ReadU16(m);
+				payloadSize = Helper.ReadU16(stream);
 			else
-				payloadSize = (ushort)(m.Length - m.Position - 1);
+				payloadSize = (ushort)(stream.Length - stream.Position - 1);
 
 			MemoryStream pl = new MemoryStream();
 
 			if (payloadSize != 0)
 				for (int i = 0; i < payloadSize; i++)
-					pl.WriteByte(Helper.ReadU8(m));
+					pl.WriteByte(Helper.ReadU8(stream));
 
 			payload = pl.ToArray();
 
@@ -157,8 +160,8 @@ namespace QNetZ
 				payloadSize = (ushort)payload.Length;
 			}
 
-			checkSum = Helper.ReadU8(m);
-			realSize = (uint)m.Position;
+			checkSum = Helper.ReadU8(stream);
+			realSize = (uint)stream.Position;
 		}
 
 		public byte[] getProcessedPayload()

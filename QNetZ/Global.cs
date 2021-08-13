@@ -10,64 +10,51 @@ namespace QNetZ
 {
 	public static class Global
 	{
-		public static uint pidCounter = 0x1234;     // 0x84504
 		public static uint RVCIDCounter = 0xBB98E;
 
-		public static uint dummyFriendPidCounter = 0x1235;
+		static readonly List<PlayerInfo> Players = new List<PlayerInfo>();
 
-		static List<ClientInfo> clients = new List<ClientInfo>();
-		public static Stopwatch uptime = new Stopwatch();
-
-		public static ClientInfo GetClientByConnection(QClient connection)
+		public static PlayerInfo GetPlayerInfoByPID(uint pid)
 		{
-			foreach (ClientInfo client in clients)
+			foreach (PlayerInfo pl in Players)
 			{
-				if (client.endpoint.Address.ToString() == connection.endpoint.Address.ToString() && 
-					client.endpoint.Port == connection.endpoint.Port)
-					return client;
+				if (pl.PID == pid)
+					return pl;
 			}
 			return null;
 		}
 
-		public static ClientInfo GetClientByPID(uint pid)
+		public static PlayerInfo GetPlayerInfoByUsername(string userName)
 		{
-			foreach (ClientInfo client in clients)
+			foreach (PlayerInfo pl in Players)
 			{
-				if (client.PID == pid)
-					return client;
+				if (pl.Name == userName)
+					return pl;
 			}
 			return null;
 		}
 
-		public static ClientInfo GetClientByUsername(string userName)
+		public static PlayerInfo CreatePlayerInfo(QClient connection)
 		{
-			foreach (ClientInfo client in clients)
-			{
-				if (client.name == userName)
-					return client;
-			}
-			return null;
+			var plInfo = new PlayerInfo();
+
+			plInfo.client = connection;
+			plInfo.PID = 0;
+			plInfo.RVCID = RVCIDCounter++;
+
+			Players.Add(plInfo);
+
+			return plInfo;
 		}
 
-		public static ClientInfo CreateClient(QClient connection)
+		public static void PurgeAllPlayers()
 		{
-			var client = new ClientInfo();
-			client.endpoint = connection.endpoint;
-			client.PID = pidCounter++;
-			client.RVCID = RVCIDCounter++;
-			clients.Add(client);
-
-			return client;
+			Players.Clear();
 		}
 
-		public static void PurgeAllClients()
+		public static void DropPlayerInfo(PlayerInfo client)
 		{
-			clients.Clear();
-		}
-
-		public static void DropClient(ClientInfo client)
-		{
-			clients.Remove(client);
+			Players.Remove(client);
 		}
 	}
 }

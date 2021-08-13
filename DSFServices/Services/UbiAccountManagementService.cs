@@ -26,11 +26,12 @@ namespace DSFServices.Services
 		[RMCMethod(3)]
 		public RMCResult GetAccount()
 		{
+			var playerInfo = Context.Client.info;
 			var reply = new UbiAccount()
 			{
-				m_ubiAccountId = Context.Client.info.accountId,
-				m_username = Context.Client.info.name,
-				m_password = Context.Client.info.pass,
+				m_ubiAccountId = playerInfo.AccountId,
+				m_username = playerInfo.Name,
+				m_password = "[REDACTED]",
 				m_firstName = "Soapy",
 				m_lastName = "Man",
 				m_countryCode = "kz",
