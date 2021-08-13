@@ -77,15 +77,18 @@ namespace DSFServices.Services
 		public RMCResult GetSession(GameSessionKey gameSessionKey)
 		{
 			var searchResult = new GameSessionSearchResult();
-
+			UNIMPLEMENTED();
 			return Result(searchResult);
 		}
 
 
 		[RMCMethod(7)]
-		public void SearchSessions()
+		public RMCResult SearchSessions(uint m_typeID, uint m_queryID, IEnumerable<GameSessionProperty> m_parameters)
 		{
+			var list = new List<GameSessionSearchResult>();
+
 			UNIMPLEMENTED();
+			return Result(list);
 		}
 
 
