@@ -28,7 +28,6 @@ namespace DSFServices.Services
 				var gathering = anyGathering.data;
 				gathering.m_idMyself = ++GatheringIdCounter;
 				gathering.m_pidOwner = playerPid;
-				gathering.m_pidHost = playerPid;
 
 				GatheringList.Add(new PartySessionGathering(gathering));
 
@@ -445,7 +444,13 @@ namespace DSFServices.Services
 		[RMCMethod(40)]
 		public RMCResult UpdateSessionHost(uint gid)
 		{
-			UNIMPLEMENTED();
+			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
+
+			if (gathering != null)
+			{
+				gathering.Session.m_pidHost = Context.Client.Info.PID;
+			}
+
 			return Error(0);
 		}
 
