@@ -91,7 +91,7 @@ namespace QNetZ
 			uint userPrincipalID = Helper.ReadU32(m);
 			uint connectionId = Helper.ReadU32(m);		// TODO: utilize
 
-			client.info = Global.GetPlayerInfoByPID(userPrincipalID);
+			client.info = NetworkPlayers.GetPlayerInfoByPID(userPrincipalID);
 
 			uint responseCode = Helper.ReadU32(m);
 
@@ -203,6 +203,9 @@ namespace QNetZ
 
 		public void ProcessPacket(byte[] data, IPEndPoint from, bool removeConnectPayload = false)
 		{
+			// first we drop old clients to proceed
+			DropClients();
+
 			while (true)
 			{
 				var packetIn = new QPacket(data);
@@ -357,8 +360,6 @@ namespace QNetZ
 				else
 					break;
 			}
-
-			DropClients();
 		}
 		private void DropClients()
 		{
@@ -366,6 +367,8 @@ namespace QNetZ
 			{
 				if((DateTime.UtcNow - c.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
 				{
+					// also drop network players
+					NetworkPlayers.DropPlayerInfo(c.info);
 					Clients.Remove(c);
 					return;
 				}

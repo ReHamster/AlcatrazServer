@@ -48,7 +48,7 @@ namespace RDVServices.Services
 				// var retModel = DDLSerializer.ReadObject<Login>(m);
 
 				// create tracking client info
-				var plInfo = Global.GetPlayerInfoByUsername(userName);
+				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
 				if (plInfo != null &&
 					plInfo.client.endpoint != Context.Client.endpoint &&
@@ -58,11 +58,11 @@ namespace RDVServices.Services
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
-				Global.DropPlayerInfo(plInfo);
+				NetworkPlayers.DropPlayerInfo(plInfo);
 
 				QLog.WriteLine(1, $"User login request {userName}");
 
-				plInfo = Global.CreatePlayerInfo(Context.Client);
+				plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
 
 				Context.Client.info = plInfo;   // TEMPORARY
 
@@ -110,7 +110,7 @@ namespace RDVServices.Services
 
 			if (oExtraData.data != null)
 			{
-				var plInfo = Global.GetPlayerInfoByUsername(userName);
+				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
 				if (plInfo != null &&
 					plInfo.client.endpoint != Context.Client.endpoint &&
@@ -120,7 +120,7 @@ namespace RDVServices.Services
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
-				Global.DropPlayerInfo(plInfo);
+				NetworkPlayers.DropPlayerInfo(plInfo);
 
 				var user = DBHelper.GetUserByName(oExtraData.data.username);
 
@@ -129,7 +129,7 @@ namespace RDVServices.Services
 					if (user.Password == oExtraData.data.password)
 					{
 						QLog.WriteLine(1, $"User login request {userName}");
-						plInfo = Global.CreatePlayerInfo(Context.Client);
+						plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
 
 						Context.Client.info = plInfo;   // TEMPORARY
 
