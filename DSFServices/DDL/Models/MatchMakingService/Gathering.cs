@@ -32,6 +32,9 @@ namespace DSFServices.DDL.Models
 		public string m_buffurizedOwnerId { get; set; }
 	}
 
+	//-----------------------------------------------------
+	// TODO: entities
+
 	public class PartySessionGathering
 	{
 		public PartySessionGathering()
