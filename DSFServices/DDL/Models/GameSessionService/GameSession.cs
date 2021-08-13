@@ -1,4 +1,5 @@
 ﻿using QNetZ.DDL;
+using System;
 using System.Collections.Generic;
 
 namespace DSFServices.DDL.Models
@@ -44,5 +45,27 @@ namespace DSFServices.DDL.Models
 		public uint m_hostPID { get; set; }
 		public ICollection<StationURL> m_hostURLs { get; set; }
 		public ICollection<GameSessionProperty> m_attributes { get; set; }
+	}
+
+	//-----------------------------------------------------
+	// TODO: entities
+
+	public class GameSessionData
+	{
+		public GameSessionData()
+		{
+			Session = new GameSession();
+			HostURLs = new List<StationURL>();
+			Participants = new HashSet<uint>();
+			PublicParticipants = new HashSet<uint>();
+		}
+
+		public uint Id { get; set; }
+
+		public GameSession Session { get; set; }
+		public uint HostPID { get; set; }
+		public ICollection<StationURL> HostURLs { get; set; }
+		public HashSet<uint> Participants { get; set; }     // ID, Private
+		public HashSet<uint> PublicParticipants { get; set; }     // ID, Public
 	}
 }

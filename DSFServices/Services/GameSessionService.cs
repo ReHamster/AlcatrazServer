@@ -2,7 +2,9 @@
 using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.Interfaces;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DSFServices.Services
 {
@@ -11,23 +13,25 @@ namespace DSFServices.Services
 	{
 		static uint GameSessionCounter = 22000;
 
+		static readonly List<GameSessionData> Sessions = new List<GameSessionData>();
+
 		[RMCMethod(1)]
 		public RMCResult CreateSession(GameSession gameSession)
 		{
-			QLog.WriteLine(1, "CreateSession : GameSession {");
-			QLog.WriteLine(1, $"    m_typeID = {gameSession.m_typeID}");
-			QLog.WriteLine(1, $"    m_attributes = ");
-			int n = 0;
-			foreach(var attr in gameSession.m_attributes)
-			{
-				QLog.WriteLine(1, $"        [{n}] = ID { attr.ID }, Value = { attr.Value }");
-				n++;
-			}
-			QLog.WriteLine(1, "}");
+			var newSession = new GameSessionData();
+			Sessions.Add(newSession);
 
+			newSession.Id = ++GameSessionCounter;
+			newSession.HostPID = Context.Client.Info.PID;
+			newSession.Session.m_typeID = gameSession.m_typeID;
+
+			foreach (var attr in gameSession.m_attributes)
+				newSession.Session.m_attributes.Add(attr);
+
+			// return key
 			var result = new GameSessionKey();
-			result.m_sessionID = ++GameSessionCounter;
-			result.m_typeID = gameSession.m_typeID;
+			result.m_sessionID = newSession.Id;
+			result.m_typeID = newSession.Session.m_typeID;
 
 			return Result(result);
 		}
@@ -36,40 +40,49 @@ namespace DSFServices.Services
 		[RMCMethod(2)]
 		public RMCResult UpdateSession(GameSessionUpdate gameSessionUpdate)
 		{
-			QLog.WriteLine(1, "UpdateSession : GameSessionUpdate {");
-			QLog.WriteLine(1, $"    m_sessionKey = {gameSessionUpdate.m_sessionKey.m_sessionID}");
-			QLog.WriteLine(1, $"    m_attributes = ");
-			int n = 0;
-			foreach (var attr in gameSessionUpdate.m_attributes)
-			{
-				QLog.WriteLine(1, $"        [{n}] = ID { attr.ID }, Value = { attr.Value }");
-				n++;
-			}
-			QLog.WriteLine(1, "}");
+			var session = Sessions
+				.FirstOrDefault(x => x.Id == gameSessionUpdate.m_sessionKey.m_sessionID && 
+									 x.Session.m_typeID == gameSessionUpdate.m_sessionKey.m_typeID);
 
-			UNIMPLEMENTED();
+			if(session != null)
+			{
+				// update or add attributes
+				foreach (var attr in gameSessionUpdate.m_attributes)
+				{
+					var updAttr = session.Session.m_attributes.FirstOrDefault(x => x.ID == attr.ID);
+					if (updAttr != null)
+						updAttr.Value = attr.Value;
+					else
+						session.Session.m_attributes.Add(attr);
+				}
+			}
+
 			return Error(0);
 		}
 
 
 		[RMCMethod(3)]
-		public void DeleteSession()
+		public RMCResult DeleteSession(GameSessionKey gameSessionKey)
 		{
 			UNIMPLEMENTED();
+			return Error(0);
 		}
 
 
 		[RMCMethod(4)]
-		public void MigrateSession()
+		public RMCResult MigrateSession(GameSessionKey gameSessionKey)
 		{
+			var gameSessionKeyMigrated = new GameSessionKey();
 			UNIMPLEMENTED();
+			return Result(gameSessionKeyMigrated);
 		}
 
 
 		[RMCMethod(5)]
-		public void LeaveSession()
+		public RMCResult LeaveSession(GameSessionKey gameSessionKey)
 		{
 			UNIMPLEMENTED();
+			return Error(0);
 		}
 
 
@@ -85,50 +98,80 @@ namespace DSFServices.Services
 		[RMCMethod(7)]
 		public RMCResult SearchSessions(uint m_typeID, uint m_queryID, IEnumerable<GameSessionProperty> m_parameters)
 		{
-			var list = new List<GameSessionSearchResult>();
+			// TODO: where to hold m_queryID???
 
-			UNIMPLEMENTED();
-			return Result(list);
+			var sessions = Sessions.Where(x => x.Session.m_typeID == m_typeID).ToArray();
+
+			var resultList = new List<GameSessionSearchResult>();
+
+			foreach (var ses in sessions)
+			{
+				// if all parameters match the found attributes, add as search result
+				if(m_parameters.All(p => ses.Session.m_attributes.Any(sa => p.ID == sa.ID && p.Value == sa.Value)))
+				{
+					resultList.Add(new GameSessionSearchResult()
+					{
+						m_hostPID = ses.HostPID,
+						m_hostURLs = ses.HostURLs,
+						m_attributes = ses.Session.m_attributes,
+						m_sessionKey = new GameSessionKey()
+						{
+							m_sessionID = ses.Id,
+							m_typeID = ses.Session.m_typeID
+						},
+					});
+				}
+			}
+
+			return Result(resultList);
 		}
 
 
 		[RMCMethod(8)]
 		public RMCResult AddParticipants(GameSessionKey gameSessionKey, IEnumerable<uint> publicParticipantIDs, IEnumerable<uint> privateParticipantIDs)
 		{
-			QLog.WriteLine(1, "AddParticipants : gameSessionKey, publicParticipantIDs, privateParticipantIDs {");
-			QLog.WriteLine(1, $"    gameSessionKey = {gameSessionKey.m_sessionID}");
-			QLog.WriteLine(1, $"    publicParticipantIDs = ");
-			int n = 0;
-			foreach (var p in publicParticipantIDs)
-			{
-				QLog.WriteLine(1, $"        [{n}] = {p}");
-				n++;
-			}
-			QLog.WriteLine(1, $"    privateParticipantIDs = ");
-			n = 0;
-			foreach (var p in privateParticipantIDs)
-			{
-				QLog.WriteLine(1, $"        [{n}] = {p}");
-				n++;
-			}
-			QLog.WriteLine(1, "}");
+			var session = Sessions
+				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
+									 x.Session.m_typeID == gameSessionKey.m_typeID);
 
-			UNIMPLEMENTED();
+			if(session != null)
+			{
+				foreach (var pid in publicParticipantIDs)
+					session.PublicParticipants.Add(pid);
+
+				foreach (var pid in privateParticipantIDs)
+					session.Participants.Add(pid);
+			}
+
 			return Error(0);
 		}
 
 
 		[RMCMethod(9)]
-		public void RemoveParticipants()
+		public RMCResult RemoveParticipants(GameSessionKey gameSessionKey, IEnumerable<uint> participantIDs)
 		{
-			UNIMPLEMENTED();
+			var session = Sessions
+				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID &&
+									 x.Session.m_typeID == gameSessionKey.m_typeID);
+
+			if (session != null)
+			{
+				foreach (var pid in participantIDs)
+					session.PublicParticipants.Remove(pid);
+
+				foreach (var pid in participantIDs)
+					session.Participants.Remove(pid);
+			}
+
+			return Error(0);
 		}
 
 
 		[RMCMethod(10)]
-		public void GetParticipantCount()
+		public RMCResult GetParticipantCount(GameSessionKey gameSessionKey, IEnumerable<uint> participantIDs)
 		{
 			UNIMPLEMENTED();
+			return Error(0);
 		}
 
 
@@ -225,12 +268,24 @@ namespace DSFServices.Services
 
 
 		[RMCMethod(23)]
-		public RMCResult AbandonSession(uint partyId)
+		public RMCResult AbandonSession(GameSessionKey gameSessionKey)
 		{
-			// remove current client from partyId
-			// AND delete session?
+			var myPlayerId = Context.Client.Info.PID;
+			var session = Sessions
+				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
+									 x.Session.m_typeID == gameSessionKey.m_typeID);
 
-			UNIMPLEMENTED();
+			if(session != null)
+			{
+				session.PublicParticipants.Remove(myPlayerId);
+				session.Participants.Remove(myPlayerId);
+			}
+
+			if(session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
+			{
+				Sessions.Remove(session);
+			}
+
 			return Error(0);
 		}
 
