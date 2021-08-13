@@ -10,8 +10,8 @@ namespace QNetZ
 
 		public byte sessionID;
 
-		public uint IDrecv;
-		public uint IDsend;
+		public uint IDrecv;		// connection signature for recieving
+		public uint IDsend;		// connection signature for sending
 
 		public IPEndPoint endpoint;
 

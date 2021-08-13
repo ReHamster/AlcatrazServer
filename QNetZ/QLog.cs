@@ -182,16 +182,21 @@ namespace QNetZ
 							}
 							break;
 						case QPacket.STREAMTYPE.DO:
+
 							if (qp.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 								break;
+#if false
 							sb.AppendLine("Trying to unpack DO messages...");
+
 							try
 							{
-								MemoryStream m = new MemoryStream(qp.payload);
+								var m = new MemoryStream(qp.payload);
 								uint size = Helper.ReadU32(m);
+
 								byte[] buff = new byte[size];
-								m.Read(buff, 0, (int)size);
 								DO.UnpackMessage(buff, 1, sb);
+
+								m.Read(buff, 0, (int)size);
 								sb.AppendLine();
 							}
 							catch
@@ -199,6 +204,7 @@ namespace QNetZ
 								sb.AppendLine("Error processing DO messages");
 								sb.AppendLine();
 							}
+#endif
 							break;
 					}
 				}
