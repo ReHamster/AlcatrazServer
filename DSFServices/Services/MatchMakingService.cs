@@ -108,7 +108,7 @@ namespace DSFServices.Services
 			{
 				var invitations = lstPrincipals.Select(x => new SentInvitation
 				{
-					SentById = Context.Client.info.PID,
+					SentById = Context.Client.Info.PID,
 					GatheringId = idGathering,
 					GuestId = x,
 					Message = strMessage
@@ -131,7 +131,7 @@ namespace DSFServices.Services
 		{
 			bool result = false;
 			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
-			var invitation = InvitationList.FirstOrDefault(x => x.GatheringId == idGathering && x.GuestId == Context.Client.info.PID);
+			var invitation = InvitationList.FirstOrDefault(x => x.GatheringId == idGathering && x.GuestId == Context.Client.Info.PID);
 
 			if (gathering != null && invitation != null)
 			{
@@ -143,9 +143,9 @@ namespace DSFServices.Services
 					// accepted invitation event
 					var senderNotification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 4)
 					{
-						m_pidSource = Context.Client.info.PID,
+						m_pidSource = Context.Client.Info.PID,
 						m_uiParam1 = idGathering,
-						m_uiParam2 = Context.Client.info.PID,
+						m_uiParam2 = Context.Client.Info.PID,
 						m_strParam = strMessage,
 						m_uiParam3 = 0
 					};
@@ -153,7 +153,7 @@ namespace DSFServices.Services
 					NotificationQueue.SendNotification(Context.Handler, qsender, senderNotification);
 				}
 
-				gathering.Participants.Add(Context.Client.info.PID);
+				gathering.Participants.Add(Context.Client.Info.PID);
 
 				// send to all party members
 				foreach (var pid in gathering.Participants)
@@ -164,9 +164,9 @@ namespace DSFServices.Services
 					{
 						var notification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 1)
 						{
-							m_pidSource = Context.Client.info.PID,
+							m_pidSource = Context.Client.Info.PID,
 							m_uiParam1 = idGathering,
-							m_uiParam2 = Context.Client.info.PID,
+							m_uiParam2 = Context.Client.Info.PID,
 							m_strParam = strMessage,
 							m_uiParam3 = 0
 						};
@@ -196,7 +196,7 @@ namespace DSFServices.Services
 		[RMCMethod(9)]
 		public RMCResult GetInvitationsSent(uint idGathering)
 		{
-			var myUserPid = Context.Client.info.PID;
+			var myUserPid = Context.Client.Info.PID;
 			var list = InvitationList
 				.Where(x => x.GatheringId == idGathering && x.SentById == myUserPid)
 				.Select(x => new Invitation()
@@ -211,7 +211,7 @@ namespace DSFServices.Services
 		[RMCMethod(10)]
 		public RMCResult GetInvitationsReceived()
 		{
-			var myUserPid = Context.Client.info.PID;
+			var myUserPid = Context.Client.Info.PID;
 			var list = InvitationList
 				.Where(x => x.GuestId == myUserPid)
 				.Select(x => new Invitation()
@@ -231,7 +231,7 @@ namespace DSFServices.Services
 
 			if (gathering != null)
 			{
-				gathering.Participants.Add(Context.Client.info.PID);
+				gathering.Participants.Add(Context.Client.Info.PID);
 				result = true;
 			}
 
@@ -246,7 +246,7 @@ namespace DSFServices.Services
 
 			if (gathering != null)
 			{
-				gathering.Participants.Remove(Context.Client.info.PID);
+				gathering.Participants.Remove(Context.Client.Info.PID);
 				result = true;
 			}
 

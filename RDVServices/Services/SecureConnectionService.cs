@@ -19,12 +19,12 @@ namespace RDVServices.Services
 		{
 			// change address
 			var rdvConnectionUrl = new StationURL(vecMyURLs.Last().ToString());
-			rdvConnectionUrl.Address = Context.Client.endpoint.Address.ToString();
+			rdvConnectionUrl.Address = Context.Client.Endpoint.Address.ToString();
 			rdvConnectionUrl["type"] = 3;
 
 			var result = new RegisterResult()
 			{
-				pidConnectionID = Context.Client.info.RVCID,
+				pidConnectionID = Context.Client.Info.RVCID,
 				retval = (int)RMCErrorCode.Core_NoError,
 				urlPublic = rdvConnectionUrl
 			};
@@ -51,12 +51,12 @@ namespace RDVServices.Services
 			{
 				// change address
 				var rdvConnectionUrl = new StationURL(vecMyURLs.Last().ToString());
-				rdvConnectionUrl.Address = Context.Client.endpoint.Address.ToString();
+				rdvConnectionUrl.Address = Context.Client.Endpoint.Address.ToString();
 				rdvConnectionUrl["type"] = 3;
 
 				var result = new RegisterResult()
 				{
-					pidConnectionID = Context.Client.info.RVCID,
+					pidConnectionID = Context.Client.Info.RVCID,
 					retval = (int)RMCErrorCode.Core_NoError,
 					urlPublic = rdvConnectionUrl
 				};

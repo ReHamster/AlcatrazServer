@@ -49,7 +49,7 @@ namespace QNetZ
 			}
 
 			QLog.WriteLine(2, $"[{ SourceName }] Got SYN packet");
-			qclient.seqCounterOut = 0;
+			qclient.SeqCounterOut = 0;
 
 			p.m_uiConnectionSignature = qclient.IDrecv;
 
@@ -59,6 +59,7 @@ namespace QNetZ
 		private QPacket ProcessCONNECT(QClient client, QPacket p)
 		{
 			client.IDsend = p.m_uiConnectionSignature;
+			client.State = QClient.StateType.Active;
 
 			QLog.WriteLine(2, $"[{ SourceName }] Got CONNECT packet");
 
@@ -91,7 +92,17 @@ namespace QNetZ
 			uint userPrincipalID = Helper.ReadU32(m);
 			uint connectionId = Helper.ReadU32(m);		// TODO: utilize
 
-			client.info = NetworkPlayers.GetPlayerInfoByPID(userPrincipalID);
+			// assign player to client and also re-assign new client to player
+			var playerInfo = NetworkPlayers.GetPlayerInfoByPID(userPrincipalID);
+
+			// drop player in case when of new account but same address
+			if(client.Info != null)
+			{
+				NetworkPlayers.DropPlayerInfo(client.Info);
+			}
+
+			playerInfo.client = client;
+			client.Info = playerInfo;
 
 			uint responseCode = Helper.ReadU32(m);
 
@@ -105,6 +116,8 @@ namespace QNetZ
 
 		private QPacket ProcessDISCONNECT(QClient client, QPacket p)
 		{
+			client.State = QClient.StateType.Dropped;
+
 			QPacket reply = MakeACK(p, client);
 			reply.m_uiSignature = client.IDsend;
 
@@ -156,7 +169,7 @@ namespace QNetZ
 			var np = MakeACK(p, client);
 			var data = np.toBuffer();
 
-			UDP.Send(data, data.Length, client.endpoint);
+			UDP.Send(data, data.Length, client.Endpoint);
 		}
 
 		public void MakeAndSend(QClient client, QPacket reqPacket, QPacket newPacket, byte[] data)
@@ -168,7 +181,7 @@ namespace QNetZ
 			if (stream.Length > Constants.PacketFragmentMaxSize)
 				newPacket.flags.AddRange(new[] { QPacket.PACKETFLAG.FLAG_HAS_SIZE });
 
-			newPacket.uiSeqId = client.seqCounterOut;
+			newPacket.uiSeqId = client.SeqCounterOut;
 			newPacket.m_byPartNumber = 1;
 			while (stream.Position < stream.Length)
 			{
@@ -188,13 +201,13 @@ namespace QNetZ
 				newPacket.payload = buff;
 				newPacket.payloadSize = (ushort)newPacket.payload.Length;
 
-				Send(reqPacket, newPacket, client.endpoint);
+				Send(reqPacket, newPacket, client.Endpoint);
 
 				newPacket.m_byPartNumber++;
 				numFragments++;
 			}
 
-			client.seqCounterOut = newPacket.uiSeqId;
+			client.SeqCounterOut = newPacket.uiSeqId;
 
 			QLog.WriteLine(10, $"[{ SourceName }] sent { numFragments } packets");
 		}
@@ -234,10 +247,11 @@ namespace QNetZ
 					client = GetQClientByIDrecv(packetIn.m_uiSignature);
 
 				// update client to not time out him
-				if (client != null && client.info != null)
+				if (client != null)
 				{
 					client.LastPacketTime = DateTime.UtcNow;
 				}
+
 
 				switch (packetIn.type)
 				{
@@ -363,16 +377,22 @@ namespace QNetZ
 		}
 		private void DropClients()
 		{
-			foreach (var c in Clients)
+			for (var i = 0; i < Clients.Count; i++)
 			{
-				if((DateTime.UtcNow - c.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+				var client = Clients[i];
+				if(client.State == QClient.StateType.Dropped ||
+					(DateTime.UtcNow - client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
 				{
+					QLog.WriteLine(2, $"[{ SourceName }] dropping client: 0x{client.IDsend.ToString("X8")}");
+					client.State = QClient.StateType.Dropped;
+
 					// also drop network players
-					NetworkPlayers.DropPlayerInfo(c.info);
-					Clients.Remove(c);
-					return;
+					Clients.RemoveAt(i);
+					i--;
 				}
 			}
+
+			NetworkPlayers.DropPlayers();
 		}
 
 		public QClient GetQClientByIDrecv(uint id)
@@ -401,7 +421,7 @@ namespace QNetZ
 		{
 			foreach (var c in Clients)
 			{
-				if (c.endpoint.Address.ToString() == ep.Address.ToString() && c.endpoint.Port == ep.Port)
+				if (c.Endpoint.Address.ToString() == ep.Address.ToString() && c.Endpoint.Port == ep.Port)
 					return c;
 			}
 
@@ -412,14 +432,14 @@ namespace QNetZ
 		{
 			foreach (var c in Clients)
 			{
-				if (c.info == null)
+				if (c.Info == null)
 					continue;
 
 				// also check if timed out
 				if ((DateTime.UtcNow - c.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
 					continue;
 
-				if (c.info.PID == userPID)
+				if (c.Info.PID == userPID)
 					return c;
 			}
 

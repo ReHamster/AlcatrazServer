@@ -27,7 +27,7 @@ namespace DSFServices.Services
 		[RMCMethod(2)]
 		public RMCResult WritePlayerStats(IEnumerable<StatisticWriteWithBoard> playerStats)
 		{
-			var playerId = Context.Client.info.PID;
+			var playerId = Context.Client.Info.PID;
 
 			using (var db = DBHelper.GetDbContext())
 			{

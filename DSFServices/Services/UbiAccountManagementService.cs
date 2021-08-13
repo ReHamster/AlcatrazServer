@@ -26,7 +26,7 @@ namespace DSFServices.Services
 		[RMCMethod(3)]
 		public RMCResult GetAccount()
 		{
-			var playerInfo = Context.Client.info;
+			var playerInfo = Context.Client.Info;
 			var reply = new UbiAccount()
 			{
 				m_ubiAccountId = playerInfo.AccountId,

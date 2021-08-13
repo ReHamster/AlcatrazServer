@@ -11,10 +11,10 @@ namespace QNetZ
 	{
 		public static void HandlePacket(QPacketHandlerPRUDP handler, QPacket p, QClient client)
 		{
-			client.sessionID = p.m_bySessionID;
+			client.SessionID = p.m_bySessionID;
 
-			if (p.uiSeqId > client.seqCounter)
-				client.seqCounter = p.uiSeqId;
+			if (p.uiSeqId > client.SeqCounter)
+				client.SeqCounter = p.uiSeqId;
 
 			var rmc = new RMCPacket(p);
 			if (rmc.isRequest)
@@ -37,8 +37,8 @@ namespace QNetZ
 
 			m.Seek(rmc._afterProtocolOffset, SeekOrigin.Begin);
 
-			if (rmc.callID > client.callCounterRMC)
-				client.callCounterRMC = rmc.callID;
+			if (rmc.callID > client.CallCounterRMC)
+				client.CallCounterRMC = rmc.callID;
 
 			WriteLog(2, "Request : " + rmc.ToString());
 
@@ -120,7 +120,7 @@ namespace QNetZ
 			packet.type = QPacket.PACKETTYPE.DATA;
 			packet.flags = new List<QPacket.PACKETFLAG>() { QPacket.PACKETFLAG.FLAG_RELIABLE | QPacket.PACKETFLAG.FLAG_NEED_ACK };
 			packet.payload = new byte[0];
-			packet.m_bySessionID = client.sessionID;
+			packet.m_bySessionID = client.SessionID;
 
 			var rmc = new RMCPacket();
 
@@ -156,7 +156,7 @@ namespace QNetZ
 			rmc.isRequest = true;
 			rmc.request = request;
 			rmc.error = error;
-			rmc.callID = ++client.callCounterRMC;
+			rmc.callID = ++client.CallCounterRMC;
 
 			var rmcRequestData = rmc.ToBuffer();
 

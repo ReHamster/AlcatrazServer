@@ -6,27 +6,37 @@ namespace QNetZ
 	// client connection info on particular server
 	public class QClient
 	{
+		public enum StateType
+		{
+			PreCONNECT = 0,
+			Active,
+			Dropped
+		}
+
 		public QClient(uint recvId, IPEndPoint ep)
 		{
 			IDrecv = recvId;
 			LastPacketTime = DateTime.UtcNow;
-			endpoint = ep;
+			Endpoint = ep;
+			State = StateType.PreCONNECT;
 		}
+
+		public StateType State;
 
 		public uint sPID;				// server PID
 		public ushort sPort;			// server port
-		public IPEndPoint endpoint;     // client endpoint
+		public IPEndPoint Endpoint;     // client endpoint
 		public DateTime LastPacketTime;
 
-		public byte sessionID;
+		public byte SessionID;
 
 		public uint IDrecv;		// connection signature for recieving
 		public uint IDsend;		// connection signature for sending
 
-		public ushort seqCounter;
-		public ushort seqCounterOut;
-		public uint callCounterRMC;
+		public ushort SeqCounter;
+		public ushort SeqCounterOut;
+		public uint CallCounterRMC;
 
-		public PlayerInfo info;      // unique player info instance
+		public PlayerInfo Info;      // unique player info instance
 	}
 }

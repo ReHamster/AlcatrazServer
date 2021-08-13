@@ -51,20 +51,18 @@ namespace RDVServices.Services
 				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
 				if (plInfo != null &&
-					plInfo.client.endpoint != Context.Client.endpoint &&
+					!plInfo.client.Endpoint.Equals(Context.Client.Endpoint) &&
 					(DateTime.UtcNow - plInfo.client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
-				NetworkPlayers.DropPlayerInfo(plInfo);
-
 				QLog.WriteLine(1, $"User login request {userName}");
 
 				plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
 
-				Context.Client.info = plInfo;   // TEMPORARY
+				Context.Client.Info = plInfo;   // TEMPORARY
 
 				plInfo.PID = user.Id;
 				plInfo.AccountId = user.Username;
@@ -113,14 +111,12 @@ namespace RDVServices.Services
 				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
 				if (plInfo != null &&
-					plInfo.client.endpoint != Context.Client.endpoint &&
+					!plInfo.client.Endpoint.Equals(Context.Client.Endpoint) &&
 					(DateTime.UtcNow - plInfo.client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
-
-				NetworkPlayers.DropPlayerInfo(plInfo);
 
 				var user = DBHelper.GetUserByName(oExtraData.data.username);
 
@@ -131,7 +127,7 @@ namespace RDVServices.Services
 						QLog.WriteLine(1, $"User login request {userName}");
 						plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
 
-						Context.Client.info = plInfo;   // TEMPORARY
+						Context.Client.Info = plInfo;   // TEMPORARY
 
 						plInfo.PID = user.Id;
 						plInfo.AccountId = userName;

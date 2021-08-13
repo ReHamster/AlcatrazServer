@@ -26,7 +26,7 @@ namespace DSFServices.Services
 		public RMCResult AddFriendByName(string strPlayerName, uint uiDetails, string strMessage)
 		{
 			bool result = false;
-			var myUserPid = Context.Client.info.PID;
+			var myUserPid = Context.Client.Info.PID;
 
 			using (var db = DBHelper.GetDbContext())
 			{
@@ -42,8 +42,8 @@ namespace DSFServices.Services
 					// send notification
 					var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
 					{
-						m_pidSource = Context.Client.info.PID,
-						m_uiParam1 = Context.Client.info.PID,       // i'm just guessing
+						m_pidSource = Context.Client.Info.PID,
+						m_uiParam1 = Context.Client.Info.PID,       // i'm just guessing
 						m_uiParam2 = 2
 					};
 
@@ -75,7 +75,7 @@ namespace DSFServices.Services
 		public RMCResult AcceptFriendship(uint uiPlayer)
 		{
 			bool result = false;
-			var myUserPid = Context.Client.info.PID;
+			var myUserPid = Context.Client.Info.PID;
 
 			using (var db = DBHelper.GetDbContext())
 			{
@@ -98,8 +98,8 @@ namespace DSFServices.Services
 					// send notification
 					var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
 					{
-						m_pidSource = Context.Client.info.PID,
-						m_uiParam1 = Context.Client.info.PID,		// i'm just guessing
+						m_pidSource = Context.Client.Info.PID,
+						m_uiParam1 = Context.Client.Info.PID,		// i'm just guessing
 						m_uiParam2 = 1
 					};
 
@@ -121,8 +121,8 @@ namespace DSFServices.Services
 			// send notification
 			var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
 			{
-				m_pidSource = Context.Client.info.PID,
-				m_uiParam1 = Context.Client.info.PID,       // i'm just guessing
+				m_pidSource = Context.Client.Info.PID,
+				m_uiParam1 = Context.Client.Info.PID,       // i'm just guessing
 				m_uiParam2 = 3
 			};
 
@@ -173,7 +173,7 @@ namespace DSFServices.Services
 		{
 			IEnumerable<FriendData> result;
 
-			var myUserPid = Context.Client.info.PID;
+			var myUserPid = Context.Client.Info.PID;
 			using (var db = DBHelper.GetDbContext())
 			{
 				var relations = db.UserRelationships
@@ -214,7 +214,7 @@ namespace DSFServices.Services
 		{
 			var result = new RelationshipsResult();
 
-			var myUserPid = Context.Client.info.PID;
+			var myUserPid = Context.Client.Info.PID;
 			using (var db = DBHelper.GetDbContext())
 			{
 				var relations = db.UserRelationships
