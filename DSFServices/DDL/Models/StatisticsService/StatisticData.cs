@@ -52,7 +52,115 @@ namespace DSFServices.DDL.Models
 		public long valueInt64 { get; set; }
 		public double valueDouble { get; set; }
 		public string valueString { get; set; }
-		public byte typeValue { get; set; }			// VariantType
+		public byte typeValue { get; set; }         // VariantType
+
+		public void Assign(StatisticValueVariant newValue)
+		{
+			switch((VariantType)typeValue)
+			{
+				case VariantType.int32:
+					valueInt32 = newValue.valueInt32;
+					break;
+				case VariantType.int64:
+					valueInt64 = newValue.valueInt64;
+					break;
+				case VariantType.Float:
+				case VariantType.Double:
+					valueDouble = newValue.valueDouble;
+					break;
+				case VariantType.String:
+					valueString = newValue.valueString;
+					break;
+			}
+		}
+
+		public void Add(StatisticValueVariant newValue)
+		{
+			switch ((VariantType)typeValue)
+			{
+				case VariantType.int32:
+					valueInt32 += newValue.valueInt32;
+					break;
+				case VariantType.int64:
+					valueInt64 += newValue.valueInt64;
+					break;
+				case VariantType.Float:
+				case VariantType.Double:
+					valueDouble += newValue.valueDouble;
+					break;
+				case VariantType.String:
+					// not supported
+					break;
+			}
+		}
+
+		public void Subtract(StatisticValueVariant newValue)
+		{
+			switch ((VariantType)typeValue)
+			{
+				case VariantType.int32:
+					valueInt32 -= newValue.valueInt32;
+					break;
+				case VariantType.int64:
+					valueInt64 -= newValue.valueInt64;
+					break;
+				case VariantType.Float:
+				case VariantType.Double:
+					valueDouble -= newValue.valueDouble;
+					break;
+				case VariantType.String:
+					// not supported
+					break;
+			}
+		}
+
+		public void ReplaceIfMin(StatisticValueVariant newValue)
+		{
+			// FIXME: might be incorrect and flipped!
+			switch ((VariantType)typeValue)
+			{
+				case VariantType.int32:
+					if(newValue.valueInt32 < valueInt32)
+						valueInt32 = newValue.valueInt32;
+					break;
+				case VariantType.int64:
+					if (newValue.valueInt64 < valueInt64)
+						valueInt64 = newValue.valueInt64;
+					break;
+				case VariantType.Float:
+				case VariantType.Double:
+					if (newValue.valueDouble < valueDouble)
+						valueDouble = newValue.valueDouble;
+					break;
+				case VariantType.String:
+					// not supported
+					break;
+			}
+		}
+
+		public void ReplaceIfMax(StatisticValueVariant newValue)
+		{
+			// FIXME: might be incorrect and flipped!
+			switch ((VariantType)typeValue)
+			{
+				case VariantType.int32:
+					if (newValue.valueInt32 > valueInt32)
+						valueInt32 = newValue.valueInt32;
+					break;
+				case VariantType.int64:
+					if (newValue.valueInt64 > valueInt64)
+						valueInt64 = newValue.valueInt64;
+					break;
+				case VariantType.Float:
+				case VariantType.Double:
+					if (newValue.valueDouble > valueDouble)
+						valueDouble = newValue.valueDouble;
+					break;
+				case VariantType.String:
+					// not supported
+					break;
+			}
+		}
 	}
 
 	public class StatisticWriteValue
@@ -162,7 +270,24 @@ namespace DSFServices.DDL.Models
 
 		public void UpdateValueWithPolicy(StatisticValueVariant newValue, StatisticPolicy policy)
 		{
-			value = newValue;
+			switch(policy)
+			{
+				case StatisticPolicy.Overwrite:
+					value.Assign(newValue);
+					break;
+				case StatisticPolicy.Add:
+					value.Add(newValue);
+					break;
+				case StatisticPolicy.Sub:
+					value.Subtract(newValue);
+					break;
+				case StatisticPolicy.ReplaceIfMin:
+					value.ReplaceIfMin(newValue);
+					break;
+				case StatisticPolicy.ReplaceIfMax:
+					value.ReplaceIfMax(newValue);
+					break;
+			}
 
 			// scoreLostForNextSlice is diff?
 			// sliceScore hmmm?
