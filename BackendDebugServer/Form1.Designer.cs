@@ -48,10 +48,12 @@
 			this.toolStripButton7 = new System.Windows.Forms.ToolStripButton();
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
 			this.dataGridView1 = new System.Windows.Forms.DataGridView();
+			this.label1 = new System.Windows.Forms.Label();
 			this.addressCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.pidCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.rvcidCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.label1 = new System.Windows.Forms.Label();
+			this.gidCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.sesIdCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.toolStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
 			this.SuspendLayout();
@@ -234,7 +236,9 @@
 			this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.addressCol,
             this.pidCol,
-            this.rvcidCol});
+            this.rvcidCol,
+            this.gidCol,
+            this.sesIdCol});
 			this.dataGridView1.Location = new System.Drawing.Point(751, 43);
 			this.dataGridView1.Name = "dataGridView1";
 			this.dataGridView1.ReadOnly = true;
@@ -242,6 +246,16 @@
 			this.dataGridView1.RowTemplate.Height = 25;
 			this.dataGridView1.Size = new System.Drawing.Size(244, 408);
 			this.dataGridView1.TabIndex = 2;
+			// 
+			// label1
+			// 
+			this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(751, 25);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(102, 15);
+			this.label1.TabIndex = 3;
+			this.label1.Text = "Authorized clients";
 			// 
 			// addressCol
 			// 
@@ -258,7 +272,7 @@
 			this.pidCol.HeaderText = "PID";
 			this.pidCol.Name = "pidCol";
 			this.pidCol.ReadOnly = true;
-			this.pidCol.Width = 60;
+			this.pidCol.Width = 50;
 			// 
 			// rvcidCol
 			// 
@@ -267,17 +281,21 @@
 			this.rvcidCol.HeaderText = "RVCID";
 			this.rvcidCol.Name = "rvcidCol";
 			this.rvcidCol.ReadOnly = true;
-			this.rvcidCol.Width = 60;
+			this.rvcidCol.Width = 50;
 			// 
-			// label1
+			// gidCol
 			// 
-			this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(751, 25);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(102, 15);
-			this.label1.TabIndex = 3;
-			this.label1.Text = "Authorized clients";
+			this.gidCol.DataPropertyName = "PartyId";
+			this.gidCol.HeaderText = "PartyId";
+			this.gidCol.Name = "gidCol";
+			this.gidCol.ReadOnly = true;
+			// 
+			// sesIdCol
+			// 
+			this.sesIdCol.DataPropertyName = "SesId";
+			this.sesIdCol.HeaderText = "SesId";
+			this.sesIdCol.Name = "sesIdCol";
+			this.sesIdCol.ReadOnly = true;
 			// 
 			// Form1
 			// 
@@ -326,6 +344,8 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn addressCol;
 		private System.Windows.Forms.DataGridViewTextBoxColumn pidCol;
 		private System.Windows.Forms.DataGridViewTextBoxColumn rvcidCol;
+		private System.Windows.Forms.DataGridViewTextBoxColumn gidCol;
+		private System.Windows.Forms.DataGridViewTextBoxColumn sesIdCol;
 	}
 }
 

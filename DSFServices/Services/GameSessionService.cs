@@ -22,11 +22,12 @@ namespace DSFServices.Services
 		[RMCMethod(1)]
 		public RMCResult CreateSession(GameSession gameSession)
 		{
+			var plInfo = Context.Client.Info;
 			var newSession = new GameSessionData();
 			Sessions.Add(newSession);
 
 			newSession.Id = ++GameSessionCounter;
-			newSession.HostPID = Context.Client.Info.PID;
+			newSession.HostPID = plInfo.PID;
 			newSession.Session.m_typeID = gameSession.m_typeID;
 
 			foreach (var attr in gameSession.m_attributes)
@@ -162,6 +163,20 @@ namespace DSFServices.Services
 
 				foreach (var pid in privateParticipantIDs)
 					session.Participants.Add(pid);
+
+				foreach(var pid in session.AllParticipants)
+				{
+					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
+					if(player != null)
+					{
+						player.GameData().CurrentSessionID = gameSessionKey.m_sessionID;
+						player.GameData().CurrentSessionTypeID = gameSessionKey.m_typeID;
+					}
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : GameSessionService.AddParticipants - no session with id={gameSessionKey.m_sessionID}");
 			}
 
 			return Error(0);
@@ -178,10 +193,24 @@ namespace DSFServices.Services
 			if (session != null)
 			{
 				foreach (var pid in participantIDs)
+				{
+					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
+					if (player != null)
+					{
+						player.GameData().CurrentSessionID = uint.MaxValue;
+						player.GameData().CurrentSessionTypeID = uint.MaxValue;
+					}
+				}
+
+				foreach (var pid in participantIDs)
 					session.PublicParticipants.Remove(pid);
 
 				foreach (var pid in participantIDs)
 					session.Participants.Remove(pid);
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : GameSessionService.RemoveParticipants - no session with id={gameSessionKey.m_sessionID}");
 			}
 
 			return Error(0);
@@ -291,18 +320,26 @@ namespace DSFServices.Services
 		[RMCMethod(23)]
 		public RMCResult AbandonSession(GameSessionKey gameSessionKey)
 		{
-			var myPlayerId = Context.Client.Info.PID;
+			var plInfo = Context.Client.Info;
+			var myPlayerId = plInfo.PID;
 			var session = Sessions
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
 									 x.Session.m_typeID == gameSessionKey.m_typeID);
 
 			if(session != null)
 			{
+				plInfo.GameData().CurrentSessionTypeID = uint.MaxValue;
+				plInfo.GameData().CurrentSessionID = uint.MaxValue;
+
 				session.PublicParticipants.Remove(myPlayerId);
 				session.Participants.Remove(myPlayerId);
 			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : GameSessionService.RemoveParticipants - no session with id={gameSessionKey.m_sessionID}");
+			}
 
-			if(session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
+			if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
 			{
 				Sessions.Remove(session);
 			}

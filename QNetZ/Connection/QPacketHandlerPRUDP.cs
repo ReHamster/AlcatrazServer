@@ -101,7 +101,7 @@ namespace QNetZ
 				NetworkPlayers.DropPlayerInfo(client.Info);
 			}
 
-			playerInfo.client = client;
+			playerInfo.Client = client;
 			client.Info = playerInfo;
 
 			uint responseCode = Helper.ReadU32(m);

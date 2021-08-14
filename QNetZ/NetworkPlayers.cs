@@ -38,7 +38,7 @@ namespace QNetZ
 		{
 			var plInfo = new PlayerInfo();
 
-			plInfo.client = connection;
+			plInfo.Client = connection;
 			plInfo.PID = 0;
 			plInfo.RVCID = RVCIDCounter++;
 
@@ -63,8 +63,8 @@ namespace QNetZ
 			for (var i = 0; i < Players.Count; i++)
 			{
 				var plInfo = Players[i];
-				if (plInfo.client.State == QClient.StateType.Dropped &&
-					(DateTime.UtcNow - plInfo.client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+				if (plInfo.Client.State == QClient.StateType.Dropped &&
+					(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"dropping player: {plInfo.Name}");
 

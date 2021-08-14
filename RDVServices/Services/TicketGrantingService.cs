@@ -51,8 +51,8 @@ namespace RDVServices.Services
 				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
 				if (plInfo != null &&
-					!plInfo.client.Endpoint.Equals(Context.Client.Endpoint) &&
-					(DateTime.UtcNow - plInfo.client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
+					!plInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
+					(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
@@ -109,8 +109,8 @@ namespace RDVServices.Services
 				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
 				if (plInfo != null &&
-					!plInfo.client.Endpoint.Equals(Context.Client.Endpoint) &&
-					(DateTime.UtcNow - plInfo.client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
+					!plInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
+					(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
