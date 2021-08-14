@@ -40,7 +40,7 @@ namespace DSFServices.Services
 				{
 					// FIXME: There is some problem with game that it does not bring up UI
 					db.UserRelationships.Add(new Relationship { 
-						ByRelationShip = 1,
+						Details = uiDetails,
 						User1Id = myUserPid,
 						User2Id = foundUser.Id
 					});
@@ -216,8 +216,8 @@ namespace DSFServices.Services
 					{
 						m_pid = x.User2Id,
 						m_strName = x.User2.PlayerNickName,
-						m_strStatus = $"Status: {x.Status}",
-						m_uiDetails = 0,
+						m_strStatus = "",
+						m_uiDetails = x.Details,
 						m_byRelationship = (byte)x.ByRelationShip
 					}).ToArray();
 			}
@@ -252,7 +252,7 @@ namespace DSFServices.Services
 							m_pid = swap ? x.User2Id : x.User1Id,
 							m_strName = swap ? x.User2.PlayerNickName : x.User1.PlayerNickName,
 							m_byStatus = (byte)(NetworkPlayers.Players.Any(p => p.PID == (swap ? x.User2Id : x.User1Id)) ? 1 : 0),
-							m_uiDetails = 0,
+							m_uiDetails = x.Details,
 							m_byRelationship = (byte)x.ByRelationShip
 						};
 						return res;
