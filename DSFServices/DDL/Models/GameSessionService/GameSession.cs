@@ -1,6 +1,7 @@
 ﻿using QNetZ.DDL;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DSFServices.DDL.Models
 {
@@ -67,5 +68,11 @@ namespace DSFServices.DDL.Models
 		public ICollection<StationURL> HostURLs { get; set; }
 		public HashSet<uint> Participants { get; set; }     // ID, Private
 		public HashSet<uint> PublicParticipants { get; set; }     // ID, Public
+
+		public uint[] AllParticipants { get
+			{
+				return Participants.Concat(PublicParticipants).ToArray();
+			}
+		}
 	}
 }

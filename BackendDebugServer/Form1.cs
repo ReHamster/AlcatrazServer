@@ -3,6 +3,7 @@ using QNetZ;
 using RDVServices;
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace BackendDebugServer
@@ -31,11 +32,7 @@ namespace BackendDebugServer
         {
             InitializeComponent();
 
-			var bs = new BindingSource();
-
-			bs.DataSource = NetworkPlayers.Players;
 			dataGridView1.AutoGenerateColumns = false;
-			dataGridView1.DataSource = bs;
 
 			QLog.ClearLog();
 			QLog.LogFunction = (int priority, string s, Color color) =>
@@ -132,8 +129,22 @@ namespace BackendDebugServer
             NotificationQueue.Update(BackendServicesServer.packetHandler);
 			var bs = (BindingSource)dataGridView1.DataSource;
 
-			if(oldPlayerCount != NetworkPlayers.Players.Count)
-				bs.ResetBindings(true);
+			//if(oldPlayerCount != NetworkPlayers.Players.Count)
+			{
+				if(bs == null)
+				{
+					bs = new BindingSource();
+					dataGridView1.DataSource = bs;
+				}
+				
+				bs.DataSource = NetworkPlayers.Players.Select(x => new {
+					PID = x.PID,
+					Name = x.Name,
+					RVCID = x.RVCID,
+					PartyId = x.GameData().CurrentGatheringId,
+					SesID = x.GameData().CurrentSessionID
+				});
+			}
 			oldPlayerCount = NetworkPlayers.Players.Count;
 		}
 
