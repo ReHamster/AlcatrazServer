@@ -8,10 +8,14 @@ using System.Linq;
 
 namespace DSFServices.Services
 {
+	/// <summary>
+	/// Game session 
+	///		Implements the sessions responsible for the gameplay process
+	/// </summary>
 	[RMCService(RMCProtocolId.GameSessionService)]
 	public class GameSessionService : RMCServiceBase
 	{
-		static uint GameSessionCounter = 22000;
+		static uint GameSessionCounter = 200600;
 
 		static readonly List<GameSessionData> Sessions = new List<GameSessionData>();
 
@@ -90,7 +94,24 @@ namespace DSFServices.Services
 		public RMCResult GetSession(GameSessionKey gameSessionKey)
 		{
 			var searchResult = new GameSessionSearchResult();
-			UNIMPLEMENTED();
+
+			var session = Sessions.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && x.Session.m_typeID == gameSessionKey.m_typeID);
+
+			if(session != null)
+			{
+				searchResult = new GameSessionSearchResult()
+				{
+					m_hostPID = session.HostPID,
+					m_hostURLs = session.HostURLs,
+					m_attributes = session.Session.m_attributes,
+					m_sessionKey = new GameSessionKey()
+					{
+						m_sessionID = session.Id,
+						m_typeID = session.Session.m_typeID
+					}
+				};
+			}
+
 			return Result(searchResult);
 		}
 
@@ -98,7 +119,7 @@ namespace DSFServices.Services
 		[RMCMethod(7)]
 		public RMCResult SearchSessions(uint m_typeID, uint m_queryID, IEnumerable<GameSessionProperty> m_parameters)
 		{
-			// TODO: where to hold m_queryID???
+			// TODO: where to hold m_queryID??? Are there notifications?
 
 			var sessions = Sessions.Where(x => x.Session.m_typeID == m_typeID).ToArray();
 
@@ -246,7 +267,7 @@ namespace DSFServices.Services
 
 
 		[RMCMethod(21)]
-		public RMCResult RegisterURLs(IEnumerable<string> stationURLs)
+		public RMCResult RegisterURLs(IEnumerable<string> stationURLs, GameSessionKey gameSessionKey)
 		{
 			QLog.WriteLine(1, "RegisterURLs : stationURLs {");
 			foreach (var url in stationURLs)
