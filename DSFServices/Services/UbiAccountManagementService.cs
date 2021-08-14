@@ -2,6 +2,9 @@
 using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.Interfaces;
+using RDVServices;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DSFServices.Services
 {
@@ -86,9 +89,19 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(11)]
-		public void LookupPrincipalIds()
+		public RMCResult LookupPrincipalIds(IEnumerable<string> ubiAccountIds)
 		{
-			UNIMPLEMENTED();
+			var pids = new Dictionary<string, uint>();
+			using (var db = DBHelper.GetDbContext())
+			{
+				var usersList = db.Users.Where(x => ubiAccountIds.Contains(x.Username)).ToArray();
+
+				foreach (var usr in usersList)
+				{
+					pids[usr.Username] = usr.Id;
+				}
+			}
+			return Result(pids);
 		}
 
 		[RMCMethod(12)]
@@ -98,9 +111,21 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(13)]
-		public void LookupUbiAccountIDsByUsernames()
+		public RMCResult LookupUbiAccountIDsByUsernames(IEnumerable<string> Usernames)
 		{
-			UNIMPLEMENTED();
+			var UbiAccountIDs = new Dictionary<string, string>();
+
+			using(var db = DBHelper.GetDbContext())
+			{
+				var usersList = db.Users.Where(x => Usernames.Contains(x.PlayerNickName)).ToArray();
+
+				foreach(var usr in usersList)
+				{
+					UbiAccountIDs[usr.Username] = usr.PlayerNickName;
+				}
+			}
+
+			return Result(UbiAccountIDs);
 		}
 
 		[RMCMethod(14)]
