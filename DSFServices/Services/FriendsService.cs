@@ -26,7 +26,8 @@ namespace DSFServices.Services
 		public RMCResult AddFriendByName(string strPlayerName, uint uiDetails, string strMessage)
 		{
 			bool result = false;
-			var myUserPid = Context.Client.Info.PID;
+			var plInfo = Context.Client.Info;
+			var myUserPid = plInfo.PID;
 
 			using (var db = DBHelper.GetDbContext())
 			{
@@ -37,14 +38,23 @@ namespace DSFServices.Services
 
 				if (foundUser != null)
 				{
+					// FIXME: There is some problem with game that it does not bring up UI
+					db.UserRelationships.Add(new Relationship { 
+						ByRelationShip = 1,
+						User1Id = myUserPid,
+						User2Id = foundUser.Id
+					});
+					db.SaveChanges();
+					
 					result = true;
 
 					// send notification
 					var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
 					{
-						m_pidSource = Context.Client.Info.PID,
-						m_uiParam1 = Context.Client.Info.PID,       // i'm just guessing
-						m_uiParam2 = 2
+						m_pidSource = myUserPid,
+						m_uiParam1 = myUserPid,       // i'm just guessing
+						m_uiParam2 = 2,
+						m_strParam = plInfo.Name
 					};
 
 					// send to proper client
@@ -75,7 +85,8 @@ namespace DSFServices.Services
 		public RMCResult AcceptFriendship(uint uiPlayer)
 		{
 			bool result = false;
-			var myUserPid = Context.Client.Info.PID;
+			var plInfo = Context.Client.Info;
+			var myUserPid = plInfo.PID;
 
 			using (var db = DBHelper.GetDbContext())
 			{
@@ -98,8 +109,8 @@ namespace DSFServices.Services
 					// send notification
 					var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
 					{
-						m_pidSource = Context.Client.Info.PID,
-						m_uiParam1 = Context.Client.Info.PID,		// i'm just guessing
+						m_pidSource = myUserPid,
+						m_uiParam1 = myUserPid,		// i'm just guessing
 						m_uiParam2 = 1
 					};
 
@@ -118,11 +129,14 @@ namespace DSFServices.Services
 		[RMCMethod(6)]
 		public RMCResult DeclineFriendship(uint uiPlayer)
 		{
+			var plInfo = Context.Client.Info;
+			var myUserPid = plInfo.PID;
+
 			// send notification
 			var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
 			{
-				m_pidSource = Context.Client.Info.PID,
-				m_uiParam1 = Context.Client.Info.PID,       // i'm just guessing
+				m_pidSource = myUserPid,
+				m_uiParam1 = myUserPid,       // i'm just guessing
 				m_uiParam2 = 3
 			};
 
@@ -173,7 +187,9 @@ namespace DSFServices.Services
 		{
 			IEnumerable<FriendData> result;
 
-			var myUserPid = Context.Client.Info.PID;
+			var plInfo = Context.Client.Info;
+			var myUserPid = plInfo.PID;
+
 			using (var db = DBHelper.GetDbContext())
 			{
 				var relations = db.UserRelationships
@@ -235,39 +251,13 @@ namespace DSFServices.Services
 						{
 							m_pid = swap ? x.User2Id : x.User1Id,
 							m_strName = swap ? x.User2.PlayerNickName : x.User1.PlayerNickName,
-							m_byStatus = (byte)x.Status,
+							m_byStatus = (byte)(NetworkPlayers.Players.Any(p => p.PID == (swap ? x.User2Id : x.User1Id)) ? 1 : 0),
 							m_uiDetails = 0,
 							m_byRelationship = (byte)x.ByRelationShip
 						};
 						return res;
 					});
 
-				/*
-					.Select(x => x.User2Id == myUserPid ?
-						new Relationship
-						{  // swap list
-							User1Id = x.User2Id,
-							User1 = x.User2,
-							User2Id = x.User1Id,
-							User2 = x.User1,
-						} : x).ToArray();
-
-				var relationsList = relations.Where(x => x.User1Id == myUserPid);
-
-				result.uiTotalCount = (uint)relationsList.Count();
-
-				relationsList = relationsList.Skip(offset).Take(size);   // apply pagination
-
-				// complete the list
-				result.lstRelationshipsList = relationsList.Select(x =>
-					new RelationshipData(){
-						m_pid = x.User2Id,
-						m_strName = x.User2.PlayerNickName,
-						m_byStatus = (byte)x.Status,
-						m_uiDetails = 0,
-						m_byRelationship = (byte)x.ByRelationShip
-					}).ToArray();
-				*/
 			}
 
 			return Result(result);
