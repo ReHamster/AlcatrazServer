@@ -65,7 +65,7 @@ namespace DSFServices.DDL.Models
 
 		public GameSession Session { get; set; }
 		public uint HostPID { get; set; }
-		public ICollection<StationURL> HostURLs { get; set; }
+		public List<StationURL> HostURLs { get; set; }
 		public HashSet<uint> Participants { get; set; }     // ID, Private
 		public HashSet<uint> PublicParticipants { get; set; }     // ID, Public
 
