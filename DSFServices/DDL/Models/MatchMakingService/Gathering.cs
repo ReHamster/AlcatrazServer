@@ -1,14 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using QNetZ.DDL;
-
-namespace DSFServices.DDL.Models
+﻿namespace DSFServices.DDL.Models
 {
-    public class Gathering
+	public class Gathering
     {
         public uint m_idMyself { get; set; }
 		public uint m_pidOwner { get; set; }
@@ -32,25 +24,4 @@ namespace DSFServices.DDL.Models
 		public string m_buffurizedOwnerId { get; set; }
 	}
 
-	//-----------------------------------------------------
-	// TODO: entities
-
-	public class PartySessionGathering
-	{
-		public PartySessionGathering()
-		{
-			Session = new HermesPartySession();
-		}
-
-		public PartySessionGathering(HermesPartySession session)
-		{
-			Session = session;
-			Urls = new List<StationURL>();
-			Participants = new HashSet<uint>();
-		}
-
-		public HermesPartySession Session { get; set; }
-		public List<StationURL> Urls { get; set; } // host and player URLs
-		public HashSet<uint> Participants { get; set; }
-	}
 }

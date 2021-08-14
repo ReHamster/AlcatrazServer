@@ -3,9 +3,14 @@ using DSFServices.DDL.Models;
 using QNetZ.Interfaces;
 using System.Collections.Generic;
 using QNetZ;
+using System.Linq;
 
 namespace DSFServices.Services
 {
+	/// <summary>
+	/// Hermes party service
+	///		Additional layer to the Match making service AND a game session
+	/// </summary>
 	[RMCService(RMCProtocolId.PartyService)]
 	class PartyService : RMCServiceBase
 	{
@@ -14,15 +19,6 @@ namespace DSFServices.Services
 		{
 			UNIMPLEMENTED($"uint id = {id}, uint toJoinId = {toJoinId}, int gameType = {gameType}, string msgRequest = {msgRequest}");
 
-			/*
-			 
-			 {
-				"id": 39704,
-				  "toJoinId": 22046,		// GameSession ID
-				  "gameType": 1879078401,		// flags?		0x70007601
-				  "msgRequest": QUAZAL PRUDP URLS
-			}
-			 */
 
 			/*
 			 SEND TO ALL CIENTS 
@@ -35,18 +31,33 @@ namespace DSFServices.Services
 			}
 			 */
 
-			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 0)
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == id);
+
+			if (gathering != null)
 			{
-				m_pidSource = Context.Client.Info.PID,
-				m_uiParam1 = toJoinId,
-				m_uiParam2 = gameType,
-				m_strParam = $"NetZHost:{msgRequest}",
-				m_uiParam3 = 0
-			};
+				foreach(var pid in gathering.Participants)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(pid);
 
-			NotificationQueue.SendNotification(Context.Handler, Context.Client, notification);
-			//NotificationQueue.AddNotification(notification, Context.Client, 500);
+					if(qclient != null)
+					{
+						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 0)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = toJoinId,
+							m_uiParam2 = gameType,
+							m_strParam = $"NetZHost:{msgRequest}",
+							m_uiParam3 = 0
+						};
 
+						NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					}
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : PartyService.SendGameIdToParty - no gathering with gid={id}");
+			}
 
 			return Error(0);
 		}
@@ -77,7 +88,6 @@ namespace DSFServices.Services
 				NotificationQueue.SendNotification(Context.Handler, qclient, notification);
 			}
 
-			UNIMPLEMENTED();
 			return Error(0);
 		}
 
@@ -193,43 +203,36 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(14)]
-		public RMCResult SendMatchmakingStatus(uint gid, uint pid)
+		public RMCResult SendMatchmakingStatus(uint gid, uint pid, uint gameType)
 		{
-			/*
-			 {
-			  "gid": 39704,		// gathering ID
-			  "pid": 196608		// 0x30000
-			}
-			 */
+			// Does pid == 0x30000 mean Search or Lobby?
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
 
-			/*
-			SEND TO ALL:
-			
-			NotificationEvent {
-				m_pidSource = 541956		// Context.Client.info.PID? Context.Client.info.sPID?
-				m_uiType = (PartyEvent, 6)
-				m_uiParam1 = 196608	 		// 0x30000 = pid
-				m_uiParam2 = -1
-				m_strParam = 
-			}
-			 */
-
-			UNIMPLEMENTED();
-
-			// TODO: search all clients in "gid" and send them notifications
-
-			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 6)
+			if (gathering != null)
 			{
-				m_pidSource = Context.Client.Info.PID,
-				m_uiParam1 = pid,
-				m_uiParam2 = 0xffffffff,
-				m_strParam = "",
-				m_uiParam3 = 0
-			};
+				foreach (var participantPid in gathering.Participants)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(participantPid);
 
-			NotificationQueue.SendNotification(Context.Handler, Context.Client, notification);
+					if (qclient != null)
+					{
+						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 6)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = pid,
+							m_uiParam2 = gameType,
+							m_strParam = "",
+							m_uiParam3 = 0
+						};
 
-			//NotificationQueue.AddNotification(notification, Context.Client, 500);
+						NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					}
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : PartyService.SendMatchmakingStatus - no gathering with gid={gid}");
+			}
 
 			return Result(new { result = true });
 		}
@@ -267,7 +270,7 @@ namespace DSFServices.Services
 		[RMCMethod(18)]
 		public void MigrateTo(uint pid, uint oldGathering, uint newGathering)
 		{
-			UNIMPLEMENTED();
+			
 		}
 	}
 }
