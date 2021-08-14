@@ -9,13 +9,13 @@ using System.Linq;
 namespace DSFServices.Services
 {
 	/// <summary>
-	/// Hermes 
+	/// Hermes match making service
+	///		Implements pre-game match making lobbies/gatherings (also known as Party buses)
 	/// </summary>
 	[RMCService(RMCProtocolId.MatchMakingService)]
 	class MatchMakingService : RMCServiceBase
 	{
 		static uint GatheringIdCounter = 39000;
-		static List<PartySessionGathering> GatheringList = new List<PartySessionGathering>();
 		static List<SentInvitation> InvitationList = new List<SentInvitation>();
 
 		[RMCMethod(1)]
@@ -29,7 +29,7 @@ namespace DSFServices.Services
 				gathering.m_idMyself = ++GatheringIdCounter;
 				gathering.m_pidOwner = playerPid;
 
-				GatheringList.Add(new PartySessionGathering(gathering));
+				PartySessions.GatheringList.Add(new PartySessionGathering(gathering));
 
 				return Result(new { gatheringId = gathering.m_idMyself });
 			}
@@ -41,13 +41,17 @@ namespace DSFServices.Services
 		public RMCResult UnregisterGathering(uint idGathering)
 		{
 			bool result = false;
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 
 			if(gathering != null)
 			{
 				// FIXME: are notifications sent?
-				GatheringList.Remove(gathering);
+				PartySessions.GatheringList.Remove(gathering);
 				result = true;
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.UnregisterGathering - no gathering with gid={idGathering}");
 			}
 
 			return Result(new { retVal = result });
@@ -66,14 +70,10 @@ namespace DSFServices.Services
 			if (anyGathering.data != null)
 			{
 				var srcGathering = anyGathering.data;
-				var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == srcGathering.m_idMyself);
+				var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == srcGathering.m_idMyself);
 
 				if (gathering != null)
 				{
-					// FIXME: check this
-					gathering.Session.m_pidOwner = srcGathering.m_pidOwner;
-					gathering.Session.m_pidHost = srcGathering.m_pidHost;
-
 					gathering.Session.m_uiMinParticipants = srcGathering.m_uiMinParticipants;
 					gathering.Session.m_uiMaxParticipants = srcGathering.m_uiMaxParticipants;
 					gathering.Session.m_uiParticipationPolicy = srcGathering.m_uiParticipationPolicy;
@@ -89,9 +89,13 @@ namespace DSFServices.Services
 					gathering.Session.m_name = srcGathering.m_name;
 					gathering.Session.m_buffurizedOwnerId = srcGathering.m_buffurizedOwnerId;
 
-					// FIXME: are notifications sent?
+					// are notifications sent?
 
 					result = true;
+				}
+				else
+				{
+					QLog.WriteLine(1, $"Error : MatchMakingService.UpdateGathering - no gathering with gid={srcGathering.m_idMyself}");
 				}
 
 			}
@@ -103,7 +107,7 @@ namespace DSFServices.Services
 		public RMCResult Invite(uint idGathering, ICollection<uint> lstPrincipals, string strMessage)
 		{
 			bool result = false;
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 
 			if (gathering != null)
 			{
@@ -115,6 +119,26 @@ namespace DSFServices.Services
 					Message = strMessage
 				}).ToList();
 
+				// send notifications to invited user
+				foreach (var inv in invitations)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(inv.GuestId);
+
+					if (qclient != null)
+					{
+						var senderNotification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 3)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = idGathering,
+							m_uiParam2 = Context.Client.Info.PID,
+							m_strParam = strMessage,
+							m_uiParam3 = 0
+						};
+
+						NotificationQueue.SendNotification(Context.Handler, qclient, senderNotification);
+					}
+				}
+
 				// remove old
 				InvitationList.RemoveAll(x => invitations.Any(y => x.GatheringId == y.GatheringId && x.GuestId == y.GuestId));
 
@@ -122,6 +146,10 @@ namespace DSFServices.Services
 				InvitationList.AddRange(invitations);
 
 				result = true;
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.Invite - no gathering with gid={idGathering}");
 			}
 
 			return Result(new { retVal = result });
@@ -131,10 +159,16 @@ namespace DSFServices.Services
 		public RMCResult AcceptInvitation(uint idGathering, string strMessage)
 		{
 			bool result = false;
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 			var invitation = InvitationList.FirstOrDefault(x => x.GatheringId == idGathering && x.GuestId == Context.Client.Info.PID);
 
-			if (gathering != null && invitation != null)
+			if(invitation == null)
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.AcceptInvitation - no invitation found to gathering gid={idGathering} for PID={Context.Client.Info.PID}");
+				return Result(new { retVal = result });
+			}
+
+			if (gathering != null)
 			{
 				// send notification to invitation sender
 				var qsender = Context.Handler.GetQClientByClientPID(invitation.SentById);
@@ -176,16 +210,62 @@ namespace DSFServices.Services
 					}
 				}
 
+				// done with it
+				InvitationList.Remove(invitation);
+
 				result = true;
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.AcceptInvitation - no gathering with gid={idGathering}");
 			}
 
 			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(7)]
-		public void DeclineInvitation()
+		public RMCResult DeclineInvitation(uint idGathering, string strMessage)
 		{
-			UNIMPLEMENTED();
+			bool result = false;
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
+			var invitation = InvitationList.FirstOrDefault(x => x.GatheringId == idGathering && x.GuestId == Context.Client.Info.PID);
+
+			if (invitation == null)
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.DeclineInvitation - no invitation found to gathering gid={idGathering} for PID={Context.Client.Info.PID}");
+				return Result(new { retVal = result });
+			}
+
+			if (gathering != null)
+			{
+				// send notification to invitation sender
+				var qsender = Context.Handler.GetQClientByClientPID(invitation.SentById);
+
+				if (qsender != null)
+				{
+					// decline invitation event
+					// is that correct?
+					var senderNotification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 2)
+					{
+						m_pidSource = Context.Client.Info.PID,
+						m_uiParam1 = idGathering,
+						m_uiParam2 = Context.Client.Info.PID,
+						m_strParam = strMessage,
+						m_uiParam3 = 0
+					};
+
+					NotificationQueue.SendNotification(Context.Handler, qsender, senderNotification);
+				}
+
+				// done with it
+				InvitationList.Remove(invitation);
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.DeclineInvitation - no gathering with gid={idGathering}");
+			}
+
+			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(8)]
@@ -206,6 +286,7 @@ namespace DSFServices.Services
 					m_idGuest = x.GuestId,
 					m_strMessage = x.Message
 				});
+
 			return Result(list);
 		}
 
@@ -221,6 +302,7 @@ namespace DSFServices.Services
 				m_idGuest = x.GuestId,
 				m_strMessage = x.Message
 			});
+
 			return Result(list);
 		}
 
@@ -228,12 +310,16 @@ namespace DSFServices.Services
 		public RMCResult Participate(uint idGathering, string strMessage)
 		{
 			bool result = false;
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 
 			if (gathering != null)
 			{
 				gathering.Participants.Add(Context.Client.Info.PID);
 				result = true;
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.Participate - no gathering with gid={idGathering}");
 			}
 
 			return Result(new { retVal = result });
@@ -243,18 +329,24 @@ namespace DSFServices.Services
 		public RMCResult CancelParticipation(uint idGathering, string strMessage)
 		{
 			bool result = false;
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 
 			if (gathering != null)
 			{
 				gathering.Participants.Remove(Context.Client.Info.PID);
+
+				if (gathering.Participants.Count == 0)
+				{
+					PartySessions.GatheringList.Remove(gathering);
+				}
+
 				result = true;
 			}
-
-			if(gathering.Participants.Count == 0)
+			else
 			{
-				GatheringList.Remove(gathering);
+				QLog.WriteLine(1, $"Error : MatchMakingService.CancelParticipation - no gathering with gid={idGathering}");
 			}
+
 
 			return Result(new { retVal = result });
 		}
@@ -311,7 +403,7 @@ namespace DSFServices.Services
 		public RMCResult FindBySingleID(uint id)
 		{
 			bool result = false;
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == id);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == id);
 
 			if (gathering != null)
 				result = true;
@@ -429,13 +521,17 @@ namespace DSFServices.Services
 		[RMCMethod(39)]
 		public RMCResult RegisterLocalURLs(uint gid, IEnumerable<StationURL> lstUrls)
 		{
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
 
 			if (gathering != null)
 			{
 				var newUrls = lstUrls.Where(x => !gathering.Urls.Any(u => u.urlString == x.urlString));
 
 				gathering.Urls.AddRange(newUrls);
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.RegisterLocalURLs - no gathering with gid={gid}");
 			}
 
 			return Error(0);
@@ -444,11 +540,15 @@ namespace DSFServices.Services
 		[RMCMethod(40)]
 		public RMCResult UpdateSessionHost(uint gid)
 		{
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
 
 			if (gathering != null)
 			{
 				gathering.Session.m_pidHost = Context.Client.Info.PID;
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.UpdateSessionHost - no gathering with gid={gid}");
 			}
 
 			return Error(0);
@@ -457,11 +557,15 @@ namespace DSFServices.Services
 		[RMCMethod(41)]
 		public RMCResult GetSessionURLs(uint gid)
 		{
-			var gathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
 
 			if (gathering != null)
 			{
 				return Result(gathering.Urls);
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : MatchMakingService.GetSessionURLs - no gathering with gid={gid}");
 			}
 
 			return Error(0);
