@@ -1,6 +1,7 @@
 ﻿using DSFServices.DDL.Models;
 using QNetZ;
 using QNetZ.Attributes;
+using QNetZ.DDL;
 using QNetZ.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -296,16 +297,21 @@ namespace DSFServices.Services
 
 
 		[RMCMethod(21)]
-		public RMCResult RegisterURLs(IEnumerable<string> stationURLs, GameSessionKey gameSessionKey)
+		public RMCResult RegisterURLs(IEnumerable<StationURL> stationURLs)
 		{
-			QLog.WriteLine(1, "RegisterURLs : stationURLs {");
-			foreach (var url in stationURLs)
+			var plInfo = Context.Client.Info;
+			var myPlayerId = plInfo.PID;
+			var session = Sessions.FirstOrDefault(x => x.HostPID == myPlayerId);
+
+			if (session != null)
 			{
-				QLog.WriteLine(1, $"    {url}");
+				session.HostURLs.AddRange(stationURLs);
 			}
-			QLog.WriteLine(1, "}");
-			// TODO:
-			UNIMPLEMENTED();
+			else
+			{
+				QLog.WriteLine(1, $"Error : GameSessionService.RegisterURLs - no session hosted by pid={myPlayerId}");
+			}
+
 			return Error(0);
 		}
 
