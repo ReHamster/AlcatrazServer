@@ -54,7 +54,7 @@ namespace DSFServices.Services
 						m_pidSource = myUserPid,
 						m_uiParam1 = myUserPid,       // i'm just guessing
 						m_uiParam2 = 2,
-						m_strParam = plInfo.Name
+						m_strParam = ""
 					};
 
 					// send to proper client
@@ -107,19 +107,16 @@ namespace DSFServices.Services
 					db.SaveChanges();
 
 					// send notification
+
 					var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
 					{
 						m_pidSource = myUserPid,
-						m_uiParam1 = myUserPid,		// i'm just guessing
+						m_uiParam1 = foundUser.Id,		// i'm just guessing
 						m_uiParam2 = 1
 					};
 
-					// send to proper client
-					// FIXME: save in db and send notification again in GetDetailedList???
-					var qClient = Context.Handler.GetQClientByClientPID(foundUser.Id);
-
-					if (qClient != null)
-						NotificationQueue.SendNotification(Context.Handler, qClient, notification);
+					// should be that sent to friend too?
+					NotificationQueue.SendNotification(Context.Handler, Context.Client, notification);
 				}
 			}
 
