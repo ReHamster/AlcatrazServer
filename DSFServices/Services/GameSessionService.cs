@@ -27,15 +27,28 @@ namespace DSFServices.Services
 
 			newSession.Id = ++GameSessionCounter;
 			newSession.HostPID = plInfo.PID;
-			newSession.Session.m_typeID = gameSession.m_typeID;
+			newSession.TypeID = gameSession.m_typeID;
 
 			foreach (var attr in gameSession.m_attributes)
-				newSession.Session.m_attributes.Add(attr);
+				newSession.Attributes[attr.ID] = attr.Value;
+
+			// TODO: read values from current player gathering
+			newSession.Attributes[(uint)GameSessionAttributeType.PublicSlots] = 0;
+			newSession.Attributes[(uint)GameSessionAttributeType.PrivateSlots] = 8;
+
+			// TODO: give names to attributes
+			newSession.Attributes[5] = 0;
+			newSession.Attributes[6] = 1;
+			newSession.Attributes[100] = 0;
+			newSession.Attributes[101] = 0;
+			newSession.Attributes[104] = 0;
+			newSession.Attributes[113] = 0;
+
 
 			// return key
 			var result = new GameSessionKey();
 			result.m_sessionID = newSession.Id;
-			result.m_typeID = newSession.Session.m_typeID;
+			result.m_typeID = newSession.TypeID;
 
 			return Result(result);
 		}
@@ -46,18 +59,14 @@ namespace DSFServices.Services
 		{
 			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionUpdate.m_sessionKey.m_sessionID && 
-									 x.Session.m_typeID == gameSessionUpdate.m_sessionKey.m_typeID);
+									 x.TypeID == gameSessionUpdate.m_sessionKey.m_typeID);
 
 			if(session != null)
 			{
 				// update or add attributes
 				foreach (var attr in gameSessionUpdate.m_attributes)
 				{
-					var updAttr = session.Session.m_attributes.FirstOrDefault(x => x.ID == attr.ID);
-					if (updAttr != null)
-						updAttr.Value = attr.Value;
-					else
-						session.Session.m_attributes.Add(attr);
+					session.Attributes[attr.ID] = attr.Value;
 				}
 			}
 
@@ -95,7 +104,7 @@ namespace DSFServices.Services
 		{
 			var searchResult = new GameSessionSearchResult();
 
-			var session = GameSessions.SessionList.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && x.Session.m_typeID == gameSessionKey.m_typeID);
+			var session = GameSessions.SessionList.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && x.TypeID == gameSessionKey.m_typeID);
 
 			if(session != null)
 			{
@@ -105,11 +114,11 @@ namespace DSFServices.Services
 				{
 					m_hostPID = session.HostPID,
 					m_hostURLs = session.HostURLs,
-					m_attributes = session.Session.m_attributes,
+					m_attributes = session.Attributes.Select(x => new GameSessionProperty { ID = x.Key, Value = x.Value}).ToArray(),
 					m_sessionKey = new GameSessionKey()
 					{
 						m_sessionID = session.Id,
-						m_typeID = session.Session.m_typeID
+						m_typeID = session.TypeID
 					}
 				};
 
@@ -124,7 +133,7 @@ namespace DSFServices.Services
 				searchResult.m_sessionKey = new GameSessionKey()
 				{
 					m_sessionID = session.Id,
-					m_typeID = session.Session.m_typeID
+					m_typeID = session.TypeID
 				};
 			}
 
@@ -137,24 +146,24 @@ namespace DSFServices.Services
 		{
 			// TODO: where to hold m_queryID??? Are there notifications?
 
-			var sessions = GameSessions.SessionList.Where(x => x.Session.m_typeID == m_typeID).ToArray();
+			var sessions = GameSessions.SessionList.Where(x => x.TypeID == m_typeID).ToArray();
 
 			var resultList = new List<GameSessionSearchResult>();
 
 			foreach (var ses in sessions)
 			{
 				// if all parameters match the found attributes, add as search result
-				if(m_parameters.All(p => ses.Session.m_attributes.Any(sa => p.ID == sa.ID && p.Value == sa.Value)))
+				if(m_parameters.All(p => ses.Attributes.Any(sa => p.ID == sa.Key && p.Value == sa.Value)))
 				{
 					resultList.Add(new GameSessionSearchResult()
 					{
 						m_hostPID = ses.HostPID,
 						m_hostURLs = ses.HostURLs,
-						m_attributes = ses.Session.m_attributes,
+						m_attributes = ses.Attributes.Select(x => new GameSessionProperty { ID = x.Key, Value = x.Value }).ToArray(),
 						m_sessionKey = new GameSessionKey()
 						{
 							m_sessionID = ses.Id,
-							m_typeID = ses.Session.m_typeID
+							m_typeID = ses.TypeID
 						},
 					});
 				}
@@ -169,7 +178,7 @@ namespace DSFServices.Services
 		{
 			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
-									 x.Session.m_typeID == gameSessionKey.m_typeID);
+									 x.TypeID == gameSessionKey.m_typeID);
 
 			if(session != null)
 			{
@@ -203,7 +212,7 @@ namespace DSFServices.Services
 		{
 			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID &&
-									 x.Session.m_typeID == gameSessionKey.m_typeID);
+									 x.TypeID == gameSessionKey.m_typeID);
 
 			if (session != null)
 			{
@@ -344,7 +353,7 @@ namespace DSFServices.Services
 			var myPlayerId = plInfo.PID;
 			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
-									 x.Session.m_typeID == gameSessionKey.m_typeID);
+									 x.TypeID == gameSessionKey.m_typeID);
 
 			if(session != null)
 			{

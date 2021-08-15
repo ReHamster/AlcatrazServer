@@ -34,7 +34,7 @@ namespace DSFServices
 			}
 			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == CurrentSessionID &&
-									 x.Session.m_typeID == CurrentSessionTypeID);
+									 x.TypeID == CurrentSessionTypeID);
 
 			if (session != null)
 			{
