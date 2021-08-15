@@ -69,8 +69,8 @@ namespace QNetZ
 				}
 				else
 				{
-					methodID = Helper.ReadU32(m) & (~0x8000u);
 					error = Helper.ReadU32(m);
+					callID = Helper.ReadU32(m);
 				}
 			}
 
@@ -152,8 +152,8 @@ namespace QNetZ
 				}
 				else
 				{
-					Helper.WriteU32(packetData, methodID | 0x8000);
 					Helper.WriteU32(packetData, error);
+					Helper.WriteU32(packetData, callID);
 				}
 			}
 
