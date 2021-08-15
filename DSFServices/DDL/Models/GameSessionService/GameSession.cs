@@ -5,6 +5,15 @@ using System.Linq;
 
 namespace DSFServices.DDL.Models
 {
+
+	public enum GameSessionAttributeType
+	{
+		QueryId = 0,
+		PublicSlots = 3,
+		PrivateSlots = 4,
+		// TODO: other parameters
+	}
+
 	public class GameSessionProperty
 	{
 		public uint ID { get; set; }

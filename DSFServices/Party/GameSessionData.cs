@@ -14,7 +14,7 @@ namespace DSFServices
 	{
 		public GameSessionData()
 		{
-			Session = new GameSession();
+			Attributes = new Dictionary<uint, uint>();
 			HostURLs = new List<StationURL>();
 			Participants = new HashSet<uint>();
 			PublicParticipants = new HashSet<uint>();
@@ -22,7 +22,8 @@ namespace DSFServices
 
 		public uint Id { get; set; }
 
-		public GameSession Session { get; set; }
+		public uint TypeID { get; set; }
+		public Dictionary<uint, uint> Attributes { get; set; }
 		public uint HostPID { get; set; }
 		public List<StationURL> HostURLs { get; set; }
 		public HashSet<uint> Participants { get; set; }     // ID, Private
