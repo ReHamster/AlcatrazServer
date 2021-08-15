@@ -25,6 +25,7 @@ namespace RDVServices.Services
 		[RMCMethod(1)]
 		public RMCResult Login(string userName)
 		{
+#if false
 			var rdvConnectionString = new StationURL(
 				"prudps",
 				QConfiguration.Instance.ServerBindAddress,
@@ -83,6 +84,8 @@ namespace RDVServices.Services
 			}
 
 			return Error((int)RMCErrorCode.RendezVous_InvalidUsername);
+#endif
+			return Error(0);
 		}
 
 		/// <summary>
