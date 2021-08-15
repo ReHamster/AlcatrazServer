@@ -17,20 +17,6 @@ namespace DSFServices.Services
 		[RMCMethod(1)]
 		public RMCResult SendGameIdToParty(uint id, uint toJoinId, byte gameType, string msgRequest)
 		{
-			UNIMPLEMENTED($"uint id = {id}, uint toJoinId = {toJoinId}, int gameType = {gameType}, string msgRequest = {msgRequest}");
-
-
-			/*
-			 SEND TO ALL CIENTS 
-			NotificationEvent {
-				m_pidSource = 541956			// Client PID ? sPID?
-				m_uiType = (PartyEvent, 0)
-				m_uiParam1 = 22046				// toJoinId
-				m_uiParam2 = 1					// hmmmm
-				m_strParam = QUAZAL PRUDP URLS in msgRequest
-			}
-			 */
-
 			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == id);
 
 			if (gathering != null)
@@ -95,29 +81,34 @@ namespace DSFServices.Services
 		public RMCResult NotifyPartyToLeaveGame(uint id)
 		{
 			// in party id send to all clients
-			/*
-			 NotificationEvent {
-				m_pidSource = 541956
-				m_uiType = (PartyEvent, 2)
-				m_uiParam1 = 0
-				m_uiParam2 = 0
-				m_strParam = NotifyPartyToLeaveGame
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == id);
+
+			if (gathering != null)
+			{
+				foreach (var pid in gathering.Participants)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(pid);
+
+					if (qclient != null)
+					{
+						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 2)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = 0,
+							m_uiParam2 = 0,
+							m_strParam = "NotifyPartyToLeaveGame",
+							m_uiParam3 = 0
+						};
+
+						NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					}
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : PartyService.NotifyPartyToLeaveGame - no gathering with gid={id}");
 			}
 
-			 */
-
-			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 2)
-			{
-				m_pidSource = Context.Client.Info.PID,
-				m_uiParam1 = 0,
-				m_uiParam2 = 0,
-				m_strParam = "NotifyPartyToLeaveGame",
-				m_uiParam3 = 0
-			};
-
-			NotificationQueue.SendNotification(Context.Handler, Context.Client, notification);
-
-			UNIMPLEMENTED();
 			return Error(0);
 		}
 
@@ -152,28 +143,31 @@ namespace DSFServices.Services
 		[RMCMethod(9)]
 		public RMCResult PartyLeaderNetZIsValid(uint partyId, int param1, int param2)
 		{
-			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 4)
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == partyId);
+
+			if (gathering != null)
 			{
-				m_pidSource = Context.Client.Info.PID,
-				m_uiParam1 = (uint)param1,
-				m_uiParam2 = (uint)param2,
-				m_strParam = "PartyLeaderNetZIsValid",
-				m_uiParam3 = 0
-			};
+				var qclient = Context.Handler.GetQClientByClientPID(gathering.Session.m_pidHost);
 
-			NotificationQueue.SendNotification(Context.Handler, Context.Client, notification);
-			/*
-			SEND TO ALL in partyId
-			NotificationEvent {
-				m_pidSource = 541956
-				m_uiType = (PartyEvent, 4)
-				m_uiParam1 = 0
-				m_uiParam2 = 0
-				m_strParam = "PartyLeaderNetZIsValid"
-			}*/
+				if (qclient != null)
+				{
+					var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 4)
+					{
+						m_pidSource = Context.Client.Info.PID,
+						m_uiParam1 = (uint)param1,
+						m_uiParam2 = (uint)param2,
+						m_strParam = "PartyLeaderNetZIsValid",
+						m_uiParam3 = 0
+					};
 
+					NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : PartyService.PartyLeaderNetZIsValid - no gathering with gid={partyId}");
+			}
 
-			UNIMPLEMENTED();
 			return Error(0);
 		}
 
@@ -240,16 +234,35 @@ namespace DSFServices.Services
 		[RMCMethod(15)]
 		public RMCResult JoinMatchmakingStatus(uint gid, uint pid, bool joinSuccess)
 		{
-			/*
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
+
+			if (gathering != null)
+			{
+				foreach (var participantPid in gathering.Participants)
 				{
-				  "gid": 39704,				// gathering ID
-				  "pid": 541956,			// 0x84504
-				  "joinSuccess": true
+					var qclient = Context.Handler.GetQClientByClientPID(participantPid);
+
+					if (qclient != null)
+					{
+						NotificationEvent notification;
+						notification = new NotificationEvent(NotificationEventsType.PartyJoinMatchmaking, 0)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = pid,
+							m_uiParam2 = (uint)(joinSuccess ? 1 : 0),
+							m_strParam = "JoinMatchmakingStatus",
+							m_uiParam3 = 0
+						};
+
+						NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					}
 				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : PartyService.JoinMatchmakingStatus - no gathering with gid={gid}");
+			}
 
-			 */
-
-			UNIMPLEMENTED();
 			return Result(new { result = true });
 		}
 

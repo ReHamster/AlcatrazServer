@@ -4,6 +4,7 @@ using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace DSFServices.Services
@@ -98,6 +99,8 @@ namespace DSFServices.Services
 
 			if(session != null)
 			{
+				var otherSessionBytes = "01 00 00 00 56 56 00 00 E9 3B 08 00 03 00 00 00 3D 00 70 72 75 64 70 3A 2F 61 64 64 72 65 73 73 3D 31 37 32 2E 32 35 2E 31 39 32 2E 31 3B 70 6F 72 74 3D 33 30 37 34 3B 50 49 44 3D 35 33 39 36 32 35 3B 52 56 43 49 44 3D 36 38 31 37 36 00 3F 00 70 72 75 64 70 3A 2F 61 64 64 72 65 73 73 3D 31 39 32 2E 31 36 38 2E 31 37 38 2E 32 31 3B 70 6F 72 74 3D 33 30 37 34 3B 50 49 44 3D 35 33 39 36 32 35 3B 52 56 43 49 44 3D 36 38 31 37 36 00 4B 00 70 72 75 64 70 3A 2F 61 64 64 72 65 73 73 3D 38 32 2E 37 32 2E 32 31 2E 31 34 38 3B 70 6F 72 74 3D 33 30 37 34 3B 73 69 64 3D 31 35 3B 74 79 70 65 3D 33 3B 50 49 44 3D 35 33 39 36 32 35 3B 52 56 43 49 44 3D 36 38 31 37 36 00 10 00 00 00 03 00 00 00 00 00 00 00 04 00 00 00 08 00 00 00 05 00 00 00 00 00 00 00 06 00 00 00 01 00 00 00 07 00 00 00 01 00 00 00 64 00 00 00 00 00 00 00 65 00 00 00 00 00 00 00 66 00 00 00 1C CE FF 0B 67 00 00 00 00 00 00 00 68 00 00 00 00 00 00 00 69 00 00 00 00 00 00 00 6A 00 00 00 00 00 00 00 6B 00 00 00 00 00 00 00 6C 00 00 00 00 00 00 00 6D 00 00 00 01 00 00 00 71 00 00 00 00 00 00 00";
+
 				searchResult = new GameSessionSearchResult()
 				{
 					m_hostPID = session.HostPID,
@@ -108,6 +111,20 @@ namespace DSFServices.Services
 						m_sessionID = session.Id,
 						m_typeID = session.Session.m_typeID
 					}
+				};
+
+				// TODO: investigate what attributes are used
+				// If I fill it it my way the game is crashing
+				var origResult = DDLSerializer.ReadObject<GameSessionSearchResult>(new MemoryStream(Helper.ParseByteArray(otherSessionBytes)));
+
+				searchResult = origResult;
+
+				searchResult.m_hostPID = session.HostPID;
+				searchResult.m_hostURLs = session.HostURLs;
+				searchResult.m_sessionKey = new GameSessionKey()
+				{
+					m_sessionID = session.Id,
+					m_typeID = session.Session.m_typeID
 				};
 			}
 
