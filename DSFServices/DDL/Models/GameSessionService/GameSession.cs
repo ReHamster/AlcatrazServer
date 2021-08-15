@@ -47,32 +47,4 @@ namespace DSFServices.DDL.Models
 		public ICollection<StationURL> m_hostURLs { get; set; }
 		public ICollection<GameSessionProperty> m_attributes { get; set; }
 	}
-
-	//-----------------------------------------------------
-	// TODO: entities
-
-	public class GameSessionData
-	{
-		public GameSessionData()
-		{
-			Session = new GameSession();
-			HostURLs = new List<StationURL>();
-			Participants = new HashSet<uint>();
-			PublicParticipants = new HashSet<uint>();
-		}
-
-		public uint Id { get; set; }
-
-		public GameSession Session { get; set; }
-		public uint HostPID { get; set; }
-		public List<StationURL> HostURLs { get; set; }
-		public HashSet<uint> Participants { get; set; }     // ID, Private
-		public HashSet<uint> PublicParticipants { get; set; }     // ID, Public
-
-		public uint[] AllParticipants { get
-			{
-				return Participants.Concat(PublicParticipants).ToArray();
-			}
-		}
-	}
 }

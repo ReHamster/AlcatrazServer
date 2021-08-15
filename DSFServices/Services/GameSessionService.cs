@@ -3,7 +3,6 @@ using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,14 +17,12 @@ namespace DSFServices.Services
 	{
 		static uint GameSessionCounter = 200600;
 
-		static readonly List<GameSessionData> Sessions = new List<GameSessionData>();
-
 		[RMCMethod(1)]
 		public RMCResult CreateSession(GameSession gameSession)
 		{
 			var plInfo = Context.Client.Info;
 			var newSession = new GameSessionData();
-			Sessions.Add(newSession);
+			GameSessions.SessionList.Add(newSession);
 
 			newSession.Id = ++GameSessionCounter;
 			newSession.HostPID = plInfo.PID;
@@ -46,7 +43,7 @@ namespace DSFServices.Services
 		[RMCMethod(2)]
 		public RMCResult UpdateSession(GameSessionUpdate gameSessionUpdate)
 		{
-			var session = Sessions
+			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionUpdate.m_sessionKey.m_sessionID && 
 									 x.Session.m_typeID == gameSessionUpdate.m_sessionKey.m_typeID);
 
@@ -97,7 +94,7 @@ namespace DSFServices.Services
 		{
 			var searchResult = new GameSessionSearchResult();
 
-			var session = Sessions.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && x.Session.m_typeID == gameSessionKey.m_typeID);
+			var session = GameSessions.SessionList.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && x.Session.m_typeID == gameSessionKey.m_typeID);
 
 			if(session != null)
 			{
@@ -123,7 +120,7 @@ namespace DSFServices.Services
 		{
 			// TODO: where to hold m_queryID??? Are there notifications?
 
-			var sessions = Sessions.Where(x => x.Session.m_typeID == m_typeID).ToArray();
+			var sessions = GameSessions.SessionList.Where(x => x.Session.m_typeID == m_typeID).ToArray();
 
 			var resultList = new List<GameSessionSearchResult>();
 
@@ -153,7 +150,7 @@ namespace DSFServices.Services
 		[RMCMethod(8)]
 		public RMCResult AddParticipants(GameSessionKey gameSessionKey, IEnumerable<uint> publicParticipantIDs, IEnumerable<uint> privateParticipantIDs)
 		{
-			var session = Sessions
+			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
 									 x.Session.m_typeID == gameSessionKey.m_typeID);
 
@@ -187,7 +184,7 @@ namespace DSFServices.Services
 		[RMCMethod(9)]
 		public RMCResult RemoveParticipants(GameSessionKey gameSessionKey, IEnumerable<uint> participantIDs)
 		{
-			var session = Sessions
+			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID &&
 									 x.Session.m_typeID == gameSessionKey.m_typeID);
 
@@ -301,7 +298,7 @@ namespace DSFServices.Services
 		{
 			var plInfo = Context.Client.Info;
 			var myPlayerId = plInfo.PID;
-			var session = Sessions.FirstOrDefault(x => x.HostPID == myPlayerId);
+			var session = GameSessions.SessionList.FirstOrDefault(x => x.HostPID == myPlayerId);
 
 			if (session != null)
 			{
@@ -328,7 +325,7 @@ namespace DSFServices.Services
 		{
 			var plInfo = Context.Client.Info;
 			var myPlayerId = plInfo.PID;
-			var session = Sessions
+			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
 									 x.Session.m_typeID == gameSessionKey.m_typeID);
 
@@ -339,15 +336,15 @@ namespace DSFServices.Services
 
 				session.PublicParticipants.Remove(myPlayerId);
 				session.Participants.Remove(myPlayerId);
+
+				if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
+				{
+					GameSessions.SessionList.Remove(session);
+				}
 			}
 			else
 			{
 				QLog.WriteLine(1, $"Error : GameSessionService.RemoveParticipants - no session with id={gameSessionKey.m_sessionID}");
-			}
-
-			if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
-			{
-				Sessions.Remove(session);
 			}
 
 			return Error(0);
