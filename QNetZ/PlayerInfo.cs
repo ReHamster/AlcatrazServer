@@ -9,7 +9,13 @@ namespace QNetZ
 	{
 		public PlayerInfo()
 		{
-			DataStore = new Dictionary<Type, object>();
+			DataStore = new Dictionary<Type, IPlayerDataStore>();
+		}
+
+		public void OnDropped()
+		{
+			foreach (var ds in DataStore.Values)
+				ds.OnDropped();
 		}
 
 		public QClient Client;	// connection info
@@ -23,20 +29,25 @@ namespace QNetZ
 		// game - specific stuff comes here
 		public T GetData<T>() where T: class
 		{
-			object value;
+			IPlayerDataStore value;
 
 			if(DataStore.TryGetValue(typeof(T), out value))
 				return (T)value;
 
 			var createFunc = Expression.Lambda<Func<T>>(
-				Expression.New(typeof(T).GetConstructor(Type.EmptyTypes))
+				Expression.New(typeof(T).GetConstructor(new[] { typeof(PlayerInfo) }), new [] { Expression.Constant(this) })
 			).Compile();
 
-			DataStore[typeof(T)] = value = createFunc();
+			DataStore[typeof(T)] = value = (IPlayerDataStore)createFunc();
 
 			return (T)value;
 		}
 
-		private Dictionary<Type, object> DataStore;
+		private Dictionary<Type, IPlayerDataStore> DataStore;
+	}
+
+	public interface IPlayerDataStore
+	{
+		void OnDropped();
 	}
 }
