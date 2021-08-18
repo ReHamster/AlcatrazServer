@@ -21,7 +21,10 @@ namespace DSFServices
 				oldGathering.Participants.Remove(player.PID);
 
 				if (oldGathering.Participants.Count == 0)
+				{
+					QLog.WriteLine(1, $"Auto-deleted gathering {oldGatheringId}");
 					GatheringList.Remove(oldGathering);
+				}
 			}
 
 			// set new participation
