@@ -52,7 +52,7 @@ namespace Alcatraz.Context
 		protected override void OnModelCreating(ModelBuilder builder)
 		{
 			builder.Entity<Relationship>()
-					.HasKey(t => new { t.User1Id, t.User2Id });
+				.HasKey(t => new { t.User1Id, t.User2Id });
 
 			builder.Entity<PlayerStatisticsBoardValue>()
 				.HasOne(rp => rp.PlayerBoard)
