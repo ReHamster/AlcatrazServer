@@ -149,20 +149,23 @@ namespace DSFServices.Services
 
 			if (gathering != null)
 			{
-				var qclient = Context.Handler.GetQClientByClientPID(gathering.Session.m_pidHost);
-
-				if (qclient != null)
+				foreach (var pid in gathering.Participants)
 				{
-					var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 4)
-					{
-						m_pidSource = Context.Client.Info.PID,
-						m_uiParam1 = (uint)param1,
-						m_uiParam2 = (uint)param2,
-						m_strParam = "PartyLeaderNetZIsValid",
-						m_uiParam3 = 0
-					};
+					var qclient = Context.Handler.GetQClientByClientPID(pid);
 
-					NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					if (qclient != null)
+					{
+						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 4)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = (uint)param1,
+							m_uiParam2 = (uint)param2,
+							m_strParam = "PartyLeaderNetZIsValid",
+							m_uiParam3 = 0
+						};
+
+						NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					}
 				}
 			}
 			else

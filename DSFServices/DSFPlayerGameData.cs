@@ -20,18 +20,8 @@ namespace DSFServices
 
 		public void OnDropped()
 		{
-			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == CurrentGatheringId);
+			PartySessions.UpdateGatheringParticipation(Owner, uint.MaxValue);
 
-			if (gathering != null)
-			{
-				gathering.Participants.Remove(Owner.PID);
-
-				if (gathering.Participants.Count == 0)
-				{
-					QLog.WriteLine(1, $"Auto-deleted gathering {CurrentGatheringId}");
-					PartySessions.GatheringList.Remove(gathering);
-				}
-			}
 			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == CurrentSessionID &&
 									 x.TypeID == CurrentSessionTypeID);

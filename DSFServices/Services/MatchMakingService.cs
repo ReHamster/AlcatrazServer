@@ -322,9 +322,7 @@ namespace DSFServices.Services
 
 			if (gathering != null)
 			{
-				plInfo.GameData().CurrentGatheringId = idGathering;
-
-				gathering.Participants.Add(plInfo.PID);
+				PartySessions.UpdateGatheringParticipation(plInfo, idGathering);
 				result = true;
 			}
 			else
@@ -344,22 +342,13 @@ namespace DSFServices.Services
 
 			if (gathering != null)
 			{
-				plInfo.GameData().CurrentGatheringId = uint.MaxValue;
-
-				gathering.Participants.Remove(plInfo.PID);
-
-				if (gathering.Participants.Count == 0)
-				{
-					PartySessions.GatheringList.Remove(gathering);
-				}
-
+				PartySessions.UpdateGatheringParticipation(plInfo, uint.MaxValue);
 				result = true;
 			}
 			else
 			{
 				QLog.WriteLine(1, $"Error : MatchMakingService.CancelParticipation - no gathering with gid={idGathering}");
 			}
-
 
 			return Result(new { retVal = result });
 		}
@@ -540,6 +529,7 @@ namespace DSFServices.Services
 			{
 				var newUrls = lstUrls.Where(x => !gathering.Urls.Any(u => u.urlString == x.urlString));
 
+				gathering.Urls.Clear();
 				gathering.Urls.AddRange(newUrls);
 			}
 			else
