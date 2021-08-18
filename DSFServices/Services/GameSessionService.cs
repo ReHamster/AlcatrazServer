@@ -38,6 +38,8 @@ namespace DSFServices.Services
 			// TODO: read values from current player gathering
 			newSession.Attributes[(uint)GameSessionAttributeType.PublicSlots] = 0;
 			newSession.Attributes[(uint)GameSessionAttributeType.PrivateSlots] = 8;
+			newSession.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)newSession.PublicParticipants.Count;
+			newSession.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)newSession.Participants.Count;
 
 			// TODO: give names to attributes
 			newSession.Attributes[100] = 0;
@@ -196,8 +198,11 @@ namespace DSFServices.Services
 
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
-						GameSessions.UpdateSessionParticipation(player, session.Id, session.TypeID, false);
+						GameSessions.UpdateSessionParticipation(player, session.Id, session.TypeID, true);
 				}
+
+				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
+				session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
 			}
 			else
 			{
