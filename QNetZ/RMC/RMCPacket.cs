@@ -152,7 +152,7 @@ namespace QNetZ
 				}
 				else
 				{
-					Helper.WriteU32(packetData, error);
+					Helper.WriteU32(packetData, error | 0x80000000);
 					Helper.WriteU32(packetData, callID);
 				}
 			}
