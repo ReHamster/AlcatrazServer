@@ -348,6 +348,7 @@ namespace DSFServices.Services
 
 			if (session != null)
 			{
+				session.HostURLs.Clear();
 				session.HostURLs.AddRange(stationURLs);
 			}
 			else
