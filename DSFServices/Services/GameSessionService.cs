@@ -4,6 +4,7 @@ using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 
@@ -16,7 +17,7 @@ namespace DSFServices.Services
 	[RMCService(RMCProtocolId.GameSessionService)]
 	public class GameSessionService : RMCServiceBase
 	{
-		static uint GameSessionCounter = 200600;
+		static uint GameSessionCounter = 22110;
 
 		[RMCMethod(1)]
 		public RMCResult CreateSession(GameSession gameSession)
@@ -32,18 +33,19 @@ namespace DSFServices.Services
 			foreach (var attr in gameSession.m_attributes)
 				newSession.Attributes[attr.ID] = attr.Value;
 
+			newSession.Participants.Add(plInfo.PID);
+
 			// TODO: read values from current player gathering
 			newSession.Attributes[(uint)GameSessionAttributeType.PublicSlots] = 0;
 			newSession.Attributes[(uint)GameSessionAttributeType.PrivateSlots] = 8;
+			newSession.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = 0;
+			newSession.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = 1;
 
 			// TODO: give names to attributes
-			newSession.Attributes[5] = 0;
-			newSession.Attributes[6] = 1;
 			newSession.Attributes[100] = 0;
 			newSession.Attributes[101] = 0;
 			newSession.Attributes[104] = 0;
 			newSession.Attributes[113] = 0;
-
 
 			// return key
 			var result = new GameSessionKey();
@@ -94,7 +96,34 @@ namespace DSFServices.Services
 		[RMCMethod(5)]
 		public RMCResult LeaveSession(GameSessionKey gameSessionKey)
 		{
-			UNIMPLEMENTED();
+			// Same as AbandonSession
+			var plInfo = Context.Client.Info;
+			var myPlayerId = plInfo.PID;
+			var session = GameSessions.SessionList
+				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
+									 x.TypeID == gameSessionKey.m_typeID);
+
+			if(session != null)
+			{
+				plInfo.GameData().CurrentSessionTypeID = uint.MaxValue;
+				plInfo.GameData().CurrentSessionID = uint.MaxValue;
+
+				session.PublicParticipants.Remove(myPlayerId);
+				session.Participants.Remove(myPlayerId);
+
+				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
+				session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
+
+				if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
+				{
+					GameSessions.SessionList.Remove(session);
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : GameSessionService.LeaveSession - no session with id={gameSessionKey.m_sessionID}");
+			}
+
 			return Error(0);
 		}
 
@@ -106,10 +135,8 @@ namespace DSFServices.Services
 
 			var session = GameSessions.SessionList.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && x.TypeID == gameSessionKey.m_typeID);
 
-			if(session != null)
+			if (session != null)
 			{
-				var otherSessionBytes = "01 00 00 00 56 56 00 00 E9 3B 08 00 03 00 00 00 3D 00 70 72 75 64 70 3A 2F 61 64 64 72 65 73 73 3D 31 37 32 2E 32 35 2E 31 39 32 2E 31 3B 70 6F 72 74 3D 33 30 37 34 3B 50 49 44 3D 35 33 39 36 32 35 3B 52 56 43 49 44 3D 36 38 31 37 36 00 3F 00 70 72 75 64 70 3A 2F 61 64 64 72 65 73 73 3D 31 39 32 2E 31 36 38 2E 31 37 38 2E 32 31 3B 70 6F 72 74 3D 33 30 37 34 3B 50 49 44 3D 35 33 39 36 32 35 3B 52 56 43 49 44 3D 36 38 31 37 36 00 4B 00 70 72 75 64 70 3A 2F 61 64 64 72 65 73 73 3D 38 32 2E 37 32 2E 32 31 2E 31 34 38 3B 70 6F 72 74 3D 33 30 37 34 3B 73 69 64 3D 31 35 3B 74 79 70 65 3D 33 3B 50 49 44 3D 35 33 39 36 32 35 3B 52 56 43 49 44 3D 36 38 31 37 36 00 10 00 00 00 03 00 00 00 00 00 00 00 04 00 00 00 08 00 00 00 05 00 00 00 00 00 00 00 06 00 00 00 01 00 00 00 07 00 00 00 01 00 00 00 64 00 00 00 00 00 00 00 65 00 00 00 00 00 00 00 66 00 00 00 1C CE FF 0B 67 00 00 00 00 00 00 00 68 00 00 00 00 00 00 00 69 00 00 00 00 00 00 00 6A 00 00 00 00 00 00 00 6B 00 00 00 00 00 00 00 6C 00 00 00 00 00 00 00 6D 00 00 00 01 00 00 00 71 00 00 00 00 00 00 00";
-
 				searchResult = new GameSessionSearchResult()
 				{
 					m_hostPID = session.HostPID,
@@ -120,20 +147,6 @@ namespace DSFServices.Services
 						m_sessionID = session.Id,
 						m_typeID = session.TypeID
 					}
-				};
-
-				// TODO: investigate what attributes are used
-				// If I fill it it my way the game is crashing
-				var origResult = DDLSerializer.ReadObject<GameSessionSearchResult>(new MemoryStream(Helper.ParseByteArray(otherSessionBytes)));
-
-				searchResult = origResult;
-
-				searchResult.m_hostPID = session.HostPID;
-				searchResult.m_hostURLs = session.HostURLs;
-				searchResult.m_sessionKey = new GameSessionKey()
-				{
-					m_sessionID = session.Id,
-					m_typeID = session.TypeID
 				};
 			}
 
@@ -188,7 +201,11 @@ namespace DSFServices.Services
 				foreach (var pid in privateParticipantIDs)
 					session.Participants.Add(pid);
 
-				foreach(var pid in session.AllParticipants)
+				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
+				session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
+
+				// update player data sessions
+				foreach (var pid in session.AllParticipants)
 				{
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if(player != null)
@@ -231,6 +248,9 @@ namespace DSFServices.Services
 
 				foreach (var pid in participantIDs)
 					session.Participants.Remove(pid);
+
+				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
+				session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
 			}
 			else
 			{
@@ -349,31 +369,7 @@ namespace DSFServices.Services
 		[RMCMethod(23)]
 		public RMCResult AbandonSession(GameSessionKey gameSessionKey)
 		{
-			var plInfo = Context.Client.Info;
-			var myPlayerId = plInfo.PID;
-			var session = GameSessions.SessionList
-				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
-									 x.TypeID == gameSessionKey.m_typeID);
-
-			if(session != null)
-			{
-				plInfo.GameData().CurrentSessionTypeID = uint.MaxValue;
-				plInfo.GameData().CurrentSessionID = uint.MaxValue;
-
-				session.PublicParticipants.Remove(myPlayerId);
-				session.Participants.Remove(myPlayerId);
-
-				if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
-				{
-					GameSessions.SessionList.Remove(session);
-				}
-			}
-			else
-			{
-				QLog.WriteLine(1, $"Error : GameSessionService.RemoveParticipants - no session with id={gameSessionKey.m_sessionID}");
-			}
-
-			return Error(0);
+			return LeaveSession(gameSessionKey);
 		}
 
 

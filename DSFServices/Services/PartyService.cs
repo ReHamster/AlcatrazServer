@@ -4,6 +4,8 @@ using QNetZ.Interfaces;
 using System.Collections.Generic;
 using QNetZ;
 using System.Linq;
+using System.Drawing;
+using QNetZ.DDL;
 
 namespace DSFServices.Services
 {
@@ -240,6 +242,10 @@ namespace DSFServices.Services
 			{
 				foreach (var participantPid in gathering.Participants)
 				{
+					// don't send back the notification
+					if (participantPid == Context.Client.Info.PID)
+						continue;
+
 					var qclient = Context.Handler.GetQClientByClientPID(participantPid);
 
 					if (qclient != null)

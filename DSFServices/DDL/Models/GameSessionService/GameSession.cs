@@ -8,10 +8,27 @@ namespace DSFServices.DDL.Models
 
 	public enum GameSessionAttributeType
 	{
-		QueryId = 0,
 		PublicSlots = 3,
 		PrivateSlots = 4,
+		FilledPublicSlots = 5,
+		FilledPrivateSlots = 6,
+		FreePublicSlots = 50,	// used internally by game
+		FreePrivateSlots = 51,  // used internally by game
+
 		// TODO: other parameters
+
+		/*
+		XBOX:
+			MM_SEARCH_QUERY_ID = 0,
+			MM_HOST_PARAM_MAX_PUBLIC_SLOTS = 2,
+			MM_HOST_PARAM_MAX_PRIVATE_SLOTS = 3,
+			MM_SESSION_FILLED_PUB_SLOTS = 4,
+			MM_SESSION_FREE_PUB_SLOTS = 5,
+			MM_SESSION_FILLED_PRIV_SLOTS = 8,
+			MM_SESSION_FREE_PRIV_SLOTS = 9,
+			MM_SESSION_GAME_MODE = 10,
+			MM_SESSION_GAME_TYPE = 11, // in some place it were 25
+		*/
 	}
 
 	public class GameSessionProperty
