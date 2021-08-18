@@ -87,9 +87,15 @@ namespace QNetZ.DDL
 			Valid = false;
 
 			// check the data
-			if (string.IsNullOrWhiteSpace(_urlScheme) || string.IsNullOrWhiteSpace(_address))
+			if (string.IsNullOrWhiteSpace(_urlScheme))
 			{
 				_urlString = "";
+				return;
+			}
+
+			if (string.IsNullOrWhiteSpace(_address))
+			{
+				_urlString = $"{ _urlScheme }:/";
 				return;
 			}
 

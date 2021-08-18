@@ -109,13 +109,15 @@ namespace RDVServices.Services
 
 			if (oExtraData.data != null)
 			{
+				RMCErrorCode loginCode = RMCErrorCode.Core_NoError;
+
 				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
 				if (plInfo != null &&
 					!plInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
 					(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 				{
-					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
+					QLog.WriteLine(1, $"User login request {userName} - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
@@ -125,38 +127,58 @@ namespace RDVServices.Services
 				{
 					if (user.Password == oExtraData.data.password)
 					{
-						QLog.WriteLine(1, $"User login request {userName}");
-						plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
-
-						plInfo.PID = user.Id;
-						plInfo.AccountId = userName;
-						plInfo.Name = oExtraData.data.username;
-
-						var kerberos = new KerberosTicket(plInfo.PID, Context.Client.sPID, Constants.SessionKey, ticket);
-
-						var loginData = new Login(plInfo.PID)
-						{
-							retVal = (int)RMCErrorCode.Core_NoError,
-							pConnectionData = new RVConnectionData()
-							{
-								m_urlRegularProtocols = rdvConnectionString
-							},
-							strReturnMsg = "",
-							pbufResponse = kerberos.toBuffer()
-						};
-
-						return Result(loginData);
+						QLog.WriteLine(1, $"User login request {userName} - success");
 					}
 					else
 					{
-						QLog.WriteLine(1, $"User login request {userName} DENIED - invalid password");
-						return Error((int)RMCErrorCode.RendezVous_InvalidPassword);
+						QLog.WriteLine(1, $"User login request {userName} - invalid password");
+
+						loginCode = RMCErrorCode.RendezVous_InvalidPassword;
 					}
 				}
 				else
 				{
-					QLog.WriteLine(1, $"User login request {userName} DENIED - invalid user name");
-					return Error((int)RMCErrorCode.RendezVous_InvalidUsername);
+					QLog.WriteLine(1, $"User login request {userName} - invalid user name");
+					loginCode = RMCErrorCode.RendezVous_InvalidUsername;
+				}
+
+				if(loginCode != RMCErrorCode.Core_NoError)
+				{
+					var loginData = new Login(0)
+					{
+						retVal = (uint)loginCode,
+						pConnectionData = new RVConnectionData()
+						{
+							m_urlRegularProtocols = new StationURL("prudp:/")
+						},
+						strReturnMsg = "",
+						pbufResponse = new byte[] { }
+					};
+
+					return Result(loginData);
+				}
+				else
+				{
+					plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
+
+					plInfo.PID = user.Id;
+					plInfo.AccountId = userName;
+					plInfo.Name = oExtraData.data.username;
+
+					var kerberos = new KerberosTicket(plInfo.PID, Context.Client.sPID, Constants.SessionKey, ticket);
+
+					var loginData = new Login(plInfo.PID)
+					{
+						retVal = (uint)loginCode,
+						pConnectionData = new RVConnectionData()
+						{
+							m_urlRegularProtocols = rdvConnectionString
+						},
+						strReturnMsg = "",
+						pbufResponse = kerberos.toBuffer()
+					};
+
+					return Result(loginData);
 				}
 			}
 			else
