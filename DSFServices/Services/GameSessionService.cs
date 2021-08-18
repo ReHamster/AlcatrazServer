@@ -33,13 +33,11 @@ namespace DSFServices.Services
 			foreach (var attr in gameSession.m_attributes)
 				newSession.Attributes[attr.ID] = attr.Value;
 
-			newSession.Participants.Add(plInfo.PID);
+			GameSessions.UpdateSessionParticipation(plInfo, newSession.Id, newSession.TypeID, true);
 
 			// TODO: read values from current player gathering
 			newSession.Attributes[(uint)GameSessionAttributeType.PublicSlots] = 0;
 			newSession.Attributes[(uint)GameSessionAttributeType.PrivateSlots] = 8;
-			newSession.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = 0;
-			newSession.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = 1;
 
 			// TODO: give names to attributes
 			newSession.Attributes[100] = 0;
@@ -105,19 +103,7 @@ namespace DSFServices.Services
 
 			if(session != null)
 			{
-				plInfo.GameData().CurrentSessionTypeID = uint.MaxValue;
-				plInfo.GameData().CurrentSessionID = uint.MaxValue;
-
-				session.PublicParticipants.Remove(myPlayerId);
-				session.Participants.Remove(myPlayerId);
-
-				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
-				session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
-
-				if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
-				{
-					GameSessions.SessionList.Remove(session);
-				}
+				GameSessions.UpdateSessionParticipation(plInfo, uint.MaxValue, uint.MaxValue, false);
 			}
 			else
 			{
@@ -196,23 +182,21 @@ namespace DSFServices.Services
 			if(session != null)
 			{
 				foreach (var pid in publicParticipantIDs)
+				{
 					session.PublicParticipants.Add(pid);
 
+					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
+					if (player != null)
+						GameSessions.UpdateSessionParticipation(player, session.Id, session.TypeID, false);
+				}
+
 				foreach (var pid in privateParticipantIDs)
+				{
 					session.Participants.Add(pid);
 
-				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
-				session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
-
-				// update player data sessions
-				foreach (var pid in session.AllParticipants)
-				{
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
-					if(player != null)
-					{
-						player.GameData().CurrentSessionID = gameSessionKey.m_sessionID;
-						player.GameData().CurrentSessionTypeID = gameSessionKey.m_typeID;
-					}
+					if (player != null)
+						GameSessions.UpdateSessionParticipation(player, session.Id, session.TypeID, false);
 				}
 			}
 			else
@@ -237,17 +221,19 @@ namespace DSFServices.Services
 				{
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
-					{
-						player.GameData().CurrentSessionID = uint.MaxValue;
-						player.GameData().CurrentSessionTypeID = uint.MaxValue;
-					}
+						GameSessions.UpdateSessionParticipation(player, uint.MaxValue, uint.MaxValue, false);
+					else
+						session.Participants.Remove(pid);
 				}
 
 				foreach (var pid in participantIDs)
-					session.PublicParticipants.Remove(pid);
-
-				foreach (var pid in participantIDs)
-					session.Participants.Remove(pid);
+				{
+					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
+					if (player != null)
+						GameSessions.UpdateSessionParticipation(player, uint.MaxValue, uint.MaxValue, false);
+					else
+						session.Participants.Remove(pid);
+				}
 
 				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
 				session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;

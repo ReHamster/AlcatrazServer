@@ -21,22 +21,7 @@ namespace DSFServices
 		public void OnDropped()
 		{
 			PartySessions.UpdateGatheringParticipation(Owner, uint.MaxValue);
-
-			var session = GameSessions.SessionList
-				.FirstOrDefault(x => x.Id == CurrentSessionID &&
-									 x.TypeID == CurrentSessionTypeID);
-
-			if (session != null)
-			{
-				session.PublicParticipants.Remove(Owner.PID);
-				session.Participants.Remove(Owner.PID);
-
-				if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
-				{
-					QLog.WriteLine(1, $"Auto-deleted session {CurrentSessionID}");
-					GameSessions.SessionList.Remove(session);
-				}
-			}
+			GameSessions.UpdateSessionParticipation(Owner, uint.MaxValue, uint.MaxValue, false);
 		}
 
 		public readonly PlayerInfo Owner;
