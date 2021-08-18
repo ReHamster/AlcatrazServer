@@ -42,7 +42,8 @@ namespace DSFServices.Services
 					db.UserRelationships.Add(new Relationship { 
 						Details = uiDetails,
 						User1Id = myUserPid,
-						User2Id = foundUser.Id
+						User2Id = foundUser.Id,
+						ByRelationShip = 3
 					});
 					db.SaveChanges();
 					

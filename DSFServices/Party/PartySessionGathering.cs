@@ -14,6 +14,9 @@ namespace DSFServices
 		{
 			var oldGatheringId = player.GameData().CurrentGatheringId;
 
+			if (oldGatheringId == newGatheringId)
+				return;
+
 			// remove participation from old gathering
 			var oldGathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == oldGatheringId);
 			if (oldGathering != null)

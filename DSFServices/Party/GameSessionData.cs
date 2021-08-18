@@ -15,6 +15,9 @@ namespace DSFServices
 			var oldSessionId = player.GameData().CurrentSessionID;
 			var oldSessionTypeId = player.GameData().CurrentSessionTypeID;
 
+			if (oldSessionId == newSessionId)
+				return;
+
 			// remove participation from old session
 			var oldSession = SessionList.FirstOrDefault(x => x.Id == oldSessionId && x.TypeID == oldSessionTypeId);
 			if (oldSession != null)
