@@ -113,12 +113,17 @@ namespace RDVServices.Services
 
 				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
-				if (plInfo != null &&
-					!plInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
-					(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
+				if(plInfo != null)
 				{
-					QLog.WriteLine(1, $"User login request {userName} - concurrent login!");
-					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
+					if (plInfo.Client != null &&
+						!plInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
+						(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
+					{
+						QLog.WriteLine(1, $"User login request {userName} - concurrent login!");
+						return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
+					}
+
+					NetworkPlayers.DropPlayerInfo(plInfo);
 				}
 
 				var user = DBHelper.GetUserByName(oExtraData.data.username);

@@ -95,12 +95,6 @@ namespace QNetZ
 			// assign player to client and also re-assign new client to player
 			var playerInfo = NetworkPlayers.GetPlayerInfoByPID(userPrincipalID);
 
-			// drop player in case when of new account but same address
-			if(client.Info != null)
-			{
-				NetworkPlayers.DropPlayerInfo(client.Info);
-			}
-
 			playerInfo.Client = client;
 			client.Info = playerInfo;
 
