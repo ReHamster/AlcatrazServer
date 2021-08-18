@@ -54,6 +54,11 @@ namespace QNetZ
 
 		public static void DropPlayerInfo(PlayerInfo plInfo)
 		{
+			if(plInfo.Client != null)
+			{
+				plInfo.Client.Info = null;
+			}
+
 			plInfo.OnDropped();
 			QLog.WriteLine(1, $"dropping player: {plInfo.Name}");
 			
@@ -69,7 +74,7 @@ namespace QNetZ
 					(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
 				{
 					plInfo.OnDropped();
-					QLog.WriteLine(1, $"dropping player: {plInfo.Name}");
+					QLog.WriteLine(1, $"auto-dropping player: {plInfo.Name}");
 
 					// also drop network players
 					Players.RemoveAt(i);
