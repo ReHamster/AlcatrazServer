@@ -290,9 +290,21 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(18)]
-		public void MigrateTo(uint pid, uint oldGathering, uint newGathering)
+		public RMCResult MigrateTo(uint pid, uint oldGathering, uint newGathering)
 		{
+			var plInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
+
+			if(plInfo != null)
+			{
+				if (plInfo.GameData().CurrentGatheringId != oldGathering)
+					QLog.WriteLine(1, $"Error : PartyService.MigrateTo - player {pid} old gathering is {plInfo.GameData().CurrentGatheringId}, expected {oldGathering}");
+
+				PartySessions.UpdateGatheringParticipation(plInfo, newGathering);
+			}
+
 			UNIMPLEMENTED();
+
+			return Error(0);
 		}
 	}
 }
