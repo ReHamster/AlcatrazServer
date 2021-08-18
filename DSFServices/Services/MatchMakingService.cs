@@ -343,6 +343,27 @@ namespace DSFServices.Services
 			if (gathering != null)
 			{
 				PartySessions.UpdateGatheringParticipation(plInfo, uint.MaxValue);
+
+				// send to all party members
+				foreach (var pid in gathering.Participants)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(pid);
+
+					if (qclient != null)
+					{
+						var leaveNotification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 2)
+						{
+							m_pidSource = plInfo.PID,
+							m_uiParam1 = idGathering,
+							m_uiParam2 = plInfo.PID,
+							m_strParam = strMessage,
+							m_uiParam3 = 0
+						};
+
+						NotificationQueue.SendNotification(Context.Handler, qclient, leaveNotification);
+					}
+				}
+
 				result = true;
 			}
 			else
