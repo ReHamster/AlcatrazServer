@@ -3,9 +3,11 @@ using DSFServices.DDL.Models;
 using Microsoft.EntityFrameworkCore;
 using QNetZ;
 using QNetZ.Attributes;
+using QNetZ.DDL;
 using QNetZ.Interfaces;
 using RDVServices;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace DSFServices.Services
@@ -38,8 +40,17 @@ namespace DSFServices.Services
 
 				if (foundUser != null)
 				{
-					// FIXME: There is some problem with game that it does not bring up UI
-					db.UserRelationships.Add(new Relationship { 
+					var existringRequest = db.UserRelationships
+						.FirstOrDefault(x => x.User1Id == myUserPid && x.User2Id == foundUser.Id ||
+											 x.User1Id == foundUser.Id && x.User2Id == myUserPid);
+
+					if(existringRequest != null)
+					{
+						return Result(new { retVal = false });
+					}
+
+					// add new relationship with ID 3
+					db.UserRelationships.Add(new UserRelationship { 
 						Details = uiDetails,
 						User1Id = myUserPid,
 						User2Id = foundUser.Id,
@@ -55,7 +66,7 @@ namespace DSFServices.Services
 						m_pidSource = myUserPid,
 						m_uiParam1 = myUserPid,       // i'm just guessing
 						m_uiParam2 = 2,
-						m_strParam = ""
+						m_strParam = strMessage
 					};
 
 					// send to proper client
@@ -97,15 +108,21 @@ namespace DSFServices.Services
 
 				if (foundUser != null)
 				{
-					result = true;
+					var existringRequest = db.UserRelationships
+						.FirstOrDefault(x => x.User1Id == myUserPid && x.User2Id == foundUser.Id ||
+											 x.User1Id == foundUser.Id && x.User2Id == myUserPid);
 
-					db.UserRelationships.Add(new Relationship()
+					if (existringRequest != null)
 					{
-						User1Id = myUserPid,
-						User2Id = uiPlayer
-					});
+						existringRequest.ByRelationShip = 1;
+						db.SaveChanges();
+					}
+					else
+					{
+						return Result(new { retVal = false });
+					}
 
-					db.SaveChanges();
+					result = true;
 
 					// send notification
 
@@ -163,9 +180,28 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(9)]
-		public void ClearRelationship()
+		public RMCResult ClearRelationship(uint uiPlayer)
 		{
-			UNIMPLEMENTED();
+			bool result = false;
+			var plInfo = Context.Client.Info;
+			var myUserPid = plInfo.PID;
+
+			using (var db = DBHelper.GetDbContext())
+			{
+				var existringRequest = db.UserRelationships
+					.FirstOrDefault(x => x.User1Id == myUserPid && x.User2Id == uiPlayer ||
+										 x.User1Id == uiPlayer && x.User2Id == myUserPid);
+
+				if(existringRequest != null)
+				{
+					db.UserRelationships.Remove(existringRequest);
+					db.SaveChanges();
+
+					result = true;
+				}
+			}
+
+			return Result(new { retVal = result });
 		}
 
 		[RMCMethod(10)]
@@ -183,11 +219,12 @@ namespace DSFServices.Services
 		[RMCMethod(12)]
 		public RMCResult GetDetailedList(byte byRelationship, bool bReversed)
 		{
+#if false
 			IEnumerable<FriendData> result;
 
 			var plInfo = Context.Client.Info;
 			var myUserPid = plInfo.PID;
-
+			
 			using (var db = DBHelper.GetDbContext())
 			{
 				var relations = db.UserRelationships
@@ -197,7 +234,7 @@ namespace DSFServices.Services
 					.Where(x => x.User1Id == myUserPid || x.User2Id == myUserPid)
 					.Where(x => x.ByRelationShip == byRelationship)
 					.Select(x => x.User2Id == myUserPid ?
-						new Relationship
+						new UserRelationship
 						{  // swap list
 							User1Id = x.User2Id,
 							User1 = x.User2,
@@ -219,7 +256,9 @@ namespace DSFServices.Services
 						m_byRelationship = (byte)x.ByRelationShip
 					}).ToArray();
 			}
-
+#else
+			var result = new List<FriendData>();
+#endif
 			return Result(result);
 		}
 
@@ -227,6 +266,10 @@ namespace DSFServices.Services
 		public RMCResult GetRelationships(int offset, int size)
 		{
 			var result = new RelationshipsResult();
+
+			var relationshipsBytes = "0B 00 00 00 0B 00 00 00 AB D6 05 00 09 00 6D 63 6E 61 6C 6C 79 6F 00 01 00 00 00 00 00 E9 3B 08 00 0C 00 53 6E 6F 6F 70 79 42 6C 61 6E 6B 00 01 00 00 00 00 00 22 3D 08 00 0B 00 7A 75 63 6B 69 6C 6F 61 6B 73 00 01 00 00 00 00 00 B5 43 08 00 0F 00 67 6F 6C 64 65 6E 5F 73 6C 65 6E 64 65 72 00 01 00 00 00 00 00 23 44 08 00 0C 00 4E 69 6B 6B 69 43 68 61 6E 39 32 00 01 00 00 00 00 00 D0 45 08 00 0C 00 61 64 72 69 61 61 6E 39 31 30 30 00 01 00 00 00 00 00 2B 47 08 00 0E 00 52 61 63 69 6E 67 46 72 65 61 6B 39 35 00 01 00 00 00 00 00 8C 4D 08 00 0E 00 56 65 72 79 48 6F 74 50 65 72 73 6F 6E 00 01 00 00 00 00 00 F3 4D 08 00 0C 00 56 6F 72 74 65 78 53 74 6F 72 65 00 01 00 00 00 00 00 97 4F 08 00 0D 00 53 49 44 45 53 57 49 50 45 31 32 37 00 01 00 00 00 00 00 47 BD 05 00 0E 00 56 6F 72 74 65 78 4C 65 42 65 6C 67 65 00 03 00 00 00 00 01 ";
+
+			var resultTest = DDLSerializer.ReadObject<RelationshipsResult>(new MemoryStream(Helper.ParseByteArray(relationshipsBytes)));
 
 			var myUserPid = Context.Client.Info.PID;
 			using (var db = DBHelper.GetDbContext())
