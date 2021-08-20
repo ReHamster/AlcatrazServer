@@ -81,6 +81,8 @@ namespace QNetZ
 			byte[] kerberosTicket = new byte[size];
 			m.Read(kerberosTicket, 0, (int)size);
 
+			var ticketData = new KerberosTicket(kerberosTicket);
+
 			// read encrypted data
 			size = Helper.ReadU32(m) - 16;
 			byte[] buff = new byte[size];

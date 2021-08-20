@@ -22,6 +22,11 @@ namespace QNetZ
 			ticket = ticketData;
 		}
 
+		public KerberosTicket(byte[] encryptedBuffer)
+		{
+			// TODO: decrypt the token
+		}
+
 		public byte[] toBuffer()
 		{
 			MemoryStream m = new MemoryStream();

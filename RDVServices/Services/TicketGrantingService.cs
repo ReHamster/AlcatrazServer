@@ -120,10 +120,12 @@ namespace RDVServices.Services
 						(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 					{
 						QLog.WriteLine(1, $"User login request {userName} - concurrent login!");
-						return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
+						loginCode = RMCErrorCode.RendezVous_ConcurrentLoginDenied;
 					}
-
-					NetworkPlayers.DropPlayerInfo(plInfo);
+					else
+					{
+						NetworkPlayers.DropPlayerInfo(plInfo);
+					}
 				}
 
 				var user = DBHelper.GetUserByName(oExtraData.data.username);
@@ -197,10 +199,6 @@ namespace RDVServices.Services
 		[RMCMethod(3)]
 		public RMCResult RequestTicket(uint sourcePID, uint targetPID)
 		{
-			// var requestTicketData = "01 00 01 00 4C 00 00 00 49 54 E6 90 C2 C9 E0 FF 2F 16 B5 10 CB 10 69 E7 BB 57 D0 15 A7 A1 AB 03 EC 22 2F BD 50 76 4C D8 4E 71 A1 E4 03 8C C9 6C 65 EB C6 23 74 78 2A E8 86 33 B4 51 91 D1 50 83 81 44 4E FA 88 36 70 2D DE C2 D6 B4 CF E8 0B ED 68 23 DB 7F ";
-			// var m = new MemoryStream(Helper.ParseByteArray(requestTicketData));
-			// var retModel = DDLSerializer.ReadObject<TicketData>(m);
-
 			var kerberos = new KerberosTicket(sourcePID, targetPID, Constants.SessionKey, ticket);
 
 			var ticketData = new TicketData()
