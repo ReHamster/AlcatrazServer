@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Alcatraz.Context.Entities
 {
 	// Friends
-	public class Relationship
+	public class UserRelationship
 	{
 		public uint User1Id { get; set; }
 		public User User1 { get; set; }

@@ -51,7 +51,7 @@ namespace Alcatraz.Context
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{
-			builder.Entity<Relationship>()
+			builder.Entity<UserRelationship>()
 				.HasKey(t => new { t.User1Id, t.User2Id });
 
 			builder.Entity<PlayerStatisticsBoardValue>()
@@ -67,7 +67,7 @@ namespace Alcatraz.Context
 
 		// USERS
 		public DbSet<User> Users { get; set; }
-		public DbSet<Relationship> UserRelationships { get; set; }
+		public DbSet<UserRelationship> UserRelationships { get; set; }
 
 		public DbSet<PlayerStatisticsBoard> PlayerStatisticBoards { get; set; }
 		public DbSet<PlayerStatisticsBoardValue> PlayerStatisticBoardValues { get; set; }
