@@ -15,6 +15,11 @@ namespace QNetZ.DDL
 
 	public class qBuffer : IAnyData
 	{
+		public qBuffer()
+		{
+			data = new byte[] { };
+		}
+
 		public byte[] data;
 		public void Read(Stream s)
 		{
