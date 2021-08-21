@@ -33,4 +33,5 @@ The tools:
 # Credits
 
 - SoapyMan - project lead
+- VortexLeBelge - for providing his game account for research purpose
 - Warranty Voider - [**original Ghost Recon Online Backend**](https://github.com/zeroKilo/GROBackendWV)

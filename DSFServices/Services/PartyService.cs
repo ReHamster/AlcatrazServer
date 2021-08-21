@@ -302,8 +302,6 @@ namespace DSFServices.Services
 				PartySessions.UpdateGatheringParticipation(plInfo, newGathering);
 			}
 
-			UNIMPLEMENTED();
-
 			return Error(0);
 		}
 	}
