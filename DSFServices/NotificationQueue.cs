@@ -27,7 +27,7 @@ namespace DSFServices
 	public static class NotificationQueue
 	{
 		private static readonly object _sync = new object();
-		private static List<NotificationQueueEntry> quene = new List<NotificationQueueEntry>();
+		private static List<NotificationQueueEntry> queued = new List<NotificationQueueEntry>();
 
 		public static void AddNotification(NotificationEvent eventData, QClient client, uint timeout)
 		{
@@ -35,7 +35,7 @@ namespace DSFServices
 
 			lock (_sync)
 			{
-				quene.Add(qItem);
+				queued.Add(qItem);
 			}
 		}
 
@@ -43,15 +43,15 @@ namespace DSFServices
 		{
 			lock (_sync)
 			{
-				for (int i = 0; i < quene.Count; i++)
+				for (int i = 0; i < queued.Count; i++)
 				{
-					NotificationQueueEntry n = quene[i];
+					NotificationQueueEntry n = queued[i];
 					if (n.timer.ElapsedMilliseconds > n.timeout)
 					{
 						SendNotification(handler, n.client, n.data);
 
 						n.timer.Stop();
-						quene.RemoveAt(i);
+						queued.RemoveAt(i);
 						i--;
 					}
 				}

@@ -177,15 +177,52 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(10)]
-		public void QueryMatchmaking(uint toMatchmaking, uint fromParty, int nbPlayers, int applyMask)
+		public RMCResult QueryMatchmaking(uint toMatchmaking, uint fromParty, int nbPlayers, int applyMask)
 		{
-			UNIMPLEMENTED();
+			// toMatchmaking - can be query ID?
+
+			/*
+			"notification": {
+				"m_pidSource": 376135,		// pid
+				"m_uiType": 1004007,
+				"m_uiParam1": 39874,		// fromParty
+				"m_uiParam2": 1,			// nbPlayers
+				"m_strParam": "MM:22143|",  // toMatchmaking
+				"m_uiParam3": 0				// applyMask ???
+			}
+			*/
+
+			// send to all players?
+			foreach(var plr in NetworkPlayers.Players)
+			{
+				var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 7)
+				{
+					m_pidSource = Context.Client.Info.PID,
+					m_uiParam1 = fromParty,
+					m_uiParam2 = (uint)nbPlayers,
+					m_strParam = $"MM:{toMatchmaking}|",
+					m_uiParam3 = (uint)applyMask
+				};
+
+				NotificationQueue.SendNotification(Context.Handler, plr.Client, notification);
+			}
+
+			return Error(0);
 		}
 
 		[RMCMethod(11)]
-		public void ResponseMatchmaking(uint toParty, uint fromMatchmaking, int approved)
+		public RMCResult ResponseMatchmaking(uint toParty, uint fromMatchmaking, int approved)
 		{
+			// what this method should do?
+			/*
+			   "toParty": 39874,
+			  "fromMatchmaking": 22143,
+			  "approved": 1
+			 */
+
 			UNIMPLEMENTED();
+
+			return Error(0);
 		}
 
 		[RMCMethod(12)]

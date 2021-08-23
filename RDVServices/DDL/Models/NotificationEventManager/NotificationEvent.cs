@@ -26,6 +26,11 @@ namespace DSFServices.DDL.Models
 		Statistics				= 1008,
 	};
 
+	// some events:
+	// FriendStatusChangeEvent param0 = PID, param1 = status
+	// GameSessionEvent(7) subtype 3 - matchmaking game found?
+	// GameSessionEvent(7) subtype 13 - when other player disconnects
+
 	// see PlatformListenerServiceRDV::ProcessNotificationEvent in game
 	public class NotificationEvent
 	{
