@@ -71,6 +71,10 @@ namespace DSFServices.Services
 					session.Attributes[attr.ID] = attr.Value;
 				}
 			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : GameSessionService.UpdateSession - no session with id={gameSessionUpdate.m_sessionKey.m_sessionID}");
+			}
 
 			return Error(0);
 		}
@@ -87,8 +91,57 @@ namespace DSFServices.Services
 		[RMCMethod(4)]
 		public RMCResult MigrateSession(GameSessionKey gameSessionKey)
 		{
+			var srcSession = GameSessions.SessionList
+				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID &&
+									 x.TypeID == gameSessionKey.m_typeID);
+
 			var gameSessionKeyMigrated = new GameSessionKey();
-			UNIMPLEMENTED();
+
+			if (srcSession != null)
+			{
+				var plInfo = Context.Client.Info;
+				var newSession = new GameSessionData();
+				GameSessions.SessionList.Add(newSession);
+
+				newSession.Id = ++GameSessionCounter;
+				newSession.HostPID = plInfo.PID;
+				newSession.TypeID = srcSession.TypeID;
+
+				// move all participants too
+				newSession.Participants = srcSession.Participants;
+				newSession.PublicParticipants = srcSession.PublicParticipants;
+
+				foreach (var pid in srcSession.PublicParticipants)
+				{
+					var participantPlInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
+
+					if(participantPlInfo != null)
+					{
+						GameSessions.UpdateSessionParticipation(participantPlInfo, newSession.Id, newSession.TypeID, false);
+					}
+				}
+
+				foreach (var pid in srcSession.Participants)
+				{
+					var participantPlInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
+
+					if (participantPlInfo != null)
+					{
+						GameSessions.UpdateSessionParticipation(participantPlInfo, newSession.Id, newSession.TypeID, true);
+					}
+				}
+
+				foreach (var attr in srcSession.Attributes)
+					newSession.Attributes[attr.Key] = attr.Value;
+
+				gameSessionKeyMigrated.m_sessionID = newSession.Id;
+				gameSessionKeyMigrated.m_typeID = newSession.TypeID;
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : GameSessionService.MigrateSession - no session with id={gameSessionKey.m_sessionID}");
+			}
+
 			return Result(gameSessionKeyMigrated);
 		}
 
