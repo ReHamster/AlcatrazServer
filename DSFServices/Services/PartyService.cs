@@ -192,19 +192,34 @@ namespace DSFServices.Services
 			}
 			*/
 
-			// send to all players?
-			foreach(var plr in NetworkPlayers.Players)
-			{
-				var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 7)
-				{
-					m_pidSource = Context.Client.Info.PID,
-					m_uiParam1 = fromParty,
-					m_uiParam2 = (uint)nbPlayers,
-					m_strParam = $"MM:{toMatchmaking}|",
-					m_uiParam3 = (uint)applyMask
-				};
+			var session = GameSessions.SessionList.FirstOrDefault(x => x.Id == toMatchmaking);
 
-				NotificationQueue.SendNotification(Context.Handler, plr.Client, notification);
+			if (session != null)
+			{
+				// send to all players?
+				// OR only to host?
+				foreach (var pid in session.AllParticipants)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(pid);
+
+					if(qclient != null)
+					{
+						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 7)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = fromParty,
+							m_uiParam2 = (uint)nbPlayers,
+							m_strParam = $"MM:{toMatchmaking}|",
+							m_uiParam3 = (uint)applyMask
+						};
+
+						NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					}
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : PartyService.QueryMatchmaking - no session with id={toMatchmaking}");
 			}
 
 			return Error(0);
@@ -220,7 +235,45 @@ namespace DSFServices.Services
 			  "approved": 1
 			 */
 
-			UNIMPLEMENTED();
+			/*
+			"notification": {
+				"m_pidSource": 376135,
+				"m_uiType": 1004008,
+				"m_uiParam1": 22148,
+				"m_uiParam2": 1,
+				"m_strParam": "ResponseMatchmaking",
+				"m_uiParam3": 0
+			  }
+			*/
+
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == toParty);
+
+			if (gathering != null)
+			{
+				foreach (var pid in gathering.Participants)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(pid);
+
+					if (qclient != null)
+					{
+						NotificationEvent notification;
+						notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 8)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = fromMatchmaking,
+							m_uiParam2 = (uint)approved,
+							m_strParam = "ResponseMatchmaking",
+							m_uiParam3 = 0
+						};
+
+						NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					}
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : PartyService.ResponseMatchmaking - no gathering with gid={toParty}");
+			}
 
 			return Error(0);
 		}
