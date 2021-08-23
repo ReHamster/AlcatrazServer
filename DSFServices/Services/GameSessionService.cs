@@ -106,18 +106,16 @@ namespace DSFServices.Services
 				newSession.Id = ++GameSessionCounter;
 				newSession.HostPID = plInfo.PID;
 				newSession.TypeID = srcSession.TypeID;
-
+				
 				// move all participants too
-				newSession.Participants = srcSession.Participants;
-				newSession.PublicParticipants = srcSession.PublicParticipants;
-
 				foreach (var pid in srcSession.PublicParticipants)
 				{
 					var participantPlInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
 
 					if(participantPlInfo != null)
 					{
-						GameSessions.UpdateSessionParticipation(participantPlInfo, newSession.Id, newSession.TypeID, false);
+						participantPlInfo.GameData().CurrentSessionID = newSession.Id;
+						//GameSessions.UpdateSessionParticipation(participantPlInfo, newSession.Id, newSession.TypeID, false);
 					}
 				}
 
@@ -127,9 +125,13 @@ namespace DSFServices.Services
 
 					if (participantPlInfo != null)
 					{
-						GameSessions.UpdateSessionParticipation(participantPlInfo, newSession.Id, newSession.TypeID, true);
+						participantPlInfo.GameData().CurrentSessionID = newSession.Id;
+						//GameSessions.UpdateSessionParticipation(participantPlInfo, newSession.Id, newSession.TypeID, true);
 					}
 				}
+
+				newSession.Participants = srcSession.Participants;
+				newSession.PublicParticipants = srcSession.PublicParticipants;
 
 				foreach (var attr in srcSession.Attributes)
 					newSession.Attributes[attr.Key] = attr.Value;
