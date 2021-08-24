@@ -1,13 +1,14 @@
 # Alcatraz
+![](https://i.ibb.co/gJFYt04/alcatraz-logo.jpg)
 
-**Driver San Francisco PC custom Online backend**
+**Driver San Francisco PC Online backend**
 
 This server mimics the behaviour of Quazal Rendez-Vous server and protocols used by Driver San Francisco.
 
 To make the game use this backend make sure following lines are set in Orbit.json (which comes with DriverNGHook):
 
 ```
-OnlineConfigServiceUrl "localhost"
+OnlineConfigServiceUrl "your_server_address"
 OnlineConfigKey "23ad683803a0457cabce83f905811dbc"
 OnlineAccessKey "8dtRv2oj"
 ```
