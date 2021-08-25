@@ -46,7 +46,6 @@ namespace DSFServices.Services
 
 			if(gathering != null)
 			{
-				// FIXME: are notifications sent?
 				PartySessions.GatheringList.Remove(gathering);
 				result = true;
 			}
@@ -342,11 +341,15 @@ namespace DSFServices.Services
 
 			if (gathering != null)
 			{
-				PartySessions.UpdateGatheringParticipation(plInfo, uint.MaxValue);
+				// NOTE: Disabled gathering dropping
+				// PartySessions.UpdateGatheringParticipation(plInfo, uint.MaxValue);
 
 				// send to all party members
 				foreach (var pid in gathering.Participants)
 				{
+					if (pid == plInfo.PID)
+						continue;
+
 					var qclient = Context.Handler.GetQClientByClientPID(pid);
 
 					if (qclient != null)

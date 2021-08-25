@@ -35,7 +35,6 @@ namespace DSFServices.Services
 
 			GameSessions.UpdateSessionParticipation(plInfo, newSession.Id, newSession.TypeID, true);
 
-			// TODO: read values from current player gathering
 			newSession.Attributes[(uint)GameSessionAttributeType.PublicSlots] = 0;
 			newSession.Attributes[(uint)GameSessionAttributeType.PrivateSlots] = 8;
 			newSession.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)newSession.PublicParticipants.Count;
@@ -200,10 +199,6 @@ namespace DSFServices.Services
 		[RMCMethod(7)]
 		public RMCResult SearchSessions(uint m_typeID, uint m_queryID, IEnumerable<GameSessionProperty> m_parameters)
 		{
-			// TODO: where to hold m_queryID??? Are there notifications?
-
-			// orig response data: 09 01 00 00 2A 01 40 01 00 00 07 80 00 00 01 00 00 00 01 00 00 00 84 56 00 00 47 BD 05 00 02 00 00 00 3F 00 70 72 75 64 70 3A 2F 61 64 64 72 65 73 73 3D 31 39 32 2E 31 36 38 2E 31 2E 32 34 35 3B 70 6F 72 74 3D 33 30 37 34 3B 50 49 44 3D 33 37 36 31 33 35 3B 52 56 43 49 44 3D 31 37 31 30 30 36 00 4C 00 70 72 75 64 70 3A 2F 61 64 64 72 65 73 73 3D 39 32 2E 34 36 2E 31 33 31 2E 37 39 3B 70 6F 72 74 3D 31 30 32 34 3B 73 69 64 3D 31 35 3B 74 79 70 65 3D 33 3B 50 49 44 3D 33 37 36 31 33 35 3B 52 56 43 49 44 3D 31 37 31 30 30 36 00 0B 00 00 00 64 00 00 00 00 00 00 00 65 00 00 00 00 00 00 00 03 00 00 00 08 00 00 00 04 00 00 00 00 00 00 00 05 00 00 00 01 00 00 00 06 00 00 00 00 00 00 00 6C 00 00 00 00 00 00 00 69 00 00 00 9A 7E 09 00 6A 00 00 00 04 00 00 00 6D 00 00 00 02 00 00 00 71 00 00 00 00 00 00 00 
-
 			var sessions = GameSessions.SessionList.Where(x => x.TypeID == m_typeID).ToArray();
 
 			var resultList = new List<GameSessionSearchResult>();

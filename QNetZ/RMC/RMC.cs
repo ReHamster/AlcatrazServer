@@ -113,7 +113,6 @@ namespace QNetZ
 		{
 			var packet = new QPacket();
 
-			// FIXME: is this even valid?
 			packet.m_oSourceVPort = new QPacket.VPort(0x31);
 			packet.m_oDestinationVPort = new QPacket.VPort(0x3f);
 

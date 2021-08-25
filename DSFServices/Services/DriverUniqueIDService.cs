@@ -7,7 +7,7 @@ namespace DSFServices.Services
 	[RMCService(RMCProtocolId.DriverUniqueIDService)]
 	public class DriverUniqueIDService : RMCServiceBase
 	{
-		static uint UniqueIDCounter = 26434; // FIXME: is it too simplistic?
+		static uint UniqueIDCounter = 26434;
 
 		[RMCMethod(2)]
 		public RMCResult CreateUniqueID()
