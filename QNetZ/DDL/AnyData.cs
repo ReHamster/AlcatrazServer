@@ -50,8 +50,6 @@ namespace QNetZ.DDL
 		public string className;
 		public T data;
 
-		// FIXME: maybe instead we construct object from buffer? But it's pain in ass. This AnyData is pain in ass
-
 		public void Read(Stream s)
 		{
 			className = Helper.ReadString(s);

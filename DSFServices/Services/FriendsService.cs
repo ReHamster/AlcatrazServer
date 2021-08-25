@@ -70,7 +70,6 @@ namespace DSFServices.Services
 					};
 
 					// send to proper client
-					// FIXME: save in db and send notification again in GetDetailedList???
 					var qClient = Context.Handler.GetQClientByClientPID(foundUser.Id);
 
 					if(qClient != null)
@@ -156,7 +155,6 @@ namespace DSFServices.Services
 			};
 
 			// send to proper client
-			// FIXME: save in db and send notification again in GetDetailedList???
 			var qClient = Context.Handler.GetQClientByClientPID(uiPlayer);
 
 			if (qClient != null)

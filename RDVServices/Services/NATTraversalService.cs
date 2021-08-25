@@ -12,30 +12,6 @@ namespace RDVServices.Services
 	public class NATTraversalService : RMCServiceBase
 	{
 		[RMCMethod(1)]
-
-		/*
-			EXAMPLE: 
-			My client adddress: 192.168.100.3
-			I'm Joining party.
-
-			My client sends next: NATTraversalService.RequestProbeInitiation:
-				{
-					"Valid": true,
-					"UrlScheme": "prudp",
-					"Address": "192.168.100.10",
-					"Parameters": {
-					"port": 3074,
-					"RVCID": 768398
-					},
-					"urlString": "prudp:/address=192.168.100.10;port=3074;RVCID=768398"
-				}
-
-			SO Server :
-				Send NATTraversalService.InitiateProbe to (192.168.100.10) with (urlStationToProbe = 192.168.100.3)
-					OR
-				Send NATTraversalService.InitiateProbe to (192.168.100.3) with (urlStationToProbe = 192.168.100.10) ???
-			
-		*/
 		public RMCResult RequestProbeInitiation(IEnumerable<StationURL> urlTargetList)
 		{
 			// urlTargetList contains all player urls (basicmcnally given by MatchMakingService.GetSessionURLs)
@@ -46,7 +22,6 @@ namespace RDVServices.Services
 				var endp = new IPEndPoint(IPAddress.Parse(urlTarget.Address), urlTarget.Parameters["port"]);
 				var qclient = Context.Handler.GetQClientByEndPoint(endp);
 
-				// FIXME: I suspect that this is valid but who knows
 				if(qclient != null)
 				{
 					var thisClientURL = new StationURL(
