@@ -1,0 +1,13 @@
+{
+	"OnlineConfig": {
+		"Use": true,
+		"ServiceUrl": "alcatraz_server_address",
+		"ConfigKey": "23ad683803a0457cabce83f905811dbc",
+		"AccessKey": "8dtRv2oj"
+	},
+	"Profile": {
+		"AccountId": "your_user_name",
+		"Password": "password",
+		"GameKey": ""
+	}
+}

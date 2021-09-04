@@ -10,3 +10,5 @@
 *.config.xml
 **/net5.0*
 packages/*
+AlcatrazLoader/bin*
+AlcatrazLoader/project_*

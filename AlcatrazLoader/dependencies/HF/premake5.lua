@@ -1,0 +1,4 @@
+usage "HackingFramework"
+	includedirs {
+		"include"
+	}
