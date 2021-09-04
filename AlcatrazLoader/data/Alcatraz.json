@@ -1,13 +1,25 @@
 {
-	"OnlineConfig": {
-		"Use": true,
-		"ServiceUrl": "alcatraz_server_address",
-		"ConfigKey": "23ad683803a0457cabce83f905811dbc",
-		"AccessKey": "8dtRv2oj"
-	},
-	"Profile": {
-		"AccountId": "your_user_name",
-		"Password": "password",
-		"GameKey": ""
+	"UseProfile" : "UbiOfficial",
+	
+	"Profiles" : {
+		"AlcatrazPROD": {
+			"AccountId": "AlcatrazLogin",
+			"Password": "test",
+			"ServiceUrl": "alcatraz_server_address.com",
+			"ConfigKey": "23ad683803a0457cabce83f905811dbc",
+			"AccessKey": "8dtRv2oj"
+		},
+		"AlcatrazDEV": {
+			"AccountId": "AlcatrazLogin",
+			"Password": "test",
+			"ServiceUrl": "192.168.1.211",
+			"ConfigKey": "23ad683803a0457cabce83f905811dbc",
+			"AccessKey": "8dtRv2oj"
+		},
+		"UbiOfficial": {
+			"AccountId": "your_ubi_username",
+			"Password": "your_ubi_password",
+			"GameKey": "your_dsf_gamekey"
+		}
 	}
 }
