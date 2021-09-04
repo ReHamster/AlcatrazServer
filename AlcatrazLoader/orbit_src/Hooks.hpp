@@ -4,6 +4,8 @@
 #include "Helpers/Failure.hpp"
 #include "Utils/Singleton.hpp"
 
+#include "ProfileManager.hpp"
+
 #include "HF/HackingFrameworkFWD.h"
 
 #include "HF/HackingFramework.hpp"
@@ -42,18 +44,13 @@ namespace AlcatrazUplayR2
 
 	inline void __stdcall OnSandboxSelectorConstructor(SandboxSelector* self)
 	{
-		auto& config = Singleton<OrbitConfig>::Instance().Get();
-		auto& OnlineConfig = config.dataVariant.toMap().find("OnlineConfig")->toMap();
+		auto& profile = Singleton<ProfileData>::Instance().Get();
 
-		const auto serviceURL = OnlineConfig.find("ServiceUrl")->toString();
-		const auto configKey = OnlineConfig.find("ConfigKey")->toString();
-		const auto accessKey = OnlineConfig.find("AccessKey")->toString();
-		
 		char* str = *(char**)kOnlineConfigServiceHostPRODAddress;
-		strcpy_s(str, 28, serviceURL);
+		strcpy_s(str, 28, profile.ServiceUrl);
 
-		strcpy_s(self->m_cOnlineConfigKey, 64, configKey);
-		strcpy_s(self->m_cSandboxKey, 32, accessKey);
+		strcpy_s(self->m_cOnlineConfigKey, 64, profile.ConfigKey);
+		strcpy_s(self->m_cSandboxKey, 32, profile.SandboxAccessKey);
 		strcpy_s(self->m_cSandboxName, 32, "DriverMadness Sandbox A");
 
 		self->m_iSandboxTrackingID = 4;
@@ -61,14 +58,12 @@ namespace AlcatrazUplayR2
 
 	inline void InitHooks()
 	{
-		auto& config = Singleton<OrbitConfig>::Instance().Get();
-		auto& OnlineConfig = config.dataVariant.toMap().find("OnlineConfig")->toMap();
-
-		const auto useAlcatraz = OnlineConfig.find("Use")->toBool();
+		auto& profile = Singleton<ProfileData>::Instance().Get();
 
 		HookProcess proc;
 
-		if (!useAlcatraz)
+		// do not initialize hook
+		if (profile.ServiceUrl.length() == 0)
 		{
 			Singleton<HookProcess>::Instance().Set(proc);
 			return;

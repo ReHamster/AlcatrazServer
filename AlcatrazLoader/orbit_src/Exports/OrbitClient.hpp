@@ -5,6 +5,7 @@
 
 #include "Macro.hpp"
 #include "Consts.hpp"
+#include "ProfileManager.hpp"
 
 #include "Utils/Singleton.hpp"
 #include "Objects/OrbitConfig.hpp"
@@ -159,16 +160,11 @@ inline void mg::orbitclient::OrbitClient::GetLoginDetails(unsigned int requestId
 		return;
 	}
 
-	auto& config = Singleton<OrbitConfig>::Instance().Get();
-	auto& Profile = config.dataVariant.toMap().find("Profile")->toMap();
+	auto& profile = Singleton<ProfileData>::Instance().Get();
 
-	const auto accountId = Profile.find("AccountId")->toString();
-	const auto password = Profile.find("Password")->toString();
-	const auto gamekey = Profile.find("GameKey")->toString();
+	std::wstring passwordWstr = stringToWstring(profile.Password);
 
-	std::wstring passwordWstr = stringToWstring(password);
-
-	callBack(loginDetailsListenerCallBack, requestId, accountId, passwordWstr.c_str(), gamekey);
+	callBack(loginDetailsListenerCallBack, requestId, profile.AccountId, passwordWstr.c_str(), profile.GameKey);
 	
 }
 
