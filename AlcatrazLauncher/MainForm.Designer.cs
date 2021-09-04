@@ -32,9 +32,8 @@ namespace AlcatrazLauncher
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			this.m_launchBtn = new System.Windows.Forms.Button();
 			this.m_settingsBtn = new System.Windows.Forms.Button();
-			this.m_loginBtn = new System.Windows.Forms.Button();
 			this.pictureBox1 = new System.Windows.Forms.PictureBox();
-			this.m_serverNameText = new System.Windows.Forms.Label();
+			this.m_curProfileCombo = new System.Windows.Forms.ComboBox();
 			this.label1 = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			this.SuspendLayout();
@@ -59,16 +58,6 @@ namespace AlcatrazLauncher
 			this.m_settingsBtn.UseVisualStyleBackColor = true;
 			this.m_settingsBtn.Click += new System.EventHandler(this.m_settingsBtn_Click);
 			// 
-			// m_loginBtn
-			// 
-			this.m_loginBtn.Location = new System.Drawing.Point(369, 302);
-			this.m_loginBtn.Name = "m_loginBtn";
-			this.m_loginBtn.Size = new System.Drawing.Size(109, 32);
-			this.m_loginBtn.TabIndex = 2;
-			this.m_loginBtn.Text = "Test connection";
-			this.m_loginBtn.UseVisualStyleBackColor = true;
-			this.m_loginBtn.Click += new System.EventHandler(this.button1_Click);
-			// 
 			// pictureBox1
 			// 
 			this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
@@ -78,23 +67,26 @@ namespace AlcatrazLauncher
 			this.pictureBox1.TabIndex = 3;
 			this.pictureBox1.TabStop = false;
 			// 
-			// m_serverNameText
+			// m_curProfileCombo
 			// 
-			this.m_serverNameText.AutoSize = true;
-			this.m_serverNameText.Location = new System.Drawing.Point(241, 312);
-			this.m_serverNameText.Name = "m_serverNameText";
-			this.m_serverNameText.Size = new System.Drawing.Size(65, 13);
-			this.m_serverNameText.TabIndex = 4;
-			this.m_serverNameText.Text = "server name";
+			this.m_curProfileCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.m_curProfileCombo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+			this.m_curProfileCombo.FormattingEnabled = true;
+			this.m_curProfileCombo.Location = new System.Drawing.Point(223, 306);
+			this.m_curProfileCombo.Name = "m_curProfileCombo";
+			this.m_curProfileCombo.Size = new System.Drawing.Size(241, 25);
+			this.m_curProfileCombo.TabIndex = 2;
+			this.m_curProfileCombo.SelectedIndexChanged += new System.EventHandler(this.m_curProfileCombo_SelectedIndexChanged);
 			// 
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(159, 312);
+			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+			this.label1.Location = new System.Drawing.Point(165, 309);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(76, 13);
-			this.label1.TabIndex = 5;
-			this.label1.Text = "Current server:";
+			this.label1.Size = new System.Drawing.Size(52, 17);
+			this.label1.TabIndex = 6;
+			this.label1.Text = "Profile:";
 			// 
 			// MainForm
 			// 
@@ -102,9 +94,8 @@ namespace AlcatrazLauncher
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(665, 346);
 			this.Controls.Add(this.label1);
-			this.Controls.Add(this.m_serverNameText);
+			this.Controls.Add(this.m_curProfileCombo);
 			this.Controls.Add(this.pictureBox1);
-			this.Controls.Add(this.m_loginBtn);
 			this.Controls.Add(this.m_settingsBtn);
 			this.Controls.Add(this.m_launchBtn);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -125,9 +116,8 @@ namespace AlcatrazLauncher
 
 		private System.Windows.Forms.Button m_launchBtn;
 		private System.Windows.Forms.Button m_settingsBtn;
-		private System.Windows.Forms.Button m_loginBtn;
 		private System.Windows.Forms.PictureBox pictureBox1;
-		private System.Windows.Forms.Label m_serverNameText;
+		private System.Windows.Forms.ComboBox m_curProfileCombo;
 		private System.Windows.Forms.Label label1;
 	}
 }

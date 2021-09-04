@@ -271,13 +271,6 @@ namespace AlcatrazLauncher.Session
 	//
 	public partial class APISession
 	{
-		
-#if DEBUG
-		public static string URL_CONFIG_KEY = "APIServerDEV";
-#else
-		public static string URL_CONFIG_KEY = "APIServer";
-#endif
-
 		private static RestClient _client { get; set; }
 		public static RestClient WebClient
 		{
@@ -285,9 +278,9 @@ namespace AlcatrazLauncher.Session
 			{
 				if(_client == null)
 				{
-					var apiServer = ConfigurationManager.AppSettings.Get(URL_CONFIG_KEY);
+					var apiServer = ConfigurationManager.AppSettings.Get(Constants.SERVICE_URL_KEY);
 
-					_client = new RestClient(apiServer);
+					_client = new RestClient("http://" + apiServer);
 					_client.UseNewtonsoftJson();
 				}
 

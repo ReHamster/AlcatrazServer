@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -61,11 +64,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dialogs\SettingsDialog.cs">
+    <Compile Include="AlcatrazClientConfig.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Dialogs\AddUbiProfileDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Dialogs\SettingsDialog.Designer.cs">
-      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    <Compile Include="Dialogs\AddUbiProfileDialog.Designer.cs">
+      <DependentUpon>AddUbiProfileDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ProfileManagerDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\ProfileManagerDialog.Designer.cs">
+      <DependentUpon>ProfileManagerDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\RegisterAlcatrazUserDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\RegisterAlcatrazUserDialog.Designer.cs">
+      <DependentUpon>RegisterAlcatrazUserDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SignInToAlcatrazDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SignInToAlcatrazDialog.Designer.cs">
+      <DependentUpon>SignInToAlcatrazDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -81,8 +104,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Session\AccountMethods.cs" />
     <Compile Include="Session\APISession.cs" />
-    <EmbeddedResource Include="Dialogs\SettingsDialog.resx">
-      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    <EmbeddedResource Include="Dialogs\AddUbiProfileDialog.resx">
+      <DependentUpon>AddUbiProfileDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\ProfileManagerDialog.resx">
+      <DependentUpon>ProfileManagerDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\RegisterAlcatrazUserDialog.resx">
+      <DependentUpon>RegisterAlcatrazUserDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\SignInToAlcatrazDialog.resx">
+      <DependentUpon>SignInToAlcatrazDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -110,7 +142,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="icon.ico" />
+  </ItemGroup>
   <Import Project="..\AlcatrazDTO\AlcatrazDTO.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

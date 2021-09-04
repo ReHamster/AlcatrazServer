@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace AlcatrazLauncher.Dialogs
 {
-	public partial class SettingsDialog : Form
+	public partial class SignInToAlcatrazDialog : Form
 	{
-		public SettingsDialog()
+		public SignInToAlcatrazDialog()
 		{
 			InitializeComponent();
 		}
