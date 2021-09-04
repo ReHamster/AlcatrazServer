@@ -34,6 +34,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.m_addUbiProfile = new System.Windows.Forms.Button();
 			this.m_signInToAlcatraz = new System.Windows.Forms.Button();
 			this.m_registerBtn = new System.Windows.Forms.Button();
+			this.label1 = new System.Windows.Forms.Label();
 			this.SuspendLayout();
 			// 
 			// m_profileList
@@ -64,6 +65,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.m_signInToAlcatraz.TabIndex = 3;
 			this.m_signInToAlcatraz.Text = "Sign in to Alcatraz";
 			this.m_signInToAlcatraz.UseVisualStyleBackColor = true;
+			this.m_signInToAlcatraz.Click += new System.EventHandler(this.m_signInToAlcatraz_Click);
 			// 
 			// m_registerBtn
 			// 
@@ -76,11 +78,21 @@ namespace AlcatrazLauncher.Dialogs
 			this.m_registerBtn.UseVisualStyleBackColor = true;
 			this.m_registerBtn.Click += new System.EventHandler(this.m_registerBtn_Click);
 			// 
+			// label1
+			// 
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(12, 179);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(189, 13);
+			this.label1.TabIndex = 5;
+			this.label1.Text = "Double click at item to show properties";
+			// 
 			// ProfileManagerDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(459, 184);
+			this.ClientSize = new System.Drawing.Size(459, 201);
+			this.Controls.Add(this.label1);
 			this.Controls.Add(this.m_registerBtn);
 			this.Controls.Add(this.m_signInToAlcatraz);
 			this.Controls.Add(this.m_addUbiProfile);
@@ -92,6 +104,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.Text = "Profile Manager";
 			this.Load += new System.EventHandler(this.ProfileManagerDialog_Load);
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
 		}
 
@@ -100,5 +113,6 @@ namespace AlcatrazLauncher.Dialogs
 		private System.Windows.Forms.Button m_addUbiProfile;
 		private System.Windows.Forms.Button m_signInToAlcatraz;
 		private System.Windows.Forms.Button m_registerBtn;
+		private System.Windows.Forms.Label label1;
 	}
 }
