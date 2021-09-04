@@ -49,9 +49,15 @@ namespace AlcatrazLauncher.Session
 				});
 			}
 
-			public void Register(UserRegisterModel data, Action<IRestResponse> onComplete)
+			public void Register(UserRegisterModel data, Action<IRestResponse> onComplete, Action<IRestResponse> onFailedResponse)
 			{
 				DoAsyncPOST("Register", data, (response) => {
+					if (response.ResponseStatus != ResponseStatus.Completed)
+					{
+						onFailedResponse(response);
+						return;
+					}
+
 					onComplete(response);
 				});
 			}
