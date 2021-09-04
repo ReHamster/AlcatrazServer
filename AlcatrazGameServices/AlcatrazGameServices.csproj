@@ -23,4 +23,6 @@
     <ProjectReference Include="..\DSFServices\DSFServices.csproj" />
   </ItemGroup>
 
+  <Import Project="..\AlcatrazDTO\AlcatrazDTO.projitems" Label="Shared" />
+
 </Project>

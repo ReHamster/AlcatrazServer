@@ -1,7 +1,7 @@
 ﻿using Alcatraz.Context;
 using Alcatraz.Context.Entities;
 using Alcatraz.GameServices.Helpers;
-using Alcatraz.GameServices.Models;
+using Alcatraz.DTO.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -43,12 +43,20 @@ namespace Alcatraz.GameServices.Services
 				.SingleOrDefault(x => x.Username == model.Username && x.Password == model.Password);
 
 			// return null if user not found
-			if (user == null) return null;
+			if (user == null) 
+				return null;
+
+			var userModel = new UserModel
+			{
+				Id = user.Id,
+				PlayerNickName = user.PlayerNickName,
+				Username = user.Username,
+			};
 
 			// authentication successful so generate jwt token
-			var token = generateJwtToken(user);
+			var token = generateJwtToken(userModel);
 
-			return new AuthenticateResponse(user, token);
+			return new AuthenticateResponse(userModel, token);
 		}
 
 		public IEnumerable<User> GetAll()
@@ -88,7 +96,7 @@ namespace Alcatraz.GameServices.Services
 
 		// helper methods
 
-		private string generateJwtToken(User user)
+		private string generateJwtToken(UserModel user)
 		{
 			// generate token that is valid for 7 days
 			var tokenHandler = new JwtSecurityTokenHandler();

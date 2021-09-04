@@ -1,6 +1,4 @@
-﻿using Alcatraz.Context.Entities;
-
-namespace Alcatraz.GameServices.Models
+﻿namespace Alcatraz.DTO.Models
 {
 	public class AuthenticateResponse
 	{
@@ -9,8 +7,12 @@ namespace Alcatraz.GameServices.Models
 		public string Username { get; set; }
 		public string Token { get; set; }
 
+		public AuthenticateResponse()
+		{
 
-		public AuthenticateResponse(User user, string token)
+		}
+
+		public AuthenticateResponse(UserModel user, string token)
 		{
 			Id = user.Id;
 			PlayerNickName = user.PlayerNickName;

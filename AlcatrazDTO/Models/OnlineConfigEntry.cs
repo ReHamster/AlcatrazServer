@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Alcatraz.GameServices.Models
+namespace Alcatraz.DTO.Models
 {
 	public class OnlineConfigEntry
 	{

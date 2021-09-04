@@ -1,8 +1,9 @@
 ﻿using Alcatraz.GameServices.Helpers;
-using Alcatraz.GameServices.Models;
 using Alcatraz.GameServices.Services;
+using Alcatraz.DTO.Models;
 
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace Alcatraz.GameServices.Controllers
 {
@@ -23,7 +24,7 @@ namespace Alcatraz.GameServices.Controllers
 			var response = _userService.Authenticate(model);
 
 			if (response == null)
-				return BadRequest(new { message = "Username or password is incorrect" });
+				return BadRequest(new ErrorModel { Message = "Username or password is incorrect" });
 
 			return Ok(response);
 		}
@@ -34,7 +35,7 @@ namespace Alcatraz.GameServices.Controllers
 			var response = _userService.Register(model);
 
 			if (response == 0)
-				return BadRequest(new { message = "Unable to register user" });
+				return BadRequest(new ErrorModel { Message = "Unable to register user" });
 
 			return Ok(response);
 		}
@@ -43,7 +44,13 @@ namespace Alcatraz.GameServices.Controllers
 		[HttpGet]
 		public IActionResult GetAll()
 		{
-			var users = _userService.GetAll();
+			var users = _userService.GetAll().Select(x => new UserModel
+			{
+				Id = x.Id,
+				PlayerNickName = x.PlayerNickName,
+				Username = x.Username
+			});
+
 			return Ok(users);
 		}
 	}

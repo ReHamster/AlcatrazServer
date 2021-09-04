@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Alcatraz.GameServices.Models
+namespace Alcatraz.DTO.Models
 {
 	public class AuthenticateRequest
 	{

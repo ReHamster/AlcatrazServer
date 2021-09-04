@@ -1,4 +1,4 @@
-﻿using Alcatraz.GameServices.Models;
+﻿using Alcatraz.DTO.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
