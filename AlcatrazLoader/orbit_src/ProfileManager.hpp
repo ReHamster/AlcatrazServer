@@ -25,12 +25,23 @@ namespace AlcatrazUplayR2
 
 	inline void InitProfile()
 	{
+		List<String> commandLine;
+		String::fromCString(GetCommandLineA()).split(commandLine, " ", true);
+
 		ProfileData profile;
 
 		auto& config = Singleton<OrbitConfig>::Instance().Get();
 		auto& AllProfiles = config.dataVariant.toMap().find("Profiles")->toMap();
 
 		profile.Name = config.dataVariant.toMap().find("UseProfile")->toString();
+
+		auto profileSwitch = commandLine.find("-profile");
+
+		if (profileSwitch != commandLine.end())
+		{
+			profile.Name = *(++profileSwitch);
+		}
+
 		auto& currentProfile = AllProfiles.find(profile.Name)->toMap();
 
 		profile.AccountId = currentProfile.find("AccountId")->toString();
