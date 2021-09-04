@@ -108,5 +108,13 @@ namespace AlcatrazLauncher.Dialogs
 
 			RefreshProfileList();
 		}
+
+		private void m_signInToAlcatraz_Click(object sender, EventArgs e)
+		{
+			var dlg = new SignInToAlcatrazDialog();
+			dlg.ShowDialog();
+
+			RefreshProfileList();
+		}
 	}
 }
