@@ -5,21 +5,19 @@
 
 This server mimics the behaviour of Quazal Rendez-Vous server and protocols used by Driver San Francisco.
 
-To make the game use this backend make sure following lines are set in Orbit.json (which comes with DriverNGHook):
+[Download](https://github.com/ReHamster/Alcatraz/releases)
 
-```
-OnlineConfigServiceUrl "your_server_address"
-OnlineConfigKey "23ad683803a0457cabce83f905811dbc"
-OnlineAccessKey "8dtRv2oj"
-```
+[Hosting your custom server](https://github.com/ReHamster/Alcatraz/blob/master/HostingYourOwnAlcatraz.md)
 
-Main projects
+Main projects:
 - AlcatrazGameServices : the Web API and game server
 - - AlcatrazDbContext : entities and database context
 - BackendDebugServer : local debug server application
 - - QNetZ : implementation of Quazal Net-Z protocol and RMC (Remote Method Calls)
 - - RDVServices : Rendez-Vous authentication services
 - - DSFSErvices : Driver SF game servcies
+- AlcatrazLauncher : Launcher for Driver SF
+- AlcatrazLoader : UbiOrbitAPI_R2 DLL replacement and game hook
 
 The tools:
 - DareDebuggerWV : tool to interface the daredebug port of the game
