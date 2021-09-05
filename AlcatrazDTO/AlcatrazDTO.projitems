@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\AlcatrazClientConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AuthenticateRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AuthenticateResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ChangePasswordRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ErrorModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\OnlineConfigEntry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\UserModel.cs" />

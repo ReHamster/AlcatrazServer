@@ -1,4 +1,4 @@
-﻿using Alcatraz.Context.Entities;
+﻿using Alcatraz.DTO.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -11,7 +11,7 @@ namespace Alcatraz.GameServices.Helpers
 	{
 		public void OnAuthorization(AuthorizationFilterContext context)
 		{
-			var user = (User)context.HttpContext.Items["User"];
+			var user = (UserModel)context.HttpContext.Items["User"];
 			if (user == null)
 			{
 				// not logged in
