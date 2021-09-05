@@ -46,14 +46,13 @@ namespace AlcatrazLauncher
 			var profiles = AlcatrazClientConfig.Instance.Profiles.Keys.ToArray();
 
 			m_curProfileCombo.Items.Clear();
-			m_curProfileCombo.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].Username }").ToArray());
+			m_curProfileCombo.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].Username ?? AlcatrazClientConfig.Instance.Profiles[x].AccountId }").ToArray());
 
 			m_curProfileCombo.SelectedIndex = Array.IndexOf(profiles, AlcatrazClientConfig.Instance.UseProfile);
 		}
 
 		private void SaveConfiguration()
 		{
-
 			var settings = new JsonSerializerSettings
 			{
 				Formatting = Formatting.Indented,
@@ -67,18 +66,6 @@ namespace AlcatrazLauncher
 			string alcatrazConfig = JsonConvert.SerializeObject(AlcatrazClientConfig.Instance, settings);
 
 			File.WriteAllText(Constants.ConfigFilename, alcatrazConfig);
-
-			/*
-			if (File.Exists(Constants.ConfigFilename))
-			{
-				string alcatrazConfig = File.ReadAllText(Constants.ConfigFilename);
-				AlcatrazClientConfig.Instance = JsonConvert.DeserializeObject<AlcatrazClientConfig>(alcatrazConfig);
-			}
-			else
-			{
-				AlcatrazClientConfig.Instance = new AlcatrazClientConfig();
-				AlcatrazClientConfig.Instance.UseProfile = Constants.NoProfile;
-			}*/
 		}
 
 		private void MainForm_Load(object sender, EventArgs e)
@@ -126,6 +113,12 @@ namespace AlcatrazLauncher
 			var str = m_curProfileCombo.SelectedItem.ToString();
 			var splitArr = str.Split(':');
 			AlcatrazClientConfig.Instance.UseProfile = splitArr[0].Trim();
+		}
+
+		private void MainForm_Shown(object sender, EventArgs e)
+		{
+			Focus();
+			BringToFront();
 		}
 	}
 }
