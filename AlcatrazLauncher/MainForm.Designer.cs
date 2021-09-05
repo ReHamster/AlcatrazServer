@@ -92,7 +92,7 @@ namespace AlcatrazLauncher
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(665, 346);
+			this.ClientSize = new System.Drawing.Size(665, 341);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.m_curProfileCombo);
 			this.Controls.Add(this.pictureBox1);
@@ -104,7 +104,7 @@ namespace AlcatrazLauncher
 			this.MinimizeBox = false;
 			this.Name = "MainForm";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-			this.Text = "Alcatraz Launcher";
+			this.Text = "Alcatraz Launcher by Jellysoapy";
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.Shown += new System.EventHandler(this.MainForm_Shown);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();

@@ -62,11 +62,11 @@ namespace AlcatrazLauncher.Session
 
 			// before request, authenticate
 			if (APISession.Authenticator != null)
-				APISession.Authenticator.Authenticate(APISession.WebClient, request);
+				APISession.Authenticator.Authenticate(Session.Client, request);
 
 			ExecuteWithRetryRequestPrompt(() =>
 			{
-				APISession.WebClient.ExecuteAsync(request, response =>
+				Session.Client.ExecuteAsync(request, response =>
 
 					Session.EventQueue.Add(() => {
 						if (response.ResponseStatus != ResponseStatus.Completed)
@@ -105,11 +105,11 @@ namespace AlcatrazLauncher.Session
 
 			// before request, authenticate
 			if (APISession.Authenticator != null)
-				APISession.Authenticator.Authenticate(APISession.WebClient, request);
+				APISession.Authenticator.Authenticate(Session.Client, request);
 
 			ExecuteWithRetryRequestPrompt(() =>
 			{
-				APISession.WebClient.ExecuteAsync(request, response =>
+				Session.Client.ExecuteAsync(request, response =>
 
 					Session.EventQueue.Add(() => {
 						if (response.ResponseStatus != ResponseStatus.Completed)
@@ -156,12 +156,12 @@ namespace AlcatrazLauncher.Session
 
 			// before request, authenticate
 			if(APISession.Authenticator != null)
-				APISession.Authenticator.Authenticate(APISession.WebClient, request);
+				APISession.Authenticator.Authenticate(Session.Client, request);
 
 			// добавляем в очередь на обработку
 			ExecuteWithRetryRequestPrompt(() =>
 			{
-				APISession.WebClient.ExecuteAsync(request, response =>
+				Session.Client.ExecuteAsync(request, response =>
 					Session.EventQueue.Add(() => onComplete(response))
 				);
 			});
@@ -192,11 +192,11 @@ namespace AlcatrazLauncher.Session
 
 			// before request, authenticate
 			if (APISession.Authenticator != null)
-				APISession.Authenticator.Authenticate(APISession.WebClient, request);
+				APISession.Authenticator.Authenticate(Session.Client, request);
 
 			ExecuteWithRetryRequestPrompt(() =>
 			{
-				APISession.WebClient.ExecuteAsync(request, response =>
+				Session.Client.ExecuteAsync(request, response =>
 					Session.EventQueue.Add(() => {
 						if (response.ResponseStatus != ResponseStatus.Completed)
 						{
@@ -271,16 +271,15 @@ namespace AlcatrazLauncher.Session
 	//
 	public partial class APISession
 	{
-		private static RestClient _client { get; set; }
-		public static RestClient WebClient
+		private string _serviceUrl { get; set; }
+		private RestClient _client { get; set; }
+		public RestClient Client
 		{
 			get
 			{
 				if(_client == null)
 				{
-					var apiServer = ConfigurationManager.AppSettings.Get(Constants.SERVICE_URL_KEY);
-
-					_client = new RestClient("http://" + apiServer);
+					_client = new RestClient("http://" + _serviceUrl);
 					_client.UseNewtonsoftJson();
 				}
 
@@ -297,8 +296,11 @@ namespace AlcatrazLauncher.Session
 		public IEventQueue EventQueue { get; }
 
 		// constructor
-		public APISession(IEventQueue queue)
+		public APISession(IEventQueue queue, string serviceUrl = null)
 		{
+			var apiServer = ConfigurationManager.AppSettings.Get(Constants.SERVICE_URL_KEY);
+
+			_serviceUrl = serviceUrl ?? apiServer;
 			EventQueue = queue;
 		}
 	}
