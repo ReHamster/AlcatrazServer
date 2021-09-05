@@ -30,7 +30,7 @@ namespace AlcatrazLauncher.Dialogs
 			//m_signInToAlcatraz.Enabled = !profiles.Contains(Constants.AlcatrazProfileKey);
 
 			m_profileList.Items.Clear();
-			m_profileList.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].Username }").ToArray());
+			m_profileList.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].Username ?? AlcatrazClientConfig.Instance.Profiles[x].AccountId }").ToArray());
 
 			m_profileList.SelectedIndex = Array.IndexOf(profiles, AlcatrazClientConfig.Instance.UseProfile);
 		}

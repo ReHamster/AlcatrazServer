@@ -6,8 +6,31 @@ using System.Threading.Tasks;
 
 namespace AlcatrazLauncher
 {
+	public class GameInstallRegProperty
+	{
+		public string RegistryPath { get; set; }
+		public string InstallPathKey { get; set; }
+	}
+
 	public class Constants
 	{
+		public static GameInstallRegProperty AlcatrazRegProperty = new GameInstallRegProperty
+		{
+			RegistryPath = @"Software\Alcatraz\Launcher",
+			InstallPathKey = "GameLocation"
+		};
+		// known game locations
+		public static GameInstallRegProperty[] GameInstallRegProperties = new GameInstallRegProperty[] { 
+			new GameInstallRegProperty{
+				RegistryPath = @"Software\Ubisoft\Driver San Francisco",
+				InstallPathKey = "GameLocation"
+			},
+			new GameInstallRegProperty{
+				RegistryPath = @"Software\Ubisoft\Launcher\Installs\13",
+				InstallPathKey = "InstallDir"
+			},
+			AlcatrazRegProperty,
+		};
 
 #if DEBUG
 		public static string SERVICE_URL_KEY => "ServiceUrlDEV";
@@ -24,5 +47,5 @@ namespace AlcatrazLauncher
 		public static string ConfigFilename =>"Alcatraz.json";
 		public static string NoProfile => "None";
 		public static string OfficialProfileKey => "UbiOfficial";
-	}
+}
 }
