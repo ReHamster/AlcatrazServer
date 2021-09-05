@@ -4,6 +4,7 @@ using Alcatraz.DTO.Models;
 
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Security.Claims;
 
 namespace Alcatraz.GameServices.Controllers
 {
@@ -19,18 +20,20 @@ namespace Alcatraz.GameServices.Controllers
 		}
 
 		[HttpPost("Authenticate")]
-		public IActionResult Authenticate(AuthenticateRequest model)
+		public IActionResult Authenticate([FromBody] AuthenticateRequest model)
 		{
 			var response = _userService.Authenticate(model);
 
 			if (response == null)
-				return BadRequest(new ErrorModel { Message = "Username or password is incorrect" });
+			{
+				return Unauthorized(new ErrorModel { Message = "Username or password is incorrect" });
+			}
 
 			return Ok(response);
 		}
 
 		[HttpPost("Register")]
-		public IActionResult Register(UserRegisterModel model)
+		public IActionResult Register([FromBody] UserRegisterModel model)
 		{
 			var response = _userService.Register(model);
 
@@ -41,15 +44,52 @@ namespace Alcatraz.GameServices.Controllers
 		}
 
 		[Authorize]
+		[HttpPost("UpdateUser")]
+		public IActionResult UpdateUser([FromBody] UserModel model)
+		{
+			var user = (UserModel)HttpContext.Items["User"];
+
+			if (user == null)
+				return Unauthorized(new ErrorModel { Message = "Unable to update user" });
+
+			model.Id = user.Id;
+
+			var response = _userService.Update(model);
+
+			if (!response)
+				return BadRequest(new ErrorModel { Message = "Unable to update user" });
+
+			// pasword change successful so generate jwt token
+			var token = _userService.GenerateJwtToken(user);
+
+			return Ok(new AuthenticateResponse(user, token));
+		}
+
+		[Authorize]
+		[HttpPost("ChangePassword")]
+		public IActionResult ChangePassword(ChangePasswordRequest model)
+		{
+			var user = (UserModel)HttpContext.Items["User"];
+
+			if (user == null)
+				return Unauthorized(new ErrorModel { Message = "Unable to change user password" });
+
+			var response = _userService.ChangePassword(user.Id, model.NewPassword);
+
+			if (!response)
+				return BadRequest(new ErrorModel { Message = "Unable to change user password" });
+
+			// pasword change successful so generate jwt token
+			var token = _userService.GenerateJwtToken(user);
+
+			return Ok(new AuthenticateResponse(user, token));
+		}
+
+		[Authorize]
 		[HttpGet]
 		public IActionResult GetAll()
 		{
-			var users = _userService.GetAll().Select(x => new UserModel
-			{
-				Id = x.Id,
-				PlayerNickName = x.PlayerNickName,
-				Username = x.Username
-			});
+			var users = _userService.GetAll();
 
 			return Ok(users);
 		}

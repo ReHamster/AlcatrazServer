@@ -18,10 +18,12 @@ namespace Alcatraz.GameServices.Services
 	public interface IUserService
 	{
 		AuthenticateResponse Authenticate(AuthenticateRequest model);
-		public uint Register([FromBody] UserRegisterModel model);
-
-		IEnumerable<User> GetAll();
-		User GetById(int id);
+		uint Register(UserRegisterModel model);
+		bool Update(UserModel model);
+		bool ChangePassword(uint userId, string newPassword);
+		IEnumerable<UserModel> GetAll();
+		UserModel GetById(uint id);
+		string GenerateJwtToken(UserModel userModel);
 	}
 
 	public class UserService : IUserService
@@ -54,22 +56,42 @@ namespace Alcatraz.GameServices.Services
 			};
 
 			// authentication successful so generate jwt token
-			var token = generateJwtToken(userModel);
+			var token = GenerateJwtToken(userModel);
 
 			return new AuthenticateResponse(userModel, token);
 		}
 
-		public IEnumerable<User> GetAll()
+		public IEnumerable<UserModel> GetAll()
 		{
-			return _dbContext.Users.AsNoTracking().ToArray();
+			return _dbContext.Users
+				.AsNoTracking()
+				.Select(x => new UserModel
+				{
+					Id = x.Id,
+					PlayerNickName = x.PlayerNickName,
+					Username = x.Username
+				}).ToArray();
 		}
 
-		public User GetById(int id)
+		public UserModel GetById(uint id)
 		{
-			return _dbContext.Users.AsNoTracking().FirstOrDefault(x => x.Id == id);
+			return _dbContext.Users
+				.AsNoTracking()
+				.Select(x => new UserModel
+				{
+					Id = x.Id,
+					PlayerNickName = x.PlayerNickName,
+					Username = x.Username
+				})
+				.FirstOrDefault(x => x.Id == id);
 		}
 
-		public uint Register([FromBody] UserRegisterModel model)
+		private User GetByIdInternal(uint id)
+		{
+			return _dbContext.Users.FirstOrDefault(x => x.Id == id);
+		}
+
+		public uint Register(UserRegisterModel model)
 		{
 			var newUser = new User()
 			{
@@ -94,17 +116,61 @@ namespace Alcatraz.GameServices.Services
 			return newUser.Id;
 		}
 
+		public bool Update(UserModel model)
+		{
+			var user = GetByIdInternal(model.Id);
+
+			if (user == null)
+				return false;
+
+			try
+			{
+				user.Username = model.Username;
+				user.PlayerNickName = model.PlayerNickName;
+				_dbContext.SaveChanges();
+			}
+			catch
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		public bool ChangePassword(uint userId, string newPassword)
+		{
+			var user = GetByIdInternal(userId);
+
+			if (user == null)
+				return false;
+
+			try
+			{
+				user.Password = newPassword;
+				_dbContext.SaveChanges();
+			}
+			catch
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		// helper methods
 
-		private string generateJwtToken(UserModel user)
+		public string GenerateJwtToken(UserModel user)
 		{
 			// generate token that is valid for 7 days
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
-				Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
-				Expires = DateTime.UtcNow.AddDays(7),
+				Subject = new ClaimsIdentity(new[] {
+					new Claim("uid", user.Id.ToString()),
+					new Claim(ClaimTypes.Name, user.Username), // FIXME: Email?
+				}),
+				Expires = DateTime.UtcNow.AddDays(1),
 				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
 			};
 			var token = tokenHandler.CreateToken(tokenDescriptor);

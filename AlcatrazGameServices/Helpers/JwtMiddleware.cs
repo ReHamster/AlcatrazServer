@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -49,7 +50,8 @@ namespace Alcatraz.GameServices.Helpers
 				}, out SecurityToken validatedToken);
 
 				var jwtToken = (JwtSecurityToken)validatedToken;
-				var userId = int.Parse(jwtToken.Claims.First(x => x.Type == "id").Value);
+				var nameId = jwtToken.Claims.FirstOrDefault(x => x.Type == "uid");
+				var userId = uint.Parse(nameId.Value);
 
 				// attach user to context on successful jwt validation
 				context.Items["User"] = userService.GetById(userId);
