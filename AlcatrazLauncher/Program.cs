@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using AlcatrazLauncher.Helpers;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -83,8 +84,29 @@ namespace AlcatrazLauncher
 				}
 			}
 
-			if(GameInstallPath.Length > 0)
+			if (GameInstallPath.Length > 0)
+			{
+				var AlcatrazLoaderFullPath = Path.GetFullPath(Constants.OrbitLoaderFilename);
+				var OrbitLoaderFullPath = Path.Combine(GameInstallPath, Constants.OrbitLoaderFilename);
+				var OrbitLoaderBackupPath = Path.Combine(GameInstallPath, Constants.OrbitLoaderFilename + ".bak");
+
+				var orbitSha1 = File.Exists(OrbitLoaderFullPath) ? FileChecksumHelper.GetFileSHA1(OrbitLoaderFullPath) : "";
+
 				Directory.SetCurrentDirectory(GameInstallPath);
+
+				// check orbit loader
+				if(FileChecksumHelper.GetFileSHA1(AlcatrazLoaderFullPath) != orbitSha1)
+				{
+					if (File.Exists(OrbitLoaderFullPath) && orbitSha1 == Constants.OrbitLoaderSHA1)
+					{
+						File.Move(OrbitLoaderFullPath, OrbitLoaderBackupPath);
+						MessageBox.Show($"Backup created:\n\n{OrbitLoaderBackupPath}", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					}
+
+					// copy new loader file to game folder
+					File.Copy(AlcatrazLoaderFullPath, OrbitLoaderFullPath);
+				}
+			}
 
 			JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 			{
