@@ -45,6 +45,7 @@ namespace Alcatraz.GameServices.Pages
         {
 			int pageSize = 50;
 			NumRegisteredUsers = _dbContext.Users.Count();
+			NumPlayersOnline = QNetZ.NetworkPlayers.Players.Count;
 
 			var selectedStatistics = new string[]
 			{
