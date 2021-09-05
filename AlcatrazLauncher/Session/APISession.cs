@@ -252,16 +252,16 @@ namespace AlcatrazLauncher.Session
 				var errorJson = JsonConvert.DeserializeObject<ErrorModel>(errorContent);
 
 				// may be send error to the USER???
-				MessageBox.Show(errorJson.Message, resource);
+				MessageBox.Show($"{resource} request error: {errorJson.Message}", "Error");
 			}
 			else if (statusCode == HttpStatusCode.Unauthorized)
 			{
 				// если авторизация куда-то подевалась, или мы не имеем права доступа
-				MessageBox.Show(statusCode.ToString(), resource);
+				MessageBox.Show($"{resource} request error: status {statusCode}", "Error");
 			}
 			else // остальные ошибки это уже по бэкэнду
 			{
-				MessageBox.Show(errorContent, resource);
+				MessageBox.Show($"{resource} request error: {errorContent}", "Error");
 			}
 		}
 	}

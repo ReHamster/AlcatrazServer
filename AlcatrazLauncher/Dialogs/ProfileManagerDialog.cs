@@ -30,58 +30,10 @@ namespace AlcatrazLauncher.Dialogs
 			//m_signInToAlcatraz.Enabled = !profiles.Contains(Constants.AlcatrazProfileKey);
 
 			m_profileList.Items.Clear();
-			m_profileList.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].AccountId }").ToArray());
+			m_profileList.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].Username }").ToArray());
 
 			m_profileList.SelectedIndex = Array.IndexOf(profiles, AlcatrazClientConfig.Instance.UseProfile);
 		}
-
-#if false
-		private void m_loginBtn_Click(object sender, EventArgs e)
-		{
-			var api = new APISession(UIEventQueue.Get());
-
-			var model = new AuthenticateRequest
-			{
-				Username = "Jellysoapy",
-				Password = "test"
-			};
-
-			m_loginBtn.Enabled = false;
-
-			// асинхронный запрос в API
-			api.Account.Authenticate(model,
-				response => // если запрос выполнился
-				{
-					m_loginBtn.Enabled = true;
-
-					if (response.StatusCode != HttpStatusCode.OK)
-					{
-						if (response.StatusCode == HttpStatusCode.Unauthorized)
-						{
-							// messagebox (bad login)
-							MessageBox.Show(this, "Authorization error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-							return;
-						}
-
-						MessageBox.Show(this, "Connection Error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-
-						return;
-					}
-
-					// use login data
-					var loginData = JsonConvert.DeserializeObject<AuthenticateResponse>(response.Content);
-
-					var session = SessionInfo.Get();
-					session.LoginData = loginData;
-
-					MessageBox.Show(this, "Login success", "Noice", MessageBoxButtons.OK, MessageBoxIcon.Information);
-				},
-				error => {
-					MessageBox.Show(this, error.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					m_loginBtn.Enabled = true;
-				});
-		}
-#endif
 
 		private void m_addUbiProfile_Click(object sender, EventArgs e)
 		{
@@ -115,6 +67,56 @@ namespace AlcatrazLauncher.Dialogs
 			dlg.ShowDialog();
 
 			RefreshProfileList();
+		}
+
+		private void m_profileList_DoubleClick(object sender, EventArgs e)
+		{
+			if (m_profileList.SelectedIndex == -1)
+				return;
+
+			var str = m_profileList.SelectedItem.ToString();
+			var splitArr = str.Split(':');
+			var profileKey = splitArr[0].Trim();
+
+			if (profileKey != Constants.OfficialProfileKey)
+			{
+				var dlg = new EditAlcatrazProfileDialog();
+
+				dlg.AlcatrazProfileKey = profileKey;
+				dlg.ShowDialog();
+
+				RefreshProfileList();
+			}
+			else
+			{
+				MessageBox.Show(null, "Official profile has no properties.", "Alcatraz", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+		}
+
+		private void m_profileList_KeyDown(object sender, KeyEventArgs e)
+		{
+			// Deletion of profile
+			if(e.KeyCode == Keys.Delete)
+			{
+				if (m_profileList.SelectedIndex == -1)
+					return;
+
+				var result = MessageBox.Show(null, "Are you sure to delete selected profile?", "Alcatraz", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+
+				if (result == DialogResult.Yes)
+				{
+					var str = m_profileList.SelectedItem.ToString();
+					var splitArr = str.Split(':');
+					var profileKey = splitArr[0].Trim();
+
+					AlcatrazClientConfig.Instance.Profiles.Remove(profileKey);
+
+					if (AlcatrazClientConfig.Instance.UseProfile == profileKey)
+						AlcatrazClientConfig.Instance.UseProfile = Constants.NoProfile;
+
+					RefreshProfileList();
+				}
+			}
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace AlcatrazLauncher
 		public static string SERVICE_URL_KEY => "ServiceUrl";
 		public static string SANDBOX_CONFIGKEY_KEY => "ConfigKey";
 		public static string SANDBOX_ACCESSKEY_KEY => "SandboxAccessKey";
-		public static string AlcatrazProfileKey => "AlcatrazPROD";
+		public static string AlcatrazProfileKey => "Alcatraz";
 #endif
 
 		public static string ConfigFilename =>"Alcatraz.json";

@@ -128,6 +128,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.Name = "AddUbiProfileDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Add Ubisoft account";
+			this.Load += new System.EventHandler(this.AddUbiProfileDialog_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
