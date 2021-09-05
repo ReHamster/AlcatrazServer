@@ -47,5 +47,7 @@ namespace AlcatrazLauncher
 		public static string ConfigFilename =>"Alcatraz.json";
 		public static string NoProfile => "None";
 		public static string OfficialProfileKey => "UbiOfficial";
-}
+		public static string OrbitLoaderFilename => "ubiorbitapi_r2_loader.dll";
+		public static string OrbitLoaderSHA1 => "8F7CC25567F8996C0A5D082024E751EAD9430FF2"; // original checksum
+	}
 }
