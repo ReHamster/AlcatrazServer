@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 
-<html>
+<html class="h-100">
 <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
 
@@ -9,25 +9,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Alcatraz @(ViewBag.Title ?? "")</title>
 </head>
-<body>
+<body class="d-flex flex-column h-100">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+        <a href="/" class="d-flex align-items-center mx-2 col-md-4 mb-2 mb-md-0 text-dark text-decoration-none">
+            <h4>Alcatraz Server</h4>
+        </a>
 
-    <div class="container">
-        <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-            <a href="/" class="d-flex align-items-center col-md-4 mb-2 mb-md-0 text-dark text-decoration-none">
-                <h4>Alcatraz Game Services</h4>
-            </a>
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            <li><a href="@Url.Page("Index")" class="nav-link px-2 link-secondary">Home</a></li>
+            <li><a href="@Url.Page("Statistics")" class="nav-link px-2 link-dark">Statistics</a></li>
 
-            <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-                <li><a href="@Url.Page("Index")" class="nav-link px-2 link-secondary">Home</a></li>
-                <li><a href="@Url.Page("Statistics")" class="nav-link px-2 link-dark">Statistics</a></li>
-            </ul>
+        </ul>
 
-            @*<div class="col-md-3 text-end">
-                <button type="button" class="btn btn-outline-primary me-2">Sign in</button>
-            </div>*@
-        </header>
-        @RenderBody()
-    </div>
+        <div class="col-md-3 text-end">
+            <a class="btn btn-primary me-2" href="https://github.com/ReHamster/Alcatraz/releases" class="nav-link px-2 link-dark">Download</a>
+            @*<button type="button" class="btn btn-outline-primary me-2">Sign in</button>*@
+        </div>
+    </header>
+    <main class="flex-shrink-0">
+        <div class="container">
+            @RenderBody()
+        </div>
+    </main>
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">Alcatraz by Jellysoapy. <a href="https://www.buymeacoffee.com/SoapyMan">Buy Me A Coffee</a></span>
+        </div>
+    </footer>
+    <script>
+        // process all markdown-tagged nodes
+        const elements = document.querySelectorAll('markdown');
+        elements.forEach(function (markdownItem) {
+            markdownItem.innerHTML = marked(markdownItem.innerHTML)
+        });
+    </script>
 </body>
 </html>
