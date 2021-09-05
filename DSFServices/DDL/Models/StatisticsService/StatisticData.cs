@@ -46,6 +46,9 @@ namespace DSFServices.DDL.Models
 		{
 			typeValue = (byte)VariantType.None;
 			valueString = "";
+			valueInt32 = 0;
+			valueInt64 = 0;
+			valueDouble = 0.0;
 		}
 
 		public int valueInt32 { get; set; }

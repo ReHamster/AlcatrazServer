@@ -34,6 +34,8 @@ namespace Alcatraz.GameServices
 			services.AddCors();
 			services.AddControllers();
 
+			services.AddRazorPages();
+
 			services.AddSwaggerGen();
 
 			// register user service
@@ -89,6 +91,7 @@ namespace Alcatraz.GameServices
 			app.UseEndpoints(endpoints =>
 			{
 				endpoints.MapControllers();
+				endpoints.MapRazorPages();
 			});
 		}
 	}
