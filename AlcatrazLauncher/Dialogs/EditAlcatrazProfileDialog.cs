@@ -144,7 +144,7 @@ namespace AlcatrazLauncher.Dialogs
 		{
 			var config = AlcatrazClientConfig.Instance.Profiles[AlcatrazProfileKey];
 
-			var api = new APISession(UIEventQueue.Get());
+			var api = new APISession(UIEventQueue.Get(), config.ServiceUrl);
 
 			var model = new AuthenticateRequest
 			{

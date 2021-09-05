@@ -32,11 +32,6 @@ namespace AlcatrazLauncher
 
 		private void Application_Idle(Object sender, EventArgs e)
 		{
-			if (APISession.WebClient.Authenticator == null)
-			{
-				// try login?
-			}
-
 			// execute the pushed events
 			UIEventQueue.Get().ExecuteEvents();
 		}
