@@ -46,7 +46,7 @@ namespace AlcatrazLauncher
 			var profiles = AlcatrazClientConfig.Instance.Profiles.Keys.ToArray();
 
 			m_curProfileCombo.Items.Clear();
-			m_curProfileCombo.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].AccountId }").ToArray());
+			m_curProfileCombo.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].Username }").ToArray());
 
 			m_curProfileCombo.SelectedIndex = Array.IndexOf(profiles, AlcatrazClientConfig.Instance.UseProfile);
 		}

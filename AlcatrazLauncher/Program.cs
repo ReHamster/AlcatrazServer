@@ -14,6 +14,12 @@ namespace AlcatrazLauncher
 		[STAThread]
 		static void Main()
 		{
+			// TODO: search entry in regedit
+			// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Uplay Install 13
+			// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Ubisoft\Driver San Francisco
+			// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Ubisoft\Driver San Francisco\GameUpdate
+			// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Ubisoft\Launcher\Installs\13
+
 			JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 			{
 				Formatting = Formatting.Indented,

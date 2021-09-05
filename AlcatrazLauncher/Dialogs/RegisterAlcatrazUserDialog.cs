@@ -69,39 +69,35 @@ namespace AlcatrazLauncher.Dialogs
 
 			m_registerBtn.Enabled = false;
 
-			// асинхронный запрос в API
 			api.Account.Register(model,
-				response => // если запрос выполнился
+				response =>
 				{
 					m_registerBtn.Enabled = true;
 
 					if (response.StatusCode != HttpStatusCode.OK)
 					{
-						if (response.StatusCode == HttpStatusCode.Unauthorized)
-						{
-							// messagebox (bad login)
-							MessageBox.Show(this, "Registration error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-							return;
-						}
-
-						MessageBox.Show(this, "Connection Error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-
+						MessageBox.Show(this, "Registration error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 						return;
 					}
 
-					MessageBox.Show(this, "Register success", "Noice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					MessageBox.Show(this, "Successfully registered!", "Noice", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
 					// add models
 					if (AlcatrazClientConfig.Instance.Profiles.Count == 0)
 						AlcatrazClientConfig.Instance.UseProfile = Constants.AlcatrazProfileKey;
 
-					AlcatrazClientConfig.Instance.Profiles.Add(Constants.AlcatrazProfileKey, config);
+					AlcatrazClientConfig.Instance.Profiles[Constants.AlcatrazProfileKey] = config;
 					DialogResult = DialogResult.OK;
 				},
 				error => {
 					MessageBox.Show(this, error.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					m_registerBtn.Enabled = true;
 				});
+		}
+
+		private void RegisterAlcatrazUserDialog_Load(object sender, EventArgs e)
+		{
+			AcceptButton = m_registerBtn;
 		}
 	}
 }

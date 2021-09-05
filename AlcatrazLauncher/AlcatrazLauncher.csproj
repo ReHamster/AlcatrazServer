@@ -72,6 +72,12 @@
     <Compile Include="Dialogs\AddUbiProfileDialog.Designer.cs">
       <DependentUpon>AddUbiProfileDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\EditAlcatrazProfileDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\EditAlcatrazProfileDialog.Designer.cs">
+      <DependentUpon>EditAlcatrazProfileDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\ProfileManagerDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -106,6 +112,9 @@
     <Compile Include="Session\APISession.cs" />
     <EmbeddedResource Include="Dialogs\AddUbiProfileDialog.resx">
       <DependentUpon>AddUbiProfileDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\EditAlcatrazProfileDialog.resx">
+      <DependentUpon>EditAlcatrazProfileDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\ProfileManagerDialog.resx">
       <DependentUpon>ProfileManagerDialog.cs</DependentUpon>

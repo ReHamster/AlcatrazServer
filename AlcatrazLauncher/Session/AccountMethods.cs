@@ -70,29 +70,21 @@ namespace AlcatrazLauncher.Session
 					onComplete(responseJson);
 				});
 			}
-#if false
-			public void ChangePassword(ChangePassDto data, Action<HttpStatusCode> onComplete)
+
+			public void ChangePassword(ChangePasswordRequest data, Action<IRestResponse> onComplete)
 			{
 				DoAsyncPOST("ChangePassword", data, (response) => {
-
-					if (response.StatusCode == HttpStatusCode.OK)
-					{
-						var loginData = JsonConvert.DeserializeObject<LoginDataDto>(response.Content);
-
-						Authenticator = new RestSharp.Authenticators.JwtAuthenticator(loginData.JwtToken);
-					}
-
-					onComplete(response.StatusCode);
+					onComplete(response);
 				});
 			}
 
-			public void UpdateUser(UserProfileDto data, Action<object> onComplete)
+			public void UpdateUser(UserModel data, Action<IRestResponse> onComplete)
 			{
 				DoAsyncPOST("UpdateUser", data, (response) => {
-					onComplete(response.StatusCode);
+					onComplete(response);
 				});
 			}
-#endif
+
 		}
 	}
 }

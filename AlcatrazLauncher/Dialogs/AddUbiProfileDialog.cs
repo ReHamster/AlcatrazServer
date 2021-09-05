@@ -51,5 +51,10 @@ namespace AlcatrazLauncher.Dialogs
 
 			DialogResult = DialogResult.OK;
 		}
+
+		private void AddUbiProfileDialog_Load(object sender, EventArgs e)
+		{
+			AcceptButton = m_doneBtn;
+		}
 	}
 }

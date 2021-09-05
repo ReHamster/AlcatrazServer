@@ -29,21 +29,22 @@ namespace AlcatrazLauncher.Dialogs
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.m_registerBtn = new System.Windows.Forms.Button();
+			this.m_loginBtn = new System.Windows.Forms.Button();
 			this.label2 = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
 			this.m_loginText = new System.Windows.Forms.TextBox();
 			this.m_passText = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
 			// 
-			// m_registerBtn
+			// m_loginBtn
 			// 
-			this.m_registerBtn.Location = new System.Drawing.Point(220, 81);
-			this.m_registerBtn.Name = "m_registerBtn";
-			this.m_registerBtn.Size = new System.Drawing.Size(109, 33);
-			this.m_registerBtn.TabIndex = 18;
-			this.m_registerBtn.Text = "Sign In";
-			this.m_registerBtn.UseVisualStyleBackColor = true;
+			this.m_loginBtn.Location = new System.Drawing.Point(220, 81);
+			this.m_loginBtn.Name = "m_loginBtn";
+			this.m_loginBtn.Size = new System.Drawing.Size(109, 33);
+			this.m_loginBtn.TabIndex = 18;
+			this.m_loginBtn.Text = "Sign In";
+			this.m_loginBtn.UseVisualStyleBackColor = true;
+			this.m_loginBtn.Click += new System.EventHandler(this.m_loginBtn_Click);
 			// 
 			// label2
 			// 
@@ -84,7 +85,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(346, 123);
-			this.Controls.Add(this.m_registerBtn);
+			this.Controls.Add(this.m_loginBtn);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.m_loginText);
@@ -93,6 +94,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.Name = "SignInToAlcatrazDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Sign In to existing Alcatraz account";
+			this.Load += new System.EventHandler(this.SignInToAlcatrazDialog_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -100,7 +102,7 @@ namespace AlcatrazLauncher.Dialogs
 
 		#endregion
 
-		private System.Windows.Forms.Button m_registerBtn;
+		private System.Windows.Forms.Button m_loginBtn;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox m_loginText;

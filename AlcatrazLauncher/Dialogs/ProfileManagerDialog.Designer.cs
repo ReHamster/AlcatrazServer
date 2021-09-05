@@ -46,6 +46,8 @@ namespace AlcatrazLauncher.Dialogs
 			this.m_profileList.Name = "m_profileList";
 			this.m_profileList.Size = new System.Drawing.Size(250, 157);
 			this.m_profileList.TabIndex = 1;
+			this.m_profileList.DoubleClick += new System.EventHandler(this.m_profileList_DoubleClick);
+			this.m_profileList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.m_profileList_KeyDown);
 			// 
 			// m_addUbiProfile
 			// 
@@ -83,15 +85,15 @@ namespace AlcatrazLauncher.Dialogs
 			this.label1.AutoSize = true;
 			this.label1.Location = new System.Drawing.Point(12, 179);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(189, 13);
+			this.label1.Size = new System.Drawing.Size(149, 26);
 			this.label1.TabIndex = 5;
-			this.label1.Text = "Double click at item to show properties";
+			this.label1.Text = "Double click - show properties\r\nDelete - remove profile";
 			// 
 			// ProfileManagerDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(459, 201);
+			this.ClientSize = new System.Drawing.Size(459, 217);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.m_registerBtn);
 			this.Controls.Add(this.m_signInToAlcatraz);

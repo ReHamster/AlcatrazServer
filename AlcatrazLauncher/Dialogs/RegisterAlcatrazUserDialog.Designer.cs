@@ -117,6 +117,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.Name = "RegisterAlcatrazUserDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Alcatraz Account registration";
+			this.Load += new System.EventHandler(this.RegisterAlcatrazUserDialog_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
