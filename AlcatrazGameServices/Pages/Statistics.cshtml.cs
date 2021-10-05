@@ -30,6 +30,7 @@ namespace Alcatraz.GameServices.Pages
 		public IEnumerable<PlayerStat> PlayerStats { get; set; }
 		public int NumRegisteredUsers { get; set; }
 		public int NumPlayersOnline { get; set; }
+		public int NumPages { get; set; }
 
 		private StatisticValueVariant GetStatisticsValue(IEnumerable<PlayerStatisticsBoardValue> boardValues, StatisticDesc desc)
 		{
@@ -41,11 +42,12 @@ namespace Alcatraz.GameServices.Pages
 			return JsonConvert.DeserializeObject<StatisticValueVariant>(boardValue.ValueJSON);
 		}
 
-		public void OnGet(int page)
+		public void OnGet(int p = 1)
         {
 			int pageSize = 50;
 			NumRegisteredUsers = _dbContext.Users.Count();
 			NumPlayersOnline = QNetZ.NetworkPlayers.Players.Count;
+			NumPages = (NumRegisteredUsers / pageSize)+1;
 
 			var selectedStatistics = new string[]
 			{
@@ -55,7 +57,7 @@ namespace Alcatraz.GameServices.Pages
 			var statistics = SeedStatistics.AllStatisticDescriptions.Where(x => selectedStatistics.Contains(x.statName));
 			var statIds = statistics.Select(x => x.statID).ToArray();
 
-			var usersPage = _dbContext.Users.Skip(page * pageSize).Take(pageSize).ToArray();
+			var usersPage = _dbContext.Users.Skip((p-1) * pageSize).Take(pageSize).ToArray();
 
 			var userIds = usersPage.Select(x => x.Id).ToArray();
 
