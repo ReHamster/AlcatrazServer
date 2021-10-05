@@ -291,7 +291,7 @@ namespace QNetZ
 								break;
 							}
 
-							// resend?
+							// force resend?
 							var cache = GetCachedResponseByRequestPacket(packetIn);
 							if (cache != null)
 							{

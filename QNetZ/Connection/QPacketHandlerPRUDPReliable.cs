@@ -25,7 +25,7 @@ namespace QNetZ
 		{
 			SrcPacket = srcPacket;
 			ResponseList = new List<QPacketState>();
-			DropTime = DateTime.UtcNow.AddMinutes(1);
+			DropTime = DateTime.UtcNow.AddSeconds(18);
 			ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
 		}
 
@@ -172,6 +172,26 @@ namespace QNetZ
 		// returns response cache list by request packet
 		QReliableResponse GetCachedResponseByRequestPacket(QPacket packet)
 		{
+			if (packet == null)
+				return null;
+
+			if (packet.m_oSourceVPort == null)
+			{
+				QLog.WriteLine(1, "GetCachedResponseByRequestPacket - invalid packet SRC VPORT!\n");
+				return null;
+			}
+
+			if (packet.m_oDestinationVPort == null)
+			{
+				QLog.WriteLine(1, "GetCachedResponseByRequestPacket - invalid packet DEST VPORT!\n");
+				return null;
+			}
+
+			// delete all invalid messages
+			CachedResponses.RemoveAll(x => x.SrcPacket == null);
+			CachedResponses.RemoveAll(x => x.SrcPacket.m_oSourceVPort == null);
+			CachedResponses.RemoveAll(x => x.SrcPacket.m_oDestinationVPort == null);
+
 			// FIXME: check packet type?
 			return CachedResponses.FirstOrDefault(cr =>
 					cr.SrcPacket.type == packet.type &&
@@ -228,7 +248,9 @@ namespace QNetZ
 			if (client == null)
 				return;
 
-			for(int i = 0; i < CachedResponses.Count; i++)
+			CachedResponses.RemoveAll(x => x.SrcPacket == null);
+
+			for (int i = 0; i < CachedResponses.Count; i++)
 			{
 				var crp = CachedResponses[i];
 
@@ -240,15 +262,10 @@ namespace QNetZ
 						crp.ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
 					}
 				}
-
-				// still drop packets
-				if (DateTime.UtcNow > crp.DropTime)
-				{
-					CachedResponses.RemoveAt(i);
-					i--;
-					continue;
-				}
 			}
+
+			// drop packets
+			CachedResponses.RemoveAll(x => DateTime.UtcNow >= x.DropTime);
 		}
 	}
 }
