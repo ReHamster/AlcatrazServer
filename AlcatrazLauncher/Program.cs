@@ -1,10 +1,9 @@
 ﻿using AlcatrazLauncher.Helpers;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.IO;
-using System.Security.Principal;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace AlcatrazLauncher
@@ -20,93 +19,55 @@ namespace AlcatrazLauncher
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 
+			bool skipSearch = Environment.GetCommandLineArgs().Contains("-skipsearch");
+			bool unInstall = Environment.GetCommandLineArgs().Contains("-uninstall");
+
 			string GameInstallPath = "";
+			
+			if(!skipSearch)
+				GameInstallPath = InstallationHelper.FindGameInstallationFolder();
 
-			// search entry in regedit
-			using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+			if(unInstall)
 			{
-				foreach(var gameInstallProp in Constants.GameInstallRegProperties)
+				if(InstallationHelper.UnInstallAlcatraz(GameInstallPath))
 				{
-					using (var regPath = view32.OpenSubKey(gameInstallProp.RegistryPath, false))
-					{
-						if (regPath == null)
-							continue;
-
-						var installPath = regPath.GetValue(gameInstallProp.InstallPathKey);
-						if (installPath != null)
-						{
-							GameInstallPath = installPath.ToString();
-							break;
-						}
-
-					}
+					MessageBox.Show($"Alcatraz is removed from {GameInstallPath}",
+								"Information",
+								MessageBoxButtons.OK, MessageBoxIcon.Information);
 				}
+
+				return;
 			}
 
-			if(GameInstallPath.Length == 0)
+			if (GameInstallPath.Length == 0)
 			{
-				MessageBox.Show("Driver San Francisco installation not found.\n\nYou will be prompted to located the game folder", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+				MessageBox.Show("Driver San Francisco installation not found.\n\nYou will be prompted to located the game folder",
+								"Warning",
+								MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 
-				using (var openFileDialog = new OpenFileDialog())
-				{
-					openFileDialog.Title = "Locate Driver San Francisco";
-					openFileDialog.InitialDirectory = "C:\\";
-					openFileDialog.Filter = "Driver San Francisco executable (Driver.exe)|Driver.exe|All files (*.*)|*.*";
-					openFileDialog.FilterIndex = 1;
-					openFileDialog.RestoreDirectory = true;
+				GameInstallPath = InstallationHelper.PromptGameFolder();
+				if (GameInstallPath.Length == 0)
+					return;
 
-					if (openFileDialog.ShowDialog() == DialogResult.OK)
-					{
-						//Get the path of specified file
-						GameInstallPath = Path.GetDirectoryName(openFileDialog.FileName);
-
-						// also request elevated access
-						try
-						{
-							// this will also store Alcatraz configuration
-							using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
-							{
-								var regPath = view32.OpenSubKey(Constants.AlcatrazRegProperty.RegistryPath, true);
-								{
-									if (regPath == null)
-										regPath = view32.CreateSubKey(Constants.AlcatrazRegProperty.RegistryPath, true);
-
-									regPath.SetValue(Constants.AlcatrazRegProperty.InstallPathKey, GameInstallPath);
-								}
-							}
-						}
-						catch (Exception ex)
-						{
-							MessageBox.Show("Please run Alcatraz launcher as Administrator and try again.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-							return;
-						}
-					}
-				}
+				if(!InstallationHelper.StoreCustomGameFolder(GameInstallPath))
+					return;
 			}
 
-			if (GameInstallPath.Length > 0)
+			if(GameInstallPath.Length > 0)
 			{
-				var AlcatrazLoaderFullPath = Path.GetFullPath(Constants.OrbitLoaderFilename);
-				var OrbitLoaderFullPath = Path.Combine(GameInstallPath, Constants.OrbitLoaderFilename);
-				var OrbitLoaderBackupPath = Path.Combine(GameInstallPath, Constants.OrbitLoaderFilename + ".bak");
-
-				var orbitSha1 = File.Exists(OrbitLoaderFullPath) ? FileChecksumHelper.GetFileSHA1(OrbitLoaderFullPath) : "";
-
-				Directory.SetCurrentDirectory(GameInstallPath);
-
-				// check orbit loader
-				if(FileChecksumHelper.GetFileSHA1(AlcatrazLoaderFullPath) != orbitSha1)
-				{
-					if (File.Exists(OrbitLoaderFullPath) && orbitSha1 == Constants.OrbitLoaderSHA1)
-					{
-						File.Move(OrbitLoaderFullPath, OrbitLoaderBackupPath);
-						MessageBox.Show($"Backup created:\n\n{OrbitLoaderBackupPath}", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-					}
-
-					// copy new loader file to game folder
-					File.Copy(AlcatrazLoaderFullPath, OrbitLoaderFullPath);
-				}
+				if (!InstallationHelper.InstallAlcatraz(GameInstallPath))
+					return;
 			}
+			else
+			{
+				MessageBox.Show($"Alcatraz cannot run as Driver San Francisco installation folder is not specified or cannot be found!",
+							"Aborting...",
+							MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
+			// now application will work in game installation folder
+			Directory.SetCurrentDirectory(GameInstallPath);
 
 			JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 			{
