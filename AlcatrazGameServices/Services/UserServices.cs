@@ -93,6 +93,15 @@ namespace Alcatraz.GameServices.Services
 
 		public uint Register(UserRegisterModel model)
 		{
+			if (string.IsNullOrWhiteSpace(model.Username))
+				return 0;
+
+			if (string.IsNullOrWhiteSpace(model.PlayerNickName))
+				return 0;
+
+			if (string.IsNullOrWhiteSpace(model.Password))
+				return 0;
+
 			var newUser = new User()
 			{
 				Username = model.Username,
