@@ -107,6 +107,7 @@ namespace DSFServices.Services
 		[RMCMethod(12)]
 		public void LookupUbiAccountIDsByPids()
 		{
+			// TODO: implement RMC method
 			UNIMPLEMENTED();
 		}
 
