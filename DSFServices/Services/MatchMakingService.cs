@@ -240,34 +240,32 @@ namespace DSFServices.Services
 				return Result(new { retVal = result });
 			}
 
-			if (gathering != null)
+			if (gathering == null)
 			{
-				// send notification to invitation sender
-				var qsender = Context.Handler.GetQClientByClientPID(invitation.SentById);
+				QLog.WriteLine(1, $"Warning : MatchMakingService.DeclineInvitation - no gathering with gid={idGathering}, removing invitation anyway");
+			}
 
-				if (qsender != null)
+			// send notification to invitation sender
+			var qsender = Context.Handler.GetQClientByClientPID(invitation.SentById);
+
+			if (qsender != null)
+			{
+				// decline invitation event
+				// is that correct?
+				var senderNotification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 2)
 				{
-					// decline invitation event
-					// is that correct?
-					var senderNotification = new NotificationEvent(NotificationEventsType.ParticipationEvent, 2)
-					{
-						m_pidSource = plInfo.PID,
-						m_uiParam1 = idGathering,
-						m_uiParam2 = plInfo.PID,
-						m_strParam = strMessage,
-						m_uiParam3 = 0
-					};
+					m_pidSource = plInfo.PID,
+					m_uiParam1 = idGathering,
+					m_uiParam2 = plInfo.PID,
+					m_strParam = strMessage,
+					m_uiParam3 = 0
+				};
 
-					NotificationQueue.SendNotification(Context.Handler, qsender, senderNotification);
-				}
+				NotificationQueue.SendNotification(Context.Handler, qsender, senderNotification);
+			}
 
-				// done with it
-				InvitationList.Remove(invitation);
-			}
-			else
-			{
-				QLog.WriteLine(1, $"Error : MatchMakingService.DeclineInvitation - no gathering with gid={idGathering}");
-			}
+			// done with it
+			InvitationList.Remove(invitation);
 
 			return Result(new { retVal = result });
 		}
