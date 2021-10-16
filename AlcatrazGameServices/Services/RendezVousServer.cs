@@ -34,7 +34,7 @@ namespace Alcatraz.GameServices.Services
 			QLog.EnableFileLogging = false;
 			QLog.LogFunction = (int priority, string s, Color color) =>
 			{
-				if (priority <= 1)
+				if (priority <= QConfiguration.Instance.LogLevel)
 				{
 					if (color.R == 255 && color.G == 0)
 						_logger.LogError(s);
