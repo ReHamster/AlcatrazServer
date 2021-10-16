@@ -1,0 +1,27 @@
+﻿@page
+@model Alcatraz.GameServices.Pages.PortUsageModel
+@{
+}
+
+<h4>Currently required UDP ports to forward</h4>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">UDP port</th>
+            <th scope="col">Usages</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var port in Model.Ports)
+		{
+        <tr>
+            <th scope="row">@port.Item1</th>
+            <td>@port.Item2</td>
+            <td>@port.Item3</td>
+        </tr>
+		}
+
+    </tbody>
+</table>
