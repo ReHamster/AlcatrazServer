@@ -33,14 +33,13 @@ namespace QNetZ
 
 		public static void HandleRequest(QPacketHandlerPRUDP handler, QClient client, QPacket p, RMCPacket rmc)
 		{
-			MemoryStream m = new MemoryStream(p.payload);
-
-			m.Seek(rmc._afterProtocolOffset, SeekOrigin.Begin);
-
 			if (rmc.callID > client.CallCounterRMC)
 				client.CallCounterRMC = rmc.callID;
 
 			WriteLog(2, "Request : " + rmc.ToString());
+
+			MemoryStream m = new MemoryStream(p.payload);
+			m.Seek(rmc._afterProtocolOffset, SeekOrigin.Begin);
 
 			var rmcContext = new RMCContext(rmc, handler, client, p);
 
