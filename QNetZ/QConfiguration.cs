@@ -14,6 +14,7 @@ namespace QNetZ
 		public string SandboxAccessKey { get; set; }            // Server access key. Affects packet checksum;
 		public string DbConnectionString { get; set; }
 		public int DbType { get; set; }
+		public int LogLevel { get; set; }						// not used in debug server. See Services/RendezVousServer.cs
 
 		public byte SandboxAccessKeyCheckSum
 		{

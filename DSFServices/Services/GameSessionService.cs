@@ -203,9 +203,17 @@ namespace DSFServices.Services
 
 			var resultList = new List<GameSessionSearchResult>();
 
+			// BUG BUG: this works incorrectly
+			// reproduction:
+			//		first player searches for Racing, second searches for Team or Takedown
+			// result:
+			//		they will find each other:
+			// expected:
+			//		the will not find each other
+
 			foreach (var ses in sessions)
 			{
-				// if all parameters match the found attributes, add as search result
+				// if any parameters match the attributes, add a search result
 				if (m_parameters.Any(p => ses.Attributes.Any(sa => p.ID == sa.Key && p.Value == sa.Value)))
 				{
 					resultList.Add(new GameSessionSearchResult()

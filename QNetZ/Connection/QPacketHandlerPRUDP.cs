@@ -216,7 +216,7 @@ namespace QNetZ
 
 		//-------------------------------------------------------------------------------------------
 
-		public void ProcessPacket(byte[] data, IPEndPoint from, bool removeConnectPayload = false)
+		public void ProcessPacket(byte[] data, IPEndPoint from)
 		{
 			// first we drop old clients to proceed
 			DropClients();
@@ -265,12 +265,6 @@ namespace QNetZ
 						{
 							client.sPID = PID;
 							client.sPort = Port;
-
-							if (removeConnectPayload)
-							{
-								packetIn.payload = new byte[0];
-								packetIn.payloadSize = 0;
-							}
 
 							reply = ProcessCONNECT(client, packetIn);
 						}
