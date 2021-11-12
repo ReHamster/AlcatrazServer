@@ -7,13 +7,25 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Alcatraz.GameServices.Pages
 {
+    public class PortUsage
+    {
+        public PortUsage()
+        {
+            Users = new List<string>();
+        }
+
+        public int Id { get; set; }
+        public int Port { get; set; }
+        public List<string> Users { get; set; }
+    }
+
     public class PortUsageModel : PageModel
     {
-        public List<Tuple<int, int, int>> Ports { get; set; }
+        public List<PortUsage> UsageList { get; set; }
 
         public void OnGet()
         {
-            Ports = new List<Tuple<int, int, int>>();
+            UsageList = new List<PortUsage>();
 
             int id = 1;
             foreach (var pl in QNetZ.NetworkPlayers.Players)
@@ -21,15 +33,21 @@ namespace Alcatraz.GameServices.Pages
                 if (pl.Client == null)
                     continue;
 
-                var foundTuple = Ports.FindIndex(x => x.Item2 == pl.Client.Endpoint.Port);
+                var foundTuple = UsageList.FindIndex(x => x.Port == pl.Client.Endpoint.Port);
 
                 if(foundTuple != -1)
                 {
-                    var tup = new Tuple<int, int, int>(Ports[foundTuple].Item1, Ports[foundTuple].Item2, Ports[foundTuple].Item3+1);
-                    Ports[foundTuple] = tup;
+                    UsageList[foundTuple].Users.Add(pl.Name);
                 }
                 else
-                    Ports.Add(new Tuple<int, int, int>(id++, pl.Client.Endpoint.Port, 1));
+                {
+                    UsageList.Add(new PortUsage()
+                    {
+                        Id = id,
+                        Port = pl.Client.Endpoint.Port,
+                        Users = new List<string>() { pl.Name }
+                    });
+                }
 			}
         }
     }

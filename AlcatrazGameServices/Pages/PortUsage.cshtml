@@ -10,16 +10,16 @@
         <tr>
             <th scope="col">Id</th>
             <th scope="col">UDP port</th>
-            <th scope="col">Usages</th>
+            <th scope="col">Users</th>
         </tr>
     </thead>
     <tbody>
-        @foreach(var port in Model.Ports)
+        @foreach(var port in Model.UsageList)
 		{
         <tr>
-            <th scope="row">@port.Item1</th>
-            <td>@port.Item2</td>
-            <td>@port.Item3</td>
+            <th scope="row">@port.Id</th>
+            <td>@port.Port</td>
+            <td>@string.Join(", ", port.Users)</td>
         </tr>
 		}
 
