@@ -42,7 +42,7 @@
         // process all markdown-tagged nodes
         const elements = document.querySelectorAll('markdown');
         elements.forEach(function (markdownItem) {
-            markdownItem.innerHTML = marked(markdownItem.innerHTML)
+            markdownItem.innerHTML = marked.parse(markdownItem.innerHTML)
         });
     </script>
 </body>
