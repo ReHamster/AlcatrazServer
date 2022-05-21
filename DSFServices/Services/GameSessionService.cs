@@ -105,6 +105,16 @@ namespace DSFServices.Services
 				newSession.Id = ++GameSessionCounter;
 				newSession.HostPID = plInfo.PID;
 				newSession.TypeID = srcSession.TypeID;
+
+				// ????
+				// "notification": {
+				// 	"m_pidSource": 539625,
+				// 	"m_uiType": 7001,
+				// 	"m_uiParam1": 31,
+				// 	"m_uiParam2": 30,
+				// 	"m_strParam": "",
+				// 	"m_uiParam3": 1
+				//   }
 				
 				// move all participants too
 				foreach (var pid in srcSession.PublicParticipants)
@@ -159,6 +169,18 @@ namespace DSFServices.Services
 
 			if(session != null)
 			{
+				// TODO: send
+				//{
+				//  "notification": {
+				//	"m_pidSource": 25447,	// ???
+				//	"m_uiType": 7004,		// GameSessionEvent
+				//	"m_uiParam1": 539625,	// participantID
+				//	"m_uiParam2": 27,		// gameSessionKey.m_sessionID
+				//	"m_strParam": "",
+				//	"m_uiParam3": 1			// gameSessionKey.m_typeID ??? not sure...
+				//  }
+				//}
+
 				GameSessions.UpdateSessionParticipation(plInfo, uint.MaxValue, uint.MaxValue, false);
 			}
 			else
@@ -282,6 +304,18 @@ namespace DSFServices.Services
 
 			if (session != null)
 			{
+				// TODO: send
+				//{
+				//  "notification": {
+				//	"m_pidSource": 25447,	// ???
+				//	"m_uiType": 7004,		// GameSessionEvent
+				//	"m_uiParam1": 539625,	// participantID
+				//	"m_uiParam2": 27,		// gameSessionKey.m_sessionID
+				//	"m_strParam": "",
+				//	"m_uiParam3": 1			// gameSessionKey.m_typeID
+				//  }
+				//}
+
 				foreach (var pid in participantIDs)
 				{
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
