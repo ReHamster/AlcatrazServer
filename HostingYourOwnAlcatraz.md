@@ -28,3 +28,4 @@ WantedBy=multi-user.target
 5. Start service
 sudo systemctl enable kestrel-alcatraz.service
 sudo systemctl start kestrel-alcatraz.service
+sudo journalctl -u kestrel-alcatraz.service
