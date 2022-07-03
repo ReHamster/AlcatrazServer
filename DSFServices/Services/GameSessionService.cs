@@ -169,7 +169,7 @@ namespace DSFServices.Services
 
 			if(session != null)
 			{
-				// TODO: send
+				// send - could be invalid!!!
 				//{
 				//  "notification": {
 				//	"m_pidSource": 25447,	// ???
@@ -180,6 +180,26 @@ namespace DSFServices.Services
 				//	"m_uiParam3": 1			// gameSessionKey.m_typeID ??? not sure...
 				//  }
 				//}
+
+				// send to all session members
+				foreach (var pid in session.Participants)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(pid);
+
+					if (qclient != null)
+					{
+						var leaveNotification = new NotificationEvent(NotificationEventsType.GameSessionEvent, 4)
+						{
+							m_pidSource = plInfo.PID,
+							m_uiParam1 = plInfo.PID,
+							m_uiParam2 = session.Id,
+							m_strParam = "",
+							m_uiParam3 = session.TypeID
+						};
+
+						NotificationQueue.SendNotification(Context.Handler, qclient, leaveNotification);
+					}
+				}
 
 				GameSessions.UpdateSessionParticipation(plInfo, uint.MaxValue, uint.MaxValue, false);
 			}
