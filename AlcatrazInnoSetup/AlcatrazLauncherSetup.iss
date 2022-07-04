@@ -22,10 +22,10 @@ DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 InfoAfterFile=afterinstall.txt
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
-;PrivilegesRequired=lowest
+PrivilegesRequired=lowest
 OutputBaseFilename=AlcatrazLauncherSetup
-Compression=lzma
-SolidCompression=yes
+Compression=zip/1
+;SolidCompression=yes
 WizardStyle=modern
 
 [Languages]
@@ -64,16 +64,6 @@ Root: HKCU32; Subkey: "Software\Alcatraz\Launcher"; ValueType: string; ValueName
 
 [Code]
 
-{function NextButtonClick(PageId: Integer): Boolean;
-begin
-    Result := True;
-    if (PageId = wpSelectDir) and FileExists(RemoveBackslashUnlessRoot(WizardForm.DirEdit.Text) + '\Driver.exe') then begin
-        MsgBox('It is not recommended to install Alcatraz into the game folder. Please select the another folder.', mbError, MB_OK);
-        Result := False;
-        exit;
-    end;
-end;      }
-
 var
   InstallationPath: string;
   ProgramFilesFolder: string;
@@ -91,10 +81,10 @@ begin
       begin
         Log('Detected UbiLauncher installation: ' + InstallationPath);
       end
-    {else if RegQueryStringValue(HKCU32, 'Software\Alcatraz\Launcher', 'GameLocation', InstallationPath) then
+    else if RegQueryStringValue(HKCU32, 'Software\Alcatraz\Launcher', 'GameLocation', InstallationPath) then
       begin
         Log('Detected existing Alcatraz installation: ' + InstallationPath);
-      end}
+      end
     else
       begin
         InstallationPath := 'Please locate Driver San Francisco folder';
@@ -110,7 +100,7 @@ procedure InitializeWizard;
 begin
   { Create the page }
 
-  DataDirPage := CreateInputDirPage(DataDirPage.ID,
+  DataDirPage := CreateInputDirPage(wpSelectDir,
     'Select Driver San Francisco install directory', 'Driver San Francisco location',
     'Select the folder where Driver San Franciso is located, ' +
       'then click Next.',
@@ -136,8 +126,13 @@ function NextButtonClick(PageId: Integer): Boolean;
 begin
   Result := True;
   { Alcatraz folder should not be same as DSF folder }
-  if (PageId = wpSelectDir) and FileExists(RemoveBackslashUnlessRoot(GetGameDataDir('')) + '\Driver.exe') then begin
+  if (PageId = wpSelectDir) and FileExists(RemoveBackslashUnlessRoot(WizardForm.DirEdit.Text) + '\Driver.exe') then begin
       MsgBox('It is not recommended to install Alcatraz into the game folder. Please select the another folder.', mbError, MB_OK);
+      Result := False;
+      exit;
+  end
+  else if (PageId = DataDirPage.ID) and not FileExists(RemoveBackslashUnlessRoot(GetGameDataDir('')) + '\Driver.exe') then begin
+      MsgBox('Driver San Francisco executable is not found. Please select valid folder.', mbError, MB_OK);
       Result := False;
       exit;
   end;
