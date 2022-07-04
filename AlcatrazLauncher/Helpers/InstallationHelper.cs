@@ -60,15 +60,17 @@ namespace AlcatrazLauncher.Helpers
 			// TODO: request elevated access
 			try
 			{
+				GameInstallRegProperty defaultProperty = Constants.AlcatrazRegProperty;
+
 				// this will also store Alcatraz configuration
-				using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+				using (var view32 = RegistryKey.OpenBaseKey(defaultProperty.RegistryHive, RegistryView.Registry32))
 				{
-					var regPath = view32.OpenSubKey(Constants.AlcatrazRegProperty.RegistryPath, true);
+					var regPath = view32.OpenSubKey(defaultProperty.RegistryPath, true);
 					{
 						if (regPath == null)
-							regPath = view32.CreateSubKey(Constants.AlcatrazRegProperty.RegistryPath, true);
+							regPath = view32.CreateSubKey(defaultProperty.RegistryPath, true);
 
-						regPath.SetValue(Constants.AlcatrazRegProperty.InstallPathKey, GameInstallPath);
+						regPath.SetValue(defaultProperty.InstallPathKey, GameInstallPath);
 					}
 				}
 			}
@@ -85,10 +87,10 @@ namespace AlcatrazLauncher.Helpers
 			string GameInstallPath = "";
 
 			// search entry in regedit
-			using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+			foreach (var gameInstallProp in Constants.GameInstallRegProperties)
 			{
-				foreach (var gameInstallProp in Constants.GameInstallRegProperties)
-				{
+				using (var view32 = RegistryKey.OpenBaseKey(gameInstallProp.RegistryHive, RegistryView.Registry32))
+                {
 					using (var regPath = view32.OpenSubKey(gameInstallProp.RegistryPath, false))
 					{
 						if (regPath == null)

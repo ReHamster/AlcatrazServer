@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace AlcatrazLauncher
 {
 	public class GameInstallRegProperty
 	{
+		public RegistryHive RegistryHive { get; set; }
 		public string RegistryPath { get; set; }
 		public string InstallPathKey { get; set; }
 	}
@@ -16,16 +18,19 @@ namespace AlcatrazLauncher
 	{
 		public static GameInstallRegProperty AlcatrazRegProperty = new GameInstallRegProperty
 		{
+			RegistryHive = RegistryHive.CurrentUser,
 			RegistryPath = @"Software\Alcatraz\Launcher",
 			InstallPathKey = "GameLocation"
 		};
 		// known game locations
 		public static GameInstallRegProperty[] GameInstallRegProperties = new GameInstallRegProperty[] { 
 			new GameInstallRegProperty{
+				RegistryHive = RegistryHive.LocalMachine,
 				RegistryPath = @"Software\Ubisoft\Driver San Francisco",
 				InstallPathKey = "GameLocation"
 			},
 			new GameInstallRegProperty{
+				RegistryHive = RegistryHive.LocalMachine,
 				RegistryPath = @"Software\Ubisoft\Launcher\Installs\13",
 				InstallPathKey = "InstallDir"
 			},
