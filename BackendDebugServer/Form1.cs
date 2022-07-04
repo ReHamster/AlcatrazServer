@@ -46,8 +46,9 @@ namespace BackendDebugServer
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             timer1.Enabled = true;
+            QConfiguration.Instance = QConfiguration.MakeDevelopmentConfiguration(serverBindAddress.Text);
 
-			TCPServer.Start();
+            TCPServer.Start();
             BackendServicesServer.Start();
             RDVServer.Start();           
             toolStripButton1.Enabled = false;

@@ -40,7 +40,7 @@ namespace BackendDebugServer
 
 			listener = new TcpListener(IPAddress.Parse(ip), listenPort);
             listener.Start();
-            QLog.WriteLine(1, "[TCP Webserver] Server started");
+            QLog.WriteLine(1, $"[TCP Webserver] Server started, listening at {ip}:{listenPort}");
             while (true)
             {
                 lock (_sync)

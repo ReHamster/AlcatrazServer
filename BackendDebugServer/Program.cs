@@ -20,7 +20,6 @@ namespace BackendDebugServer
 			QLog.EnablePacketLogging = true;
 
 			ServiceFactoryDSF.RegisterDSFServices();
-			QConfiguration.Instance = QConfiguration.MakeDevelopmentConfiguration();
 
 			Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.EnableVisualStyles();

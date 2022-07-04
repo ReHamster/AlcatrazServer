@@ -39,11 +39,11 @@ namespace QNetZ
 			}
 		}
 
-		public static QConfiguration MakeDevelopmentConfiguration()
+		public static QConfiguration MakeDevelopmentConfiguration(string serverBindAddress)
 		{
 			var cfg = new QConfiguration();
 
-			cfg.ServerBindAddress = "127.0.0.1";
+			cfg.ServerBindAddress = serverBindAddress ?? "127.0.0.1";
 			cfg.RDVServerPort = 21005;
 			cfg.BackendServiceServerPort = 21006;
 
