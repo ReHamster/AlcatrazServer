@@ -10,5 +10,6 @@ namespace Alcatraz.Context.Entities
 		public string PlayerNickName { get; set; }
 		[JsonIgnore]
 		public string Password { get; set; }
-	}
+        public int RewardFlags { get; set; }
+    }
 }
