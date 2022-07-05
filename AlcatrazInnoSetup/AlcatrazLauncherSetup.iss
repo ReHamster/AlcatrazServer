@@ -47,7 +47,9 @@ Source: "..\AlcatrazLauncher\bin\Release\RestSharp.Serializers.NewtonsoftJson.dl
 Source: "..\AlcatrazLauncher\bin\Release\RestSharp.Serializers.NewtonsoftJson.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\AlcatrazLauncher\bin\Release\RestSharp.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\AlcatrazLauncher\bin\Release\System.ComponentModel.Annotations.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\AlcatrazLoader\bin\Release\ubiorbitapi_r2_loader.dll"; DestDir: "{app}"; Flags: ignoreversion
+
+Source: "{code:GetGameDataDir}\ubiorbitapi_r2_loader.dll"; DestDir: "{code:GetGameDataDir}\backup"; Flags: external skipifsourcedoesntexist uninsneveruninstall
+Source: "..\AlcatrazLoader\bin\Release\ubiorbitapi_r2_loader.dll"; DestDir: "{code:GetGameDataDir}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -119,6 +121,10 @@ end;
 function GetGameDataDir(Param: String): String;
 begin
   { Return the selected DataDir }
+  if (DataDirPage = nil) then begin
+    Result := '';
+    exit;
+  end;
   Result := DataDirPage.Values[0];
 end;
 
