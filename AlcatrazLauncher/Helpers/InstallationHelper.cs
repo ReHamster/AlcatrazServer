@@ -76,7 +76,7 @@ namespace AlcatrazLauncher.Helpers
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Please run Alcatraz launcher as Administrator and try again.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+				MessageBox.Show($"Error - {ex.Message}. It may be required to run as Administrator.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 				return false;
 			}
 			return true;
@@ -131,20 +131,23 @@ namespace AlcatrazLauncher.Helpers
 					}
 					catch (Exception ex)
 					{
-						MessageBox.Show("Please run Alcatraz launcher as Administrator and try again.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+						MessageBox.Show($"Error - {ex.Message}. It may be required to run as Administrator.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 						return false;
 					}
 				}
 
-				try
-				{
-					// copy new loader file to game folder
-					File.Copy(AlcatrazLoaderFullPath, OrbitLoaderFullPath);
-				}
-				catch (Exception ex)
-				{
-					MessageBox.Show("Please run Alcatraz launcher as Administrator and try again.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-					return false;
+				if(AlcatrazLoaderVersion != OrbitR2LoaderVersion.DoesNotExist)
+                {
+					try
+					{
+						// copy new loader file to game folder
+						File.Copy(AlcatrazLoaderFullPath, OrbitLoaderFullPath);
+					}
+					catch (Exception ex)
+					{
+						MessageBox.Show($"Error - {ex.Message}. It may be required to run as Administrator.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+						return false;
+					}
 				}
 			}
 
@@ -187,7 +190,7 @@ namespace AlcatrazLauncher.Helpers
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Please run Alcatraz launcher as Administrator and try again.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+				MessageBox.Show($"Error - {ex.Message}. It may be required to run as Administrator.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 				return false;
 			}
 
