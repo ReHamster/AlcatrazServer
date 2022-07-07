@@ -178,6 +178,14 @@ namespace DSFServices.Services
 			var playerStats = new List<ScoreListRead>();
 			uint playersTotal = 0;
 
+			using (var db = DBHelper.GetDbContext())
+            {
+				var playerBoards = db.PlayerStatisticBoards
+					.Where(x => x.BoardId == boardId);
+
+				playersTotal = (uint)playerBoards.Count();
+			}
+
 			return Result(new { a = playerStats, b = playersTotal });
 		}
 
@@ -186,6 +194,18 @@ namespace DSFServices.Services
 		{
 			var playerStats = new List<ScoreListRead>();
 			uint playersTotal = 0;
+
+			using (var db = DBHelper.GetDbContext())
+			{
+				foreach(var data in dataList)
+                {
+					var playerBoards = db.PlayerStatisticBoards
+						.Where(x => x.BoardId == data.boardId)
+						.Where(x => playerPIDs.Contains(x.PlayerId));
+
+					playersTotal += (uint)playerBoards.Count();
+				}
+			}
 
 			return Result(new { a = playerStats, b = playersTotal });
 		}
