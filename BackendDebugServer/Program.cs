@@ -21,6 +21,8 @@ namespace BackendDebugServer
 
 			ServiceFactoryDSF.RegisterDSFServices();
 
+			QConfiguration.Instance = QConfiguration.MakeDevelopmentConfiguration(null);
+
 			Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
