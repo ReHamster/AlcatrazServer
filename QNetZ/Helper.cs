@@ -98,11 +98,11 @@ namespace QNetZ
 			try
 			{
 				ret = new DateTime(
-					(int)(v >> 26 & 2047),
-					(int)(v >> 22 & 15),
-					(int)(v >> 17 & 31),
-					(int)(v << 12 & 31),
-					(int)(v >> 6 & 63),
+					(int)((v >> 26) & 2047),
+					(int)((v >> 22) & 15),
+					(int)((v >> 17) & 31),
+					(int)((v << 12) & 31),
+					(int)((v >> 6) & 63),
 					(int)(v & 63));
 			}
 			catch

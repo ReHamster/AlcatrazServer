@@ -109,82 +109,176 @@ namespace QNetZ
 			return members;
 		}
 
+		static List<QPacket> DefragPackets = new List<QPacket>();
+
+		static bool LogDefragPacket(QPacket packet, StringBuilder sb)
+		{
+			if (packet.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
+				return true;
+
+			if (!packet.flags.Contains(QPacket.PACKETFLAG.FLAG_RELIABLE))
+				return true;
+
+			if (!DefragPackets.Any(x =>
+				 x.uiSeqId == packet.uiSeqId &&
+				 x.checkSum == packet.checkSum &&
+				 x.m_byPartNumber == packet.m_byPartNumber &&
+				 x.checkSum == packet.checkSum &&
+				 x.m_bySessionID == packet.m_bySessionID &&
+				 x.m_uiSignature == packet.m_uiSignature
+				))
+			{
+				DefragPackets.Add(packet);
+			}
+
+			if (packet.m_byPartNumber != 0)
+			{
+				// add and don't process
+				return false;
+			}
+
+			// got last fragment, assemble
+			var orderedFragments = DefragPackets.OrderBy(x => x.uiSeqId);
+
+			int numPackets = 0;
+			foreach (var fragPacket in orderedFragments)
+			{
+				numPackets++;
+				if (fragPacket.m_byPartNumber == 0)
+					break;
+			}
+
+			var fragments = orderedFragments.Take(numPackets).ToArray();
+
+			// remove fragments that we processed
+			DefragPackets.Clear();
+
+			if (numPackets > 1)
+			{
+				// validate algorightm above
+				ushort seqId = fragments.First().uiSeqId;
+				int nfrag = 1;
+				foreach (var fragPacket in fragments)
+				{
+					// if(fragPacket.uiSeqId != seqId)
+					// {
+					// 	Log.WriteLine(1, "ERROR : invalid packet sequence for defragmenting - call a programmer!");
+					// 	return false;
+					// }
+
+					if (fragments.Length == nfrag && fragPacket.m_byPartNumber != 0)
+					{
+						sb.Append("ERROR : packet sequence does not end with 0 - call a programmer!");
+						return false;
+					}
+
+					if (!(fragPacket.m_byPartNumber == 0 && fragments.Length == nfrag))
+					{
+						if (fragPacket.m_byPartNumber != nfrag)
+						{
+							sb.Append("ERROR : insufficient packet fragments - call a programmer!");
+							return false;
+						}
+					}
+
+					seqId++;
+					nfrag++;
+				}
+
+				var fullPacketData = new MemoryStream();
+				foreach (var fragPacket in fragments)
+					fullPacketData.Write(fragPacket.payload, 0, fragPacket.payload.Length);
+
+				// replace packet payload with defragmented data
+				packet.payload = fullPacketData.ToArray();
+				packet.payloadSize = (ushort)fullPacketData.Length;
+
+				sb.AppendLine("##########################################################");
+				sb.Append($"Defragmented sequence of {numPackets} packets !\n");
+			}
+
+			return true;
+		}
+
 		public static string MakeDetailedPacketLog(byte[] data, bool isSinglePacket = false)
 		{
 			StringBuilder sb = new StringBuilder();
 			while (true)
 			{
 				QPacket qp = new QPacket(data);
-				sb.AppendLine("##########################################################");
-				sb.AppendLine(qp.ToStringDetailed());
-				if (qp.type == QPacket.PACKETTYPE.DATA && qp.m_byPartNumber == 0)
+				int size2 = qp.toBuffer().Length;
+				if (LogDefragPacket(qp, sb))
 				{
-					switch (qp.m_oSourceVPort.type)
+					sb.AppendLine("##########################################################");
+					sb.AppendLine(qp.ToStringDetailed());
+					if (qp.type == QPacket.PACKETTYPE.DATA && qp.m_byPartNumber == 0)
 					{
-						case QPacket.STREAMTYPE.RVSecure:
-							if (qp.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
-								break;
-							sb.AppendLine("Trying to process RMC packet...");
-							try
-							{
-								MemoryStream m = new MemoryStream(qp.payload);
-								RMCPacket p = new RMCPacket(qp);
-
-								m.Seek(p._afterProtocolOffset, SeekOrigin.Begin);
-
-								string methodName = p.methodID.ToString();
-
-								var serviceFactory = RMCServiceFactory.GetServiceFactory(p.proto);
-								MethodInfo bestMethod = null;
-								if(serviceFactory != null)
+						switch (qp.m_oSourceVPort.type)
+						{
+							case QPacket.STREAMTYPE.RVSecure:
+								if (qp.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
+									break;
+								sb.AppendLine("Trying to process RMC packet...");
+								try
 								{
-									var service = serviceFactory();
-									
-									bestMethod = service.GetServiceMethodById(p.methodID);
-									if (bestMethod != null)
-										methodName = bestMethod.Name;
-								}
+									MemoryStream m = new MemoryStream(qp.payload);
+									RMCPacket p = new RMCPacket(qp);
 
-								sb.AppendLine("\tRMC CallId : " + p.callID);
-								sb.AppendLine("\tRMC Protocol : " + p.proto);
-								sb.AppendLine("\tRMC Method   : " + methodName);
+									m.Seek(p._afterProtocolOffset, SeekOrigin.Begin);
 
-								if (p.isRequest)
-								{
-									sb.AppendLine("\tRMC Request  : " + p.isRequest);
+									string methodName = p.methodID.ToString();
 
-									/*if (p.methodID == 1 && p.proto == RMCProtocolId.NotificationEventManager)
+									var serviceFactory = RMCServiceFactory.GetServiceFactory(p.proto);
+									MethodInfo bestMethod = null;
+									if (serviceFactory != null)
 									{
-										var notif = DDLSerializer.ReadObject<NotificationEvent>(m);
-										sb.AppendLine(notif.ToString());
+										var service = serviceFactory();
+
+										bestMethod = service.GetServiceMethodById(p.methodID);
+										if (bestMethod != null)
+											methodName = bestMethod.Name;
 									}
-									else */
-									if (bestMethod != null)
+
+									sb.AppendLine("\tRMC CallId : " + p.callID);
+									sb.AppendLine("\tRMC Protocol : " + p.proto);
+									sb.AppendLine("\tRMC Method   : " + methodName);
+
+									if (p.isRequest)
 									{
-										sb.AppendLine("RMC Method arguments:");
-										var paramValues = HandleMethodParameters(bestMethod, m);
+										sb.AppendLine("\tRMC Request  : " + p.isRequest);
 
-										// serialize input parameters
-										sb.Append(DDLSerializer.ObjectToString(paramValues));
+										/*if (p.methodID == 1 && p.proto == RMCProtocolId.NotificationEventManager)
+										{
+											var notif = DDLSerializer.ReadObject<NotificationEvent>(m);
+											sb.AppendLine(notif.ToString());
+										}
+										else */
+										if (bestMethod != null)
+										{
+											sb.AppendLine("RMC Method arguments:");
+											var paramValues = HandleMethodParameters(bestMethod, m);
+
+											// serialize input parameters
+											sb.Append(DDLSerializer.ObjectToString(paramValues));
+										}
 									}
+									else
+									{
+										sb.AppendLine("\tRMC Response " + (p.success ? "Success" : $"Error : {p.error.ToString("X8")}"));
+									}
+
+									sb.AppendLine();
 								}
-								else
+								catch (Exception ex)
 								{
-									sb.AppendLine("\tRMC Response " + (p.success ? "Success" : $"Error : { p.error.ToString("X8") }"));
+									sb.AppendLine("Error processing RMC packet: " + ex.Message);
+									sb.AppendLine();
 								}
-
-								sb.AppendLine();
-							}
-							catch(Exception ex)
-							{
-								sb.AppendLine("Error processing RMC packet: " + ex.Message);
-								sb.AppendLine();
-							}
-							break;
-						case QPacket.STREAMTYPE.DO:
-
-							if (qp.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
 								break;
+							case QPacket.STREAMTYPE.DO:
+
+								if (qp.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
+									break;
 #if false
 							sb.AppendLine("Trying to unpack DO messages...");
 
@@ -205,13 +299,13 @@ namespace QNetZ
 								sb.AppendLine();
 							}
 #endif
-							break;
+								break;
+						}
 					}
 				}
 
-				// sometimes happens that there are more packets in single UDP payload...
 
-				int size2 = qp.toBuffer().Length;
+				// sometimes happens that there are more packets in single UDP payload...
 				if (size2 == data.Length || isSinglePacket)
 					break;
 
