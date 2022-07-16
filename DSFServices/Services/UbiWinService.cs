@@ -137,9 +137,11 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(9)]
-		public void SetActionsCompleted()
+		public RMCResult SetActionsCompleted(IEnumerable<string> actionCodeList, string cultureName, string platformCode)
 		{
+			var actionList = new List<UplayAction>();
 			UNIMPLEMENTED();
+			return Result(actionList);
 		}
 
 		[RMCMethod(10)]
