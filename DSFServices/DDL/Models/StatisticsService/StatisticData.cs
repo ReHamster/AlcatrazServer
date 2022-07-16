@@ -57,27 +57,48 @@ namespace DSFServices.DDL.Models
 		public string valueString { get; set; }
 		public byte typeValue { get; set; }         // VariantType
 
-		public void Assign(StatisticValueVariant newValue)
+		public bool Compare(StatisticValueVariant other)
+        {
+			switch ((VariantType)typeValue)
+			{
+				case VariantType.int32:
+					return (valueInt32 == other.valueInt32);
+				case VariantType.int64:
+					return (valueInt64 == other.valueInt64);
+				case VariantType.Float:
+				case VariantType.Double:
+					return (valueDouble == other.valueDouble);
+				case VariantType.String:
+					return (valueString == other.valueString);
+			}
+			return false;
+		}
+
+		public bool Assign(StatisticValueVariant newValue)
 		{
+			if (Compare(newValue))
+				return false;
+
 			switch((VariantType)typeValue)
 			{
 				case VariantType.int32:
 					valueInt32 = newValue.valueInt32;
-					break;
+					return true;
 				case VariantType.int64:
 					valueInt64 = newValue.valueInt64;
-					break;
+					return true;
 				case VariantType.Float:
 				case VariantType.Double:
 					valueDouble = newValue.valueDouble;
-					break;
+					return true;
 				case VariantType.String:
 					valueString = newValue.valueString;
-					break;
+					return true;
 			}
+			return false;
 		}
 
-		public void Add(StatisticValueVariant newValue)
+		public bool Add(StatisticValueVariant newValue)
 		{
 			switch ((VariantType)typeValue)
 			{
@@ -93,11 +114,13 @@ namespace DSFServices.DDL.Models
 					break;
 				case VariantType.String:
 					// not supported
-					break;
+				default:
+					return false;
 			}
+			return true;
 		}
 
-		public void Subtract(StatisticValueVariant newValue)
+		public bool Subtract(StatisticValueVariant newValue)
 		{
 			switch ((VariantType)typeValue)
 			{
@@ -113,56 +136,95 @@ namespace DSFServices.DDL.Models
 					break;
 				case VariantType.String:
 					// not supported
-					break;
+				default:
+					return false;
 			}
+			return true;
 		}
 
-		public void ReplaceIfMin(StatisticValueVariant newValue)
+		public bool ReplaceIfMin(StatisticValueVariant newValue)
 		{
 			// FIXME: might be incorrect and flipped!
 			switch ((VariantType)typeValue)
 			{
 				case VariantType.int32:
 					if(newValue.valueInt32 < valueInt32)
+                    {
 						valueInt32 = newValue.valueInt32;
+						return true;
+					}
 					break;
 				case VariantType.int64:
 					if (newValue.valueInt64 < valueInt64)
+                    {
 						valueInt64 = newValue.valueInt64;
+						return true;
+					}
 					break;
 				case VariantType.Float:
 				case VariantType.Double:
 					if (newValue.valueDouble < valueDouble)
+                    {
 						valueDouble = newValue.valueDouble;
+						return true;
+					}
 					break;
 				case VariantType.String:
 					// not supported
 					break;
 			}
+			return false;
 		}
 
-		public void ReplaceIfMax(StatisticValueVariant newValue)
+		public bool ReplaceIfMax(StatisticValueVariant newValue)
 		{
 			// FIXME: might be incorrect and flipped!
 			switch ((VariantType)typeValue)
 			{
 				case VariantType.int32:
 					if (newValue.valueInt32 > valueInt32)
+                    {
 						valueInt32 = newValue.valueInt32;
+						return true;
+					}
 					break;
 				case VariantType.int64:
 					if (newValue.valueInt64 > valueInt64)
+                    {
 						valueInt64 = newValue.valueInt64;
+						return true;
+					}
 					break;
 				case VariantType.Float:
 				case VariantType.Double:
 					if (newValue.valueDouble > valueDouble)
+                    {
 						valueDouble = newValue.valueDouble;
+						return true;
+					}
 					break;
 				case VariantType.String:
 					// not supported
 					break;
 			}
+			return false;
+		}
+
+		public override string? ToString()
+        {
+			switch ((VariantType)typeValue)
+			{
+				case VariantType.int32:
+					return valueInt32.ToString();
+				case VariantType.int64:
+					return valueInt64.ToString();
+				case VariantType.Float:
+				case VariantType.Double:
+					return valueDouble.ToString();
+				case VariantType.String:
+					return valueString.ToString();
+			}
+			return "<invalid variant type>";
 		}
 	}
 
@@ -271,29 +333,26 @@ namespace DSFServices.DDL.Models
 			value = initialValue;
 		}
 
-		public void UpdateValueWithPolicy(StatisticValueVariant newValue, StatisticPolicy policy)
+		public bool UpdateValueWithPolicy(StatisticValueVariant newValue, StatisticPolicy policy)
 		{
-			switch(policy)
+			value.typeValue = newValue.typeValue;
+			switch (policy)
 			{
 				case StatisticPolicy.Overwrite:
-					value.Assign(newValue);
-					break;
+					return value.Assign(newValue);
 				case StatisticPolicy.Add:
-					value.Add(newValue);
-					break;
+					return value.Add(newValue);
 				case StatisticPolicy.Sub:
-					value.Subtract(newValue);
-					break;
+					return value.Subtract(newValue);
 				case StatisticPolicy.ReplaceIfMin:
-					value.ReplaceIfMin(newValue);
-					break;
+					return value.ReplaceIfMin(newValue);
 				case StatisticPolicy.ReplaceIfMax:
-					value.ReplaceIfMax(newValue);
-					break;
+					return value.ReplaceIfMax(newValue);
 			}
 
 			// scoreLostForNextSlice is diff?
 			// sliceScore hmmm?
+			return false;
 		}
 
 		public StatisticValueVariant value { get; set; }
@@ -301,25 +360,4 @@ namespace DSFServices.DDL.Models
 		public StatisticValueVariant sliceScore { get; set; }
 		public StatisticValueVariant scoreLostForNextSlice { get; set; }
 	}
-
-	/*
-	public class StatisticsBoard
-	{
-		public StatisticsBoard()
-		{
-			properties = new Dictionary<int, StatisticsBoardValue>();
-			rank = 0;
-			score = 0.0f;
-			lastUpdate = DateTime.UtcNow;
-		}
-
-		public uint playerId { get; set; }
-		public int boardId { get; set; }
-		public int rank { get; set; }
-		public float score { get; set; }
-		public DateTime lastUpdate { get; set; }
-
-		public IDictionary<int, StatisticsBoardValue> properties { get; set; }		// by propertyId
-	}*/
-
 }
