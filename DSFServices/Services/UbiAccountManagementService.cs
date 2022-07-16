@@ -32,7 +32,7 @@ namespace DSFServices.Services
 		public RMCResult GetAccount()
 		{
 			var playerInfo = Context.Client.Info;
-			var reply = new UbiAccount()
+			var account = new UbiAccount()
 			{
 				m_ubiAccountId = playerInfo.AccountId,
 				m_username = playerInfo.Name,
@@ -77,7 +77,7 @@ namespace DSFServices.Services
 				m_dateOfBirth = new System.DateTime(1990, 11, 1)
 			};
 			
-			return Result(reply);
+			return Result(new { account = account, exist = true});
 		}
 
 		[RMCMethod(4)]

@@ -12,47 +12,7 @@ namespace DSFServices.Services
 		[RMCMethod(3)]
 		public RMCResult UnlockG2W(List<UnlockInputData> unlocksIds, string table)
 		{
-			UNIMPLEMENTED();
-
-			/*
-				{
-				  "unlocksIds": [
-					{
-					  "id": 62,
-					  "status": 0
-					}
-				  ],
-				  "table": "vehicles"
-				}
-
-				REQ2:
-
-			{
-			  "unlocksIds": [
-				{
-				  "id": 172,
-				  "status": 19
-				},
-				{
-				  "id": 168,
-				  "status": 19
-				},
-				{
-				  "id": 169,
-				  "status": 19
-				},
-				{
-				  "id": 170,
-				  "status": 19
-				},
-				{
-				  "id": 171,
-				  "status": 19
-				}
-			  ],
-			  "table": "challenges"
-			}
-			 */
+			// apparently this does nothing
 
 			return Error(0);
 		}

@@ -26,7 +26,7 @@ namespace DSFServices.Services
 				m_ID = 1,
 				m_description = "Allow to play online"
 			});
-
+			/*
 			int unlockFlags = 0;
 			using (var db = DBHelper.GetDbContext())
             {
@@ -49,7 +49,7 @@ namespace DSFServices.Services
 				foreach (var priv in DeluxePrivileges.ChallengeIds)
 					privileges.Add(id++, priv);
 			}
-
+			*/
 			return Result(privileges);
 		}
 
