@@ -139,10 +139,21 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(12)]
-		public void LookupUbiAccountIDsByPids()
+		public RMCResult LookupUbiAccountIDsByPids(IEnumerable<uint> pids)
 		{
-			// TODO: implement RMC method
-			UNIMPLEMENTED();
+			var ubiaccountIDs = new Dictionary<uint, string>();
+
+			using (var db = DBHelper.GetDbContext())
+			{
+				var usersList = db.Users.Where(x => pids.Contains(x.Id)).ToArray();
+
+				foreach (var usr in usersList)
+				{
+					ubiaccountIDs[usr.Id] = usr.PlayerNickName;
+				}
+			}
+
+			return Result(ubiaccountIDs);
 		}
 
 		[RMCMethod(13)]
