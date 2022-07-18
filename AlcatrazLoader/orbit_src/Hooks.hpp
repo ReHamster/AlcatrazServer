@@ -34,6 +34,8 @@ namespace AlcatrazUplayR2
 	static constexpr uintptr_t kSandboxSelectorConstructorAddr = 0x004CF530;
 	static constexpr size_t kSandboxSelectorConstructorPatchSize = 10;
 
+	static constexpr size_t kFriendsListPageLimitAddress = 0x009E24DE;
+
 
 	struct HookProcess
 	{
@@ -111,6 +113,11 @@ namespace AlcatrazUplayR2
 			Fail("Failed to initialise hook for SandboxSelector constructor", true);
 			return;
 		}
+
+		// Patch friends list, limit to 16 for og server
+		// Alcatraz server itself will always send all friends
+		uchar maxFriendsList = 16;
+		proc.MainProcess->writeMemory(kFriendsListPageLimitAddress, sizeof(uchar), &maxFriendsList);
 
 		Singleton<HookProcess>::Instance().Set(proc);
 	}

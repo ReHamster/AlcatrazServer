@@ -264,6 +264,8 @@ namespace DSFServices.Services
 		[RMCMethod(13)]
 		public RMCResult GetRelationships(int offset, int size)
 		{
+			var onlinePlayerIds = NetworkPlayers.Players.Select(x => x.PID);
+
 			var result = new RelationshipsResult();
 
 			var myUserPid = Context.Client.Info.PID;
@@ -275,12 +277,45 @@ namespace DSFServices.Services
 					.AsNoTracking()
 					.Where(x => x.User1Id == myUserPid || x.User2Id == myUserPid);
 
+				//result.uiTotalCount = (uint)size;
 				result.uiTotalCount = (uint)relations.Count();
 
 				// do not show sent pending relationships
 				relations = relations.Where(x => !(x.ByRelationShip == 3 && x.User1Id == myUserPid));
 
-				var relationsPage = relations.Skip(offset).Take(size).ToList();   // apply pagination
+				//var relationsPage = relations.Skip(offset).Take(size).ToList();   // DO NOT apply pagination, it doesn't even work
+
+				// prefer players that currently online
+				// TODO: make a preference in Web UI
+				if(result.uiTotalCount > 16)
+                {
+					relations = relations.Where(x => onlinePlayerIds.Contains((x.User1Id == myUserPid) ? x.User2Id : x.User1Id));
+					if(relations.Count() == 0)
+                    {
+						result.lstRelationshipsList = new List<RelationshipData>()
+						{
+							new RelationshipData()
+							{
+								m_pid = 1,
+								m_strName = $"{result.uiTotalCount} friends",
+								m_byRelationship = 1,
+								m_byStatus = 0,
+								m_uiDetails = 0
+							},
+							new RelationshipData()
+							{
+								m_pid = 0,
+								m_strName = "Everyone is",
+								m_byRelationship = 1,
+								m_byStatus = 0,
+								m_uiDetails = 0
+							}
+						};
+						return Result(result);
+					}
+				}
+
+				var relationsPage = relations.ToArray();
 
 				result.lstRelationshipsList = relationsPage.Select(x =>
 					{
@@ -289,7 +324,7 @@ namespace DSFServices.Services
 						{
 							m_pid = swap ? x.User2Id : x.User1Id,
 							m_strName = swap ? x.User2.PlayerNickName : x.User1.PlayerNickName,
-							m_byStatus = (byte)(NetworkPlayers.Players.Any(p => p.PID == (swap ? x.User2Id : x.User1Id)) ? 1 : 0),
+							m_byStatus = (byte)(onlinePlayerIds.Contains(swap ? x.User2Id : x.User1Id) ? 1 : 0),
 							m_uiDetails = x.Details,
 							m_byRelationship = (byte)x.ByRelationShip
 						};

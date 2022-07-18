@@ -96,37 +96,17 @@ namespace DSFServices.Services
 		[RMCMethod(4)]
 		public RMCResult ReadPlayerStats(IEnumerable<StatisticData> data, List<uint> playerIds)
 		{
-#if false
-			var statsData = new[] {
-				"01 00 00 00 04 45 08 00 0B 00 4A 65 6C 6C 79 73 6F 61 70 79 00 01 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 04 00 00 00 01 72 BE 0B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 02 8F 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 03 D3 00 3E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 04 37 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 CF 4B 0D 96 1F 00 00 00",
-				"01 00 00 00 04 45 08 00 0B 00 4A 65 6C 6C 79 73 6F 61 70 79 00 01 00 00 00 0C 00 00 00 00 00 00 00 00 00 00 00 04 00 00 00 01 72 BE 0B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 02 16 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 03 AC 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 01 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80 41 5F C0 3F 01 00 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 04 73 3A 03 96 1F 00 00 "
-			};
-
-			for(var i = 0; i < statsData.Length; i++)
-			{
-				var m = new MemoryStream(Helper.ParseByteArray(statsData[i]));
-				var retModel = DDLSerializer.ReadObject<List<ScoreListRead>>(m);
-
-				if(data.First().boardId == retModel.First().scoresByBoard.First().boardId)
-				{
-					Log.WriteLine(1, "Statistics request:");
-					Log.WriteLine(1, DDLSerializer.ObjectToString(data));
-					Log.WriteLine(1, "Statistics result:");
-					Log.WriteLine(1, DDLSerializer.ObjectToString(retModel));
-
-					return Result(retModel);
-				}
-			}
-
-			UNIMPLEMENTED();
-
 			var playerStats = new List<ScoreListRead>();
-			return Result(playerStats);
-#endif
-			var playerStats = new List<ScoreListRead>();
+
+			int i = 0;
+			const int MAX_STAT_PLAYERS_OR_FRIENDS_LIST_WILL_CRASH = 16;
 
 			foreach (var playerId in playerIds)
 			{
+				// Until we fix the game executable this remains here
+				if (++i > MAX_STAT_PLAYERS_OR_FRIENDS_LIST_WILL_CRASH)
+					break;
+
 				var player = DBHelper.GetUserByPID(playerId);
 
 				if (player == null)
@@ -135,7 +115,7 @@ namespace DSFServices.Services
 				var scoreListRead = new ScoreListRead()
 				{
 					pid = playerId,
-					pname = player.Username
+					pname = player.PlayerNickName
 				};
 				playerStats.Add(scoreListRead);
 
@@ -163,7 +143,9 @@ namespace DSFServices.Services
 							score = playerBoard.Score,
 						};
 
-						readBoardValue.scores = playerBoard.Values.Select(x => new StatisticReadValue()
+						
+
+						readBoardValue.scores = playerBoard.Values.Where(x => statReqData.propertyIds.Contains(x.PropertyId)).Select(x => new StatisticReadValue()
 						{
 							propertyId = (byte)x.PropertyId,
 							value = JsonConvert.DeserializeObject<StatisticValueVariant>(x.ValueJSON),
