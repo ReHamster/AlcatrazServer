@@ -26,6 +26,6 @@ namespace DSFServices.DDL.Models
 		public ushort m_value { get; set; }
 		public string m_gameCode { get; set; }
 
-		public IEnumerable<UplayActionPlatform> m_platforms { get; set; }
+		public ICollection<UplayActionPlatform> m_platforms { get; set; }
 	}
 }

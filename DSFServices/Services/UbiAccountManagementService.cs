@@ -175,15 +175,30 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(14)]
-		public void LookupUsernamesByUbiAccountIDs()
+		public RMCResult LookupUsernamesByUbiAccountIDs(IEnumerable<string> UbiAccountIds)
 		{
-			UNIMPLEMENTED();
+			var Usernames = new Dictionary<string, string>();
+
+			using (var db = DBHelper.GetDbContext())
+			{
+				var usersList = db.Users.Where(x => UbiAccountIds.Contains(x.Username)).ToArray();
+
+				foreach (var usr in usersList)
+				{
+					Usernames[usr.Username] = usr.Username;
+				}
+			}
+
+			return Result(Usernames);
 		}
 
 		[RMCMethod(15)]
-		public void LookupUbiAccountIDsByUsernameSubString()
+		public RMCResult LookupUbiAccountIDsByUsernameSubString(string UsernameSubString)
 		{
+			var UbiAccountIDs = new Dictionary<string, string>();
+			
 			UNIMPLEMENTED();
+			return Result(UbiAccountIDs);
 		}
 
 		[RMCMethod(16)]

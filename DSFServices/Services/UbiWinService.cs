@@ -131,9 +131,25 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(8)]
-		public void SetActionCompleted()
+		public RMCResult SetActionCompleted(string actionCode, string cultureName, string platformCode)
 		{
 			UNIMPLEMENTED();
+			var unlockedAction = new UplayAction()
+			{
+				m_code = actionCode,
+				m_description = actionCode + "_description",
+				m_gameCode = "DRV5",
+				m_name = actionCode + "_action",
+				m_value = 1,
+			};
+			unlockedAction.m_platforms.Add(new UplayActionPlatform()
+            {
+				m_completed = true,
+				m_platformCode = platformCode,
+				m_specificKey = ""
+			});
+
+			return Result(unlockedAction);
 		}
 
 		[RMCMethod(9)]
