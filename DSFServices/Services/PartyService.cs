@@ -279,21 +279,38 @@ namespace DSFServices.Services
 		}
 
 		[RMCMethod(12)]
-		public void PartyProbeSessions(uint gid, uint pid, string packedSessions)
+		public RMCResult PartyProbeSessions(uint gid, uint pid, string packedSessions)
 		{
-			var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 3)
+			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
+
+			if (gathering != null)
 			{
-				m_pidSource = Context.Client.Info.PID,
-				m_uiParam1 = gid,
-				m_uiParam2 = pid,
-				m_strParam = packedSessions,
-				m_uiParam3 = 0
-			};
+				foreach (var participantPid in gathering.Participants)
+				{
+					var qclient = Context.Handler.GetQClientByClientPID(participantPid);
 
-			//NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					if (qclient != null)
+					{
+						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 3)
+						{
+							m_pidSource = Context.Client.Info.PID,
+							m_uiParam1 = gid,
+							m_uiParam2 = pid,
+							m_strParam = packedSessions,
+							m_uiParam3 = 0
+						};
 
-			// TODO: implement RMC method
-			UNIMPLEMENTED();
+						NotificationQueue.SendNotification(Context.Handler, qclient, notification);
+					}
+				}
+			}
+			else
+			{
+				QLog.WriteLine(1, $"Error : PartyService.PartyProbeSessions - no gathering with gid={gid}");
+			}
+
+			return Error(0);
+
 		}
 
 		[RMCMethod(13)]
