@@ -42,10 +42,7 @@ include "dependencies/HF/premake5.lua"
 -- NoSTD
 project "libnstd"
 	kind "StaticLib"
-	
-	filter "system:Windows"
-		defines { "__PLACEMENT_NEW_INLINE" }
-	
+		
 	includedirs {
 		"dependencies/libnstd/include"
 	}
