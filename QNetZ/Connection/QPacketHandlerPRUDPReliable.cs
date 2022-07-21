@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,19 +15,22 @@ namespace QNetZ
 		{
 			Packet = p;
 			GotAck = false;
+			ReSendCount = 0;
 		}
 		public QPacket Packet;
+		public int ReSendCount;
 		public bool GotAck;                // if true it won't be sent again
 	}
 
 	class QReliableResponse
 	{
-		public QReliableResponse(QPacket srcPacket)
+		public QReliableResponse(QPacket srcPacket, IPEndPoint endpoint)
 		{
 			SrcPacket = srcPacket;
 			ResponseList = new List<QPacketState>();
 			DropTime = DateTime.UtcNow.AddSeconds(18);
 			ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
+			Endpoint = endpoint;
 		}
 
 		public QPacket SrcPacket;
@@ -34,14 +38,13 @@ namespace QNetZ
 
 		public DateTime DropTime;		// if ACKs not recieved, in this time it will be dropped
 		public DateTime ResendTime;
+		public IPEndPoint Endpoint;     // client endpoint
 	}
 
 	//-----------------------------------------------------
 
 	public partial class QPacketHandlerPRUDP
 	{
-		
-
 		bool Defrag(QClient client, QPacket packet)
 		{
 			if (packet.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
@@ -70,7 +73,6 @@ namespace QNetZ
 
 			// got last fragment, assemble
 			var orderedFragments = AccumulatedPackets.OrderBy(x => x.uiSeqId);
-
 			int numPackets = 0;
 			foreach (var fragPacket in orderedFragments)
 			{
@@ -91,11 +93,11 @@ namespace QNetZ
 				int nfrag = 1;
 				foreach (var fragPacket in fragments)
 				{
-					// if(fragPacket.uiSeqId != seqId)
-					// {
-					// 	Log.WriteLine(1, "ERROR : invalid packet sequence for defragmenting - call a programmer!");
-					// 	return false;
-					// }
+					//if(fragPacket.uiSeqId != seqId)
+					//{
+					//	QLog.WriteLine(1, "ERROR : packet sequence mismatch!");
+					//	//return false;
+					//}
 
 					if (fragments.Length == nfrag && fragPacket.m_byPartNumber != 0)
 					{
@@ -188,9 +190,10 @@ namespace QNetZ
 			}
 
 			// delete all invalid messages
-			CachedResponses.RemoveAll(x => x.SrcPacket == null);
-			CachedResponses.RemoveAll(x => x.SrcPacket.m_oSourceVPort == null);
-			CachedResponses.RemoveAll(x => x.SrcPacket.m_oDestinationVPort == null);
+			CachedResponses.RemoveAll(x => 
+				x.SrcPacket == null || 
+				x.SrcPacket.m_oSourceVPort == null || 
+				x.SrcPacket.m_oDestinationVPort == null);
 
 			// FIXME: check packet type?
 			return CachedResponses.FirstOrDefault(cr =>
@@ -205,23 +208,23 @@ namespace QNetZ
 		}
 
 		// Caches the response which is going to be sent
-		void CacheResponse(QPacket requestPacket, QPacket responsePacket)
+		bool CacheResponse(QPacket requestPacket, QPacket responsePacket, IPEndPoint ep)
 		{
 			// only DATA can be reliable
 			if (responsePacket.type != QPacket.PACKETTYPE.DATA)
-				return;
+				return false;
 
 			// don't cache non-reliable packets
 			if (!responsePacket.flags.Contains(QPacket.PACKETFLAG.FLAG_RELIABLE))
-				return;
+				return false;
 
 			if (responsePacket.flags.Contains(QPacket.PACKETFLAG.FLAG_ACK))
-				return;
+				return false;
 
 			var cache = GetCachedResponseByRequestPacket(requestPacket);
 			if (cache == null)
 			{
-				cache = new QReliableResponse(requestPacket);
+				cache = new QReliableResponse(requestPacket, ep);
 				CachedResponses.Add(cache);
 			}
 			else
@@ -230,37 +233,31 @@ namespace QNetZ
 			}
 
 			cache.ResponseList.Add(new QPacketState(responsePacket));
+			return true;
 		}
 
-		private void RetrySend(QReliableResponse cache, QClient client)
+		private void RetrySend(QReliableResponse cache)
 		{
 			QLog.WriteLine(5, "Re-sending reliable packets...");
 
 			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
 			{
 				var data = crp.Packet.toBuffer();
-				UDP.Send(data, data.Length, client.Endpoint);
+				crp.ReSendCount++;
+				UDP.Send(data, data.Length, cache.Endpoint);
 			}
 		}
 
-		private void CheckResendPackets(QClient client)
+		private void CheckResendPackets()
 		{
-			if (client == null)
-				return;
-
 			CachedResponses.RemoveAll(x => x.SrcPacket == null);
 
-			for (int i = 0; i < CachedResponses.Count; i++)
+			foreach(var crp in CachedResponses)
 			{
-				var crp = CachedResponses[i];
-
-				if (client != null && crp.SrcPacket.m_uiSignature == client.IDsend)
+				if (DateTime.UtcNow >= crp.ResendTime)
 				{
-					if (DateTime.UtcNow > crp.ResendTime)
-					{
-						RetrySend(crp, client);
-						crp.ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
-					}
+					RetrySend(crp);
+					crp.ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
 				}
 			}
 

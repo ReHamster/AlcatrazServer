@@ -143,11 +143,9 @@ namespace QNetZ
 
 		public void Send(QPacket reqPacket, QPacket sendPacket, IPEndPoint ep)
 		{
-			byte[] data = sendPacket.toBuffer();
 			StringBuilder sb = new StringBuilder();
 
-			CacheResponse(reqPacket, new QPacket(data));
-
+			var data = sendPacket.toBuffer();
 			foreach (byte b in data)
 				sb.Append(b.ToString("X2") + " ");
 
@@ -155,7 +153,8 @@ namespace QNetZ
 			QLog.WriteLine(10, () => $"[{ SourceName }] send : { sb.ToString()}");
 			QLog.WriteLine(10, () => $"[{ SourceName }] send : { sendPacket.ToStringDetailed() }");
 
-			// TODO: bufferize in queue then send, that's how Quazal does it
+			// bufferize in queue then send, that's how Quazal does it
+			CacheResponse(reqPacket, sendPacket, ep);
 			UDP.Send(data, data.Length, ep);
 
 			QLog.LogPacket(true, data);
@@ -211,7 +210,7 @@ namespace QNetZ
 				newPacket.payload = buff;
 				newPacket.payloadSize = (ushort)newPacket.payload.Length;
 
-				Send(reqPacket, newPacket, client.Endpoint);
+				Send(reqPacket, new QPacket(newPacket.toBuffer()), client.Endpoint);
 
 				newPacket.m_byPartNumber++;
 				numFragments++;
@@ -298,7 +297,7 @@ namespace QNetZ
 							if (cache != null)
 							{
 								SendACK(packetIn, client);
-								RetrySend(cache, client);
+								RetrySend(cache);
 								break;
 							}
 
@@ -360,7 +359,7 @@ namespace QNetZ
 					Send(packetIn, reply, from);
 
 				// retry sending reliable packets
-				CheckResendPackets(client);
+				CheckResendPackets();
 
 				// more packets in data stream?
 				if (packetIn.realSize != data.Length)
