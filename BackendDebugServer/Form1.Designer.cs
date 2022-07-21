@@ -116,6 +116,7 @@
             this.toolStripComboBox1.Items.AddRange(new object[] {
             "Log Level 1",
             "Log Level 2",
+            "Log Level 4",
             "Log Level 5",
             "Log Level 10"});
             this.toolStripComboBox1.Name = "toolStripComboBox1";

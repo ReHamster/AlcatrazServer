@@ -66,7 +66,9 @@ namespace QNetZ
 			var reply = MakeACK(p, client);
 
 			if (p.payload != null && p.payload.Length > 0)
+            {
 				reply.payload = MakeConnectPayload(client, p);
+			}
 
 			return reply;
 		}
@@ -96,6 +98,12 @@ namespace QNetZ
 
 			// assign player to client and also re-assign new client to player
 			var playerInfo = NetworkPlayers.GetPlayerInfoByPID(userPrincipalID);
+
+			if(playerInfo == null)
+            {
+				QLog.WriteLine(1, $"User pid={userPrincipalID} seem to be dropped but connect was received");
+				return new byte[0];
+            }
 
 			// drop player in case when of new account but same address
 			if(client.Info != null)
@@ -399,7 +407,7 @@ namespace QNetZ
 					return c;
 			}
 
-			QLog.WriteLine(1, $"[{ SourceName }] Error : Cant find client for id : 0x" + id.ToString("X8"));
+			QLog.WriteLine(1, $"[{ SourceName }] Error : unknown client: 0x{id.ToString("X8")}");
 			return null;
 		}
 

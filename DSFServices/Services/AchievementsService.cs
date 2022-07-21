@@ -14,7 +14,6 @@ namespace DSFServices.Services
 		[RMCMethod(3)]
 		public RMCResult UnlockAchievements(IEnumerable<int> achievementIds)
 		{
-			UNIMPLEMENTED();
 			return Error(0);
 		}
 	}

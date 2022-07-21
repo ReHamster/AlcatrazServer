@@ -1,6 +1,7 @@
 ﻿using QNetZ.DDL;
 using QNetZ.Factory;
 using QNetZ.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,8 +26,9 @@ namespace QNetZ
 
 		public static void HandleResponse(QPacketHandlerPRUDP handler, QClient client, QPacket p, RMCPacket rmc)
 		{
-			WriteLog(2, "Received Response : " + rmc.ToString());
-			WriteLog(2, "Got response for Protocol " + rmc.proto + " = " + (rmc.success ? "Success" : $"Fail : { rmc.error.ToString("X8") } for callID = { rmc.callID }"));
+			WriteLog(client, 2, $"Received Response : {rmc}");
+			var message = (rmc.success ? "Success" : $"Fail : {rmc.error.ToString("X8")} for callID = {rmc.callID}");
+			WriteLog(client, 2, $"Got response for {rmc.proto} = {message}");
 
 			handler.SendACK(p, client);
 		}
@@ -36,7 +38,7 @@ namespace QNetZ
 			if (rmc.callID > client.CallCounterRMC)
 				client.CallCounterRMC = rmc.callID;
 
-			WriteLog(2, "Request : " + rmc.ToString());
+			WriteLog(client, 2, "Request : " + rmc.ToString());
 
 			MemoryStream m = new MemoryStream(p.payload);
 			m.Seek(rmc._afterProtocolOffset, SeekOrigin.Begin);
@@ -46,62 +48,76 @@ namespace QNetZ
 			// create service instance
 			var serviceFactory = RMCServiceFactory.GetServiceFactory(rmc.proto);
 
-			if (serviceFactory != null)
+			if (serviceFactory == null)
 			{
-				var serviceInstance = serviceFactory();
-				var bestMethod = serviceInstance.GetServiceMethodById(rmc.methodID);
+				WriteLog(client, 1, $"Error: No service registered for packet protocol '{rmc.proto}' (protocolId = {(int)rmc.proto})");
+				handler.SendACK(rmcContext.Packet, client);
+				return;
+			}
 
-				if (bestMethod != null)
+			// set the execution context
+			var serviceInstance = serviceFactory();
+
+			serviceInstance.Context = rmcContext;
+			var bestMethod = serviceInstance.GetServiceMethodById(rmc.methodID);
+
+			if (bestMethod == null)
+			{
+				WriteLog(client, 1, $"Error: No method '{ rmc.methodID }' registered for protocol '{ rmc.proto }'");
+				handler.SendACK(rmcContext.Packet, client);
+				return;
+			}
+
+			// try invoke method method
+			// TODO: extended info
+			var typeList = bestMethod.GetParameters().Select(x => x.ParameterType);
+			var parameters = DDLSerializer.ReadPropertyValues(typeList.ToArray(), m);
+
+			WriteLog(client, 5, () => "Request parameters: " + DDLSerializer.ObjectToString(parameters));
+
+			try
+			{
+				var returnValue = bestMethod.Invoke(serviceInstance, parameters);
+
+				if (returnValue != null)
 				{
-					// set the execution context
-					serviceInstance.Context = rmcContext;
-
-					// call method
-					// TODO: extended info
-					var typeList = bestMethod.GetParameters().Select(x => x.ParameterType);
-					var parameters = DDLSerializer.ReadPropertyValues(typeList.ToArray(), m);
-
-					QLog.WriteLine(5, () => "[RMC] Request parameters: " + DDLSerializer.ObjectToString(parameters));
-
-					var returnValue = bestMethod.Invoke(serviceInstance, parameters);
-
-					if (returnValue != null)
+					if (typeof(RMCResult).IsAssignableFrom(returnValue.GetType()))
 					{
-						if (typeof(RMCResult).IsAssignableFrom(returnValue.GetType()))
-						{
-							var rmcResult = (RMCResult)returnValue;
+						var rmcResult = (RMCResult)returnValue;
 
-							SendResponseWithACK(
-								handler,
-								rmcContext.Packet,
-								rmcContext.RMC,
-								rmcContext.Client,
-								rmcResult.Response,
-								rmcResult.Compression, rmcResult.Error);
-						}
-						else
-						{
-							// TODO: try to cast and create RMCPResponseDDL???
-						}
+						SendResponseWithACK(
+							handler,
+							rmcContext.Packet,
+							rmcContext.RMC,
+							rmcContext.Client,
+							rmcResult.Response,
+							rmcResult.Compression, rmcResult.Error);
 					}
-
-					return;
-				}
-				else
-				{
-					WriteLog(1, $"Error: No method '{ rmc.methodID }' registered for protocol '{ rmc.proto }'");
+					else
+					{
+						// TODO: try to cast and create RMCPResponseDDL???
+						throw new Exception("something other than RMCResult is cannot be sent yet");
+					}
+				} else {
+					handler.SendACK(rmcContext.Packet, client);
 				}
 			}
-			else
+			catch (Exception ex)
 			{
-				WriteLog(1, $"Error: No service registered for packet protocol '{ rmc.proto }' (protocolId = { (int)rmc.proto })");
+				handler.SendACK(rmcContext.Packet, client);
+
+				WriteLog(client, 1, $"Error: {rmc.proto}.{bestMethod.Name} exception occurred:" + ex.Message);
+				if(ex.StackTrace != null)
+                {
+					WriteLog(client, 1, "Error:" + ex.StackTrace);
+				}
 			}
 		}
 
 		public static void SendResponseWithACK(QPacketHandlerPRUDP handler, QPacket p, RMCPacket rmc, QClient client, RMCPResponse reply, bool useCompression = true, uint error = 0)
 		{
-			WriteLog(2, "Response : " + reply.ToString());
-			QLog.WriteLine(5, () => "[RMC] Response data : \n" + reply.PayloadToString());
+			WriteLog(client, 2, "Response : " + reply.ToString());
+			WriteLog(client, 4, () => "Response data : \n" + reply.PayloadToString());
 
 			handler.SendACK(p, client);
 
@@ -125,8 +141,8 @@ namespace QNetZ
 			rmc.proto = protoId;
 			rmc.methodID = methodId;
 
-			QLog.WriteLine(2, $"[RMC] Sending call { protoId }.{ methodId }");
-			QLog.WriteLine(5, () => "[RMC] Call data : " + requestData.PayloadToString());
+			WriteLog(client, 2, $"Sending call { protoId }.{ methodId }");
+			WriteLog(client, 4, () => "Call data : " + requestData.PayloadToString());
 
 			SendRequestPacket(handler, packet, rmc, client, requestData, true, 0);
 		}
@@ -166,9 +182,16 @@ namespace QNetZ
 			handler.MakeAndSend(client, p, np, rmcRequestData);
 		}
 
-		private static void WriteLog(int priority, string s)
+		private static void WriteLog(QClient client, int priority, Func<string> resolve)
+        {
+			var unknwnClientName = client.Info != null ? client.Info.Name : "<unkClient>";
+			QLog.WriteLine(priority, () => $"[RMC] ({unknwnClientName}) {resolve.Invoke()}"); 
+		}
+
+		private static void WriteLog(QClient client, int priority, string s)
 		{
-			QLog.WriteLine(priority, $"[RMC] {s}");
+			var unknwnClientName = client.Info != null ? client.Info.Name : "<unkClient>";
+			QLog.WriteLine(priority, $"[RMC] ({unknwnClientName}) {s}");
 		}
 	}
 }

@@ -156,7 +156,6 @@ namespace DSFServices.Services
 		public RMCResult SetActionsCompleted(IEnumerable<string> actionCodeList, string cultureName, string platformCode)
 		{
 			var actionList = new List<UplayAction>();
-			UNIMPLEMENTED();
 			return Result(actionList);
 		}
 

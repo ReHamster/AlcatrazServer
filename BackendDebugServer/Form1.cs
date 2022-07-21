@@ -102,9 +102,12 @@ namespace BackendDebugServer
                     QLog.MinPriority = 2;
                     break;
                 case 2:
-                    QLog.MinPriority = 5;
+                    QLog.MinPriority = 4;
                     break;
                 case 3:
+                    QLog.MinPriority = 5;
+                    break;
+                case 4:
                     QLog.MinPriority = 10;
                     break;
             }
