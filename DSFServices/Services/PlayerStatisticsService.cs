@@ -183,13 +183,17 @@ namespace DSFServices.Services
 			using (var db = DBHelper.GetDbContext())
             {
 				var playerBoards = db.PlayerStatisticBoards
-					.Where(x => x.BoardId == boardId);
+					.Where(x => x.BoardId == boardId)
+					.Take(numRows);
 
 				foreach (var board in playerBoards)
 				{
 					var scoreList = new ScoreListRead();
                     {
 						var user = DBHelper.GetUserByPID(board.PlayerId);
+
+						if(user == null)
+							continue;
 
 						scoreList = new ScoreListRead();
 						scoreList.pid = board.PlayerId;
@@ -244,13 +248,13 @@ namespace DSFServices.Services
 					playerStats.Sort((a, b) => (int)(b.scoresByBoard.First().score - a.scoresByBoard.First().score));
 
 				// perform ranking
-				var rankMin = 1;
+				var rank = rankStart;
 				foreach (var score in playerStats)
                 {
 					if(score.scoresByBoard.First().score != 0)
                     {
-						score.scoresByBoard.First().rank = rankMin;
-						rankMin++;
+						score.scoresByBoard.First().rank = rank;
+						rank++;
 					}
 				}
 
