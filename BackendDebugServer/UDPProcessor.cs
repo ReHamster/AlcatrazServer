@@ -34,7 +34,7 @@ namespace BackendDebugServer
                     try
                     {
                         byte[] data = makeArray(l.Trim());
-                        sb.Append(QLog.MakeDetailedPacketLog(data));
+                        sb.Append(QLog.MakeDetailedPacketLog(data, false, toolStripButton2.Checked));
                     }
                     catch
                     {

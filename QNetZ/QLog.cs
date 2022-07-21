@@ -200,18 +200,19 @@ namespace QNetZ
 			return true;
 		}
 
-		public static string MakeDetailedPacketLog(byte[] data, bool isSinglePacket = false)
+		public static string MakeDetailedPacketLog(byte[] data, bool isSinglePacket = false, bool defragment = true)
 		{
 			StringBuilder sb = new StringBuilder();
 			while (true)
 			{
 				QPacket qp = new QPacket(data);
 				int size2 = qp.toBuffer().Length;
-				if (LogDefragPacket(qp, sb))
+				bool isComplete = defragment && LogDefragPacket(qp, sb);
+				if (!defragment || isComplete)
 				{
 					sb.AppendLine("##########################################################");
 					sb.AppendLine(qp.ToStringDetailed());
-					if (qp.type == QPacket.PACKETTYPE.DATA && qp.m_byPartNumber == 0)
+					if (qp.type == QPacket.PACKETTYPE.DATA && qp.m_byPartNumber == 0 && isComplete)
 					{
 						switch (qp.m_oSourceVPort.type)
 						{

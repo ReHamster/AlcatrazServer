@@ -41,6 +41,11 @@
     <Compile Update="PacketGenerator.Designer.cs">
       <DependentUpon>PacketGenerator.cs</DependentUpon>
     </Compile>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Update="SendNotification.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -67,6 +72,10 @@
     </EmbeddedResource>
     <EmbeddedResource Update="PacketGenerator.resx">
       <DependentUpon>PacketGenerator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="SendNotification.resx">
       <DependentUpon>SendNotification.cs</DependentUpon>
