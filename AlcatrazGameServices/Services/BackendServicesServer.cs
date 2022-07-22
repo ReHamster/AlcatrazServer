@@ -21,5 +21,10 @@ namespace Alcatraz.GameServices.Services
 		{
 			_serverConfig = serverConfig;
 		}
+
+		protected override void Update()
+		{
+			NetworkPlayers.DropPlayers();
+		}
 	}
 }

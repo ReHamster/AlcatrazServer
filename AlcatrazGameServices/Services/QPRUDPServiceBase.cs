@@ -26,12 +26,17 @@ namespace Alcatraz.GameServices.Services
 
 		//----------------------------------------------------------
 
+		protected virtual void Update()
+		{
+		}
+
 		public Task StartAsync(CancellationToken cancellationToken)
         {
 			_logger.LogInformation($"{ServiceName} is STARTED.");
 
 			listener = new UdpClient(ListenPort);
 			packetHandler = new QPacketHandlerPRUDP(listener, ServerPID, ListenPort, ServiceName);
+			packetHandler.Updates.Add(() => Update());
 
 			_timer = new Timer(Process, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(1));
 			return Task.CompletedTask;
@@ -54,6 +59,8 @@ namespace Alcatraz.GameServices.Services
 		{
 			try
 			{
+				packetHandler.Update();
+
 				// use non-blocking recieve
 				if (CurrentRecvTask != null)
 				{

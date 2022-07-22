@@ -11,49 +11,51 @@ using System.Threading.Tasks;
 
 namespace BackendDebugServer
 {
-    public static class RDVServer
-    {
-        public static readonly object _sync = new object();
-        public static bool _exit = false;
+	public static class RDVServer
+	{
+		public static readonly object _sync = new object();
+		public static bool _exit = false;
 		private static UdpClient listener;
-        public static ushort _skipNextNAT = 0xFFFF;
+		public static ushort _skipNextNAT = 0xFFFF;
 		static QPacketHandlerPRUDP packetHandler;
 
 		static Task<UdpReceiveResult> CurrentRecvTask = null;
 
 		public static void Start()
-        {
-            _exit = false;
-            new Thread(tMainThread).Start();
-        }
+		{
+			_exit = false;
+			new Thread(tMainThread).Start();
+		}
 
-        public static void Stop()
-        {
-            lock (_sync)
-            {
-                _exit = true;
-            }
-        }
+		public static void Stop()
+		{
+			lock (_sync)
+			{
+				_exit = true;
+			}
+		}
 
-        public static void tMainThread(object obj)
-        {
+		public static void tMainThread(object obj)
+		{
 			var listenPort = QConfiguration.Instance.RDVServerPort;
 
 			listener = new UdpClient(listenPort);
 			packetHandler = new QPacketHandlerPRUDP(listener, BackendServicesServer.serverPID, listenPort, "RendezVous");
 
-			WriteLog(1, $"Listening at port { listenPort }");
+			WriteLog(1, $"Listening at port {listenPort}");
 
 			while (true)
-            {
-                lock (_sync)
-                {
-                    if (_exit)
-                        break;
-                }
+			{
+				lock (_sync)
+				{
+					if (_exit)
+						break;
+				}
 
-                try
-                {
+				try
+				{
+					packetHandler.Update();
+
 					// use non-blocking recieve
 					if (CurrentRecvTask != null)
 					{
@@ -74,21 +76,21 @@ namespace BackendDebugServer
 
 					Thread.Sleep(1);
 				}
-                catch (Exception ex)
-                {
-                    WriteLog(1, "error - exception occured! " + ex.Message);
-                }
-            }
+				catch (Exception ex)
+				{
+					WriteLog(1, "error - exception occured! " + ex.Message);
+				}
+			}
 
-            WriteLog(1, "Server stopped");
+			WriteLog(1, "Server stopped");
 
 			CurrentRecvTask = null;
 			listener.Close();
 		}
 
-        private static void WriteLog(int priority, string s)
-        {
-            QLog.WriteLine(priority, "[RendezVous] " + s);
-        }
-    }
+		private static void WriteLog(int priority, string s)
+		{
+			QLog.WriteLine(priority, "[RendezVous] " + s);
+		}
+	}
 }

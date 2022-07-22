@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -16,12 +15,8 @@ namespace QNetZ
 			SourceName = sourceName;
 			PID = pid;
 			Port = port;
-			NATPingTimeToIgnore = new List<ulong>();
-			AccumulatedPackets = new List<QPacket>();
-			CachedResponses = new List<QReliableResponse>();
-			Clients = new List<QClient>();
 
-			if(QConfiguration.Instance == null)
+			if (QConfiguration.Instance == null)
 			{
 				throw new Exception("QConfiguration.Instance is null! You need to configure it first!");
 			}
@@ -33,22 +28,23 @@ namespace QNetZ
 		public readonly ushort Port;
 		private List<QPacket> AccumulatedPackets = new List<QPacket>();
 		private List<QReliableResponse> CachedResponses = new List<QReliableResponse>();
-		private readonly List<ulong> NATPingTimeToIgnore;
+		private readonly List<ulong> NATPingTimeToIgnore = new List<ulong>();
 
-		public List<QClient> Clients;
+		public List<QClient> Clients = new List<QClient>();
+		public List<Action> Updates = new List<Action>();
 
-		public uint ClientIdCounter = 0x12345678;	// or client signature
+		public uint ClientIdCounter = 0x12345678;   // or client signature
 
 		private QPacket ProcessSYN(QPacket p, IPEndPoint from)
 		{
 			// create protocol client
 			var qclient = GetQClientByEndPoint(from);
-			if(qclient == null)
+			if (qclient == null)
 			{
 				qclient = NewQClient(from);
 			}
 
-			QLog.WriteLine(2, $"[{ SourceName }] Got SYN packet");
+			QLog.WriteLine(2, $"[{SourceName}] Got SYN packet");
 			qclient.SeqCounterOut = 0;
 
 			p.m_uiConnectionSignature = qclient.IDrecv;
@@ -61,12 +57,12 @@ namespace QNetZ
 			client.IDsend = p.m_uiConnectionSignature;
 			client.State = QClient.StateType.Active;
 
-			QLog.WriteLine(2, $"[{ SourceName }] Got CONNECT packet");
+			QLog.WriteLine(2, $"[{SourceName}] Got CONNECT packet");
 
 			var reply = MakeACK(p, client);
 
 			if (p.payload != null && p.payload.Length > 0)
-            {
+			{
 				reply.payload = MakeConnectPayload(client, p);
 			}
 
@@ -94,19 +90,19 @@ namespace QNetZ
 
 			m = new MemoryStream(buff);
 			uint userPrincipalID = Helper.ReadU32(m);
-			uint connectionId = Helper.ReadU32(m);		// TODO: utilize
+			uint connectionId = Helper.ReadU32(m);      // TODO: utilize
 
 			// assign player to client and also re-assign new client to player
 			var playerInfo = NetworkPlayers.GetPlayerInfoByPID(userPrincipalID);
 
-			if(playerInfo == null)
-            {
+			if (playerInfo == null)
+			{
 				QLog.WriteLine(1, $"User pid={userPrincipalID} seem to be dropped but connect was received");
 				return new byte[0];
-            }
+			}
 
 			// drop player in case when of new account but same address
-			if(client.Info != null)
+			if (client.Info != null)
 			{
 				NetworkPlayers.DropPlayerInfo(client.Info);
 			}
@@ -131,7 +127,7 @@ namespace QNetZ
 			QPacket reply = MakeACK(p, client);
 			reply.m_uiSignature = client.IDsend;
 
-			QLog.WriteLine(2, $"[{ SourceName }] Got DISCONNECT packet");
+			QLog.WriteLine(2, $"[{SourceName}] Got DISCONNECT packet");
 
 			return reply;
 		}
@@ -149,13 +145,13 @@ namespace QNetZ
 			foreach (byte b in data)
 				sb.Append(b.ToString("X2") + " ");
 
-			QLog.WriteLine(5,  () => $"[{ SourceName }] send : { sendPacket.ToStringShort()}");
-			QLog.WriteLine(10, () => $"[{ SourceName }] send : { sb.ToString()}");
-			QLog.WriteLine(10, () => $"[{ SourceName }] send : { sendPacket.ToStringDetailed() }");
+			QLog.WriteLine(5, () => $"[{SourceName}] send : {sendPacket.ToStringShort()}");
+			QLog.WriteLine(10, () => $"[{SourceName}] send : {sb.ToString()}");
+			QLog.WriteLine(10, () => $"[{SourceName}] send : {sendPacket.ToStringDetailed()}");
 
 			// bufferize in queue then send, that's how Quazal does it
-			CacheResponse(reqPacket, sendPacket, ep);
-			UDP.Send(data, data.Length, ep);
+			if (!CacheResponse(reqPacket, sendPacket, ep))
+				UDP.Send(data, data.Length, ep);
 
 			QLog.LogPacket(true, data);
 		}
@@ -218,16 +214,22 @@ namespace QNetZ
 
 			client.SeqCounterOut = newPacket.uiSeqId;
 
-			QLog.WriteLine(10, $"[{ SourceName }] sent { numFragments } packets");
+			QLog.WriteLine(10, $"[{SourceName}] sent {numFragments} packets");
 		}
 
 		//-------------------------------------------------------------------------------------------
 
-		public void ProcessPacket(byte[] data, IPEndPoint from)
+		public void Update()
 		{
-			// first we drop old clients to proceed
+			CheckResendPackets();
 			DropClients();
 
+			foreach (var upd in Updates)
+				upd();
+		}
+
+		public void ProcessPacket(byte[] data, IPEndPoint from)
+		{
 			while (true)
 			{
 				var packetIn = new QPacket(data);
@@ -244,9 +246,9 @@ namespace QNetZ
 						sb.Append(b.ToString("X2") + " ");
 
 					QLog.LogPacket(false, buff);
-					QLog.WriteLine(5,  ()=> $"[{ SourceName }] received : { packetIn.ToStringShort() }" );
-					QLog.WriteLine(10, ()=> $"[{ SourceName }] received : { sb }" );
-					QLog.WriteLine(10, ()=> $"[{ SourceName }] received : { packetIn.ToStringDetailed() }");
+					QLog.WriteLine(5, () => $"[{SourceName}] received : {packetIn.ToStringShort()}");
+					QLog.WriteLine(10, () => $"[{SourceName}] received : {sb}");
+					QLog.WriteLine(10, () => $"[{SourceName}] received : {packetIn.ToStringDetailed()}");
 				}
 
 				QPacket reply = null;
@@ -260,7 +262,6 @@ namespace QNetZ
 				{
 					client.LastPacketTime = DateTime.UtcNow;
 				}
-
 
 				switch (packetIn.type)
 				{
@@ -358,9 +359,6 @@ namespace QNetZ
 				if (reply != null)
 					Send(packetIn, reply, from);
 
-				// retry sending reliable packets
-				CheckResendPackets();
-
 				// more packets in data stream?
 				if (packetIn.realSize != data.Length)
 				{
@@ -378,15 +376,16 @@ namespace QNetZ
 					break;
 			}
 		}
+
 		private void DropClients()
 		{
 			for (var i = 0; i < Clients.Count; i++)
 			{
 				var client = Clients[i];
-				if(client.State == QClient.StateType.Dropped ||
+				if (client.State == QClient.StateType.Dropped ||
 					(DateTime.UtcNow - client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
 				{
-					QLog.WriteLine(2, $"[{ SourceName }] dropping client: 0x{client.IDsend.ToString("X8")}");
+					QLog.WriteLine(2, $"[{SourceName}] dropping client: 0x{client.IDsend.ToString("X8")}");
 					client.State = QClient.StateType.Dropped;
 
 					// also drop network players
@@ -394,8 +393,6 @@ namespace QNetZ
 					i--;
 				}
 			}
-
-			NetworkPlayers.DropPlayers();
 		}
 
 		public QClient GetQClientByIDrecv(uint id)
@@ -406,13 +403,13 @@ namespace QNetZ
 					return c;
 			}
 
-			QLog.WriteLine(1, $"[{ SourceName }] Error : unknown client: 0x{id.ToString("X8")}");
+			QLog.WriteLine(2, $"[{SourceName}] Error : unknown client: 0x{id.ToString("X8")}");
 			return null;
 		}
 
 		public QClient NewQClient(IPEndPoint from)
 		{
-			QLog.WriteLine(2, $"[{ SourceName }] [QUAZAL] New client { from.Address }:{ from.Port } registered at server PID={PID}");
+			QLog.WriteLine(2, $"[{SourceName}] [QUAZAL] New client {from.Address}:{from.Port} registered at server PID={PID}");
 
 			var qclient = new QClient(++ClientIdCounter, from);
 

@@ -8,53 +8,56 @@ using System.Threading.Tasks;
 namespace BackendDebugServer
 {
 	public static class BackendServicesServer
-    {
-        public static readonly uint serverPID = 2;
-        public static readonly object _sync = new object();
-        public static bool _exit = false;
-        public static UdpClient listener;
-        public static ushort _skipNextNAT = 0xFFFF;
+	{
+		public static readonly uint serverPID = 2;
+		public static readonly object _sync = new object();
+		public static bool _exit = false;
+		public static UdpClient listener;
+		public static ushort _skipNextNAT = 0xFFFF;
 		public static QPacketHandlerPRUDP packetHandler;
 
 		static Task<UdpReceiveResult> CurrentRecvTask = null;
 
 		public static void Start()
-        {
-            _exit = false;
-            new Thread(tMainThread).Start();
-        }
+		{
+			_exit = false;
+			new Thread(tMainThread).Start();
+		}
 
-        public static void Stop()
-        {
-            lock (_sync)
-            {
-                _exit = true;
-            }
-        }
+		public static void Stop()
+		{
+			lock (_sync)
+			{
+				_exit = true;
+			}
+		}
 
-        public static void tMainThread(object obj)
-        {
+		public static void tMainThread(object obj)
+		{
 			var listenPort = QConfiguration.Instance.BackendServiceServerPort;
 
 			listener = new UdpClient(listenPort);
 			packetHandler = new QPacketHandlerPRUDP(listener, serverPID, listenPort, "BackendServices");
+			packetHandler.Updates.Add(() => NetworkPlayers.DropPlayers());
 
-			WriteLog(1, $"Listening at port { listenPort }");
+			WriteLog(1, $"Listening at port {listenPort}");
 
 			while (true)
-            {
-                lock (_sync)
-                {
-                    if (_exit)
-                        break;
-                }
+			{
+				lock (_sync)
+				{
+					if (_exit)
+						break;
+				}
 
-                try
-                {
+				try
+				{
+					packetHandler.Update();
+
 					// use non-blocking recieve
 					if (CurrentRecvTask != null)
 					{
-						if(CurrentRecvTask.IsCompleted)
+						if (CurrentRecvTask.IsCompleted)
 						{
 							var result = CurrentRecvTask.Result;
 							CurrentRecvTask = null;
@@ -71,25 +74,25 @@ namespace BackendDebugServer
 
 					Thread.Sleep(1);
 				}
-                catch (Exception ex)
-                {
-                    WriteLog(1, "error - exception occured! " + ex.Message);
-                }
-            }
-            WriteLog(1, "Server stopped");
+				catch (Exception ex)
+				{
+					WriteLog(1, "error - exception occured! " + ex.Message);
+				}
+			}
+			WriteLog(1, "Server stopped");
 
 			CurrentRecvTask = null;
 			listener.Close();
 		}
 
-        public static void ProcessPacket(byte[] data, IPEndPoint ep)
-        {
+		public static void ProcessPacket(byte[] data, IPEndPoint ep)
+		{
 			packetHandler.ProcessPacket(data, ep);
-        }
+		}
 
-        private static void WriteLog(int priority, string s)
-        {
-            QLog.WriteLine(priority, "[BackendServices] " + s);
-        }
-    }
+		private static void WriteLog(int priority, string s)
+		{
+			QLog.WriteLine(priority, "[BackendServices] " + s);
+		}
+	}
 }

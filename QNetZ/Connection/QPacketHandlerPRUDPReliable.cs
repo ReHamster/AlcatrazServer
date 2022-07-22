@@ -14,12 +14,10 @@ namespace QNetZ
 		public QPacketState(QPacket p)
 		{
 			Packet = p;
-			GotAck = false;
 			ReSendCount = 0;
 		}
 		public QPacket Packet;
 		public int ReSendCount;
-		public bool GotAck;                // if true it won't be sent again
 	}
 
 	class QReliableResponse
@@ -29,14 +27,14 @@ namespace QNetZ
 			SrcPacket = srcPacket;
 			ResponseList = new List<QPacketState>();
 			DropTime = DateTime.UtcNow.AddSeconds(18);
-			ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
+			ResendTime = DateTime.UtcNow;
 			Endpoint = endpoint;
 		}
 
 		public QPacket SrcPacket;
 		public List<QPacketState> ResponseList;
 
-		public DateTime DropTime;		// if ACKs not recieved, in this time it will be dropped
+		public DateTime DropTime;       // if ACKs not recieved, in this time it will be dropped
 		public DateTime ResendTime;
 		public IPEndPoint Endpoint;     // client endpoint
 	}
@@ -142,33 +140,17 @@ namespace QNetZ
 		// acknowledges packet
 		void OnGotAck(QPacket ackPacket)
 		{
-			var (cr, ack) = GetCachedResponseByAckPacket(ackPacket);
-			if (cr == null)
-				return;
-
-			ack.GotAck = true;
-
-			// can safely remove cache?
-			if (cr.ResponseList.All(x => x.GotAck))
+			lock (CachedResponses)
 			{
-				QLog.WriteLine(10, "[QPacketReliable] sequence completed!");
-				CachedResponses.Remove(cr);
-			}
-		}
+				foreach (var cr in CachedResponses)
+				{
+					cr.ResponseList.RemoveAll(x =>
+						x.Packet.m_bySessionID == ackPacket.m_bySessionID &&
+						x.Packet.uiSeqId == ackPacket.uiSeqId);
+				}
 
-		// returns response cache list by request packet
-		(QReliableResponse, QPacketState) GetCachedResponseByAckPacket(QPacket packet)
-		{
-			foreach (var cr in CachedResponses)
-			{
-				var st = cr.ResponseList.FirstOrDefault(x =>
-					 x.Packet.m_bySessionID == packet.m_bySessionID &&
-					 x.Packet.uiSeqId == packet.uiSeqId);
-
-				if (st != null)
-					return (cr, st);
+				CachedResponses.RemoveAll(x => !x.ResponseList.Any());
 			}
-			return (null, null);
 		}
 
 		// returns response cache list by request packet
@@ -190,12 +172,11 @@ namespace QNetZ
 			}
 
 			// delete all invalid messages
-			CachedResponses.RemoveAll(x => 
-				x.SrcPacket == null || 
-				x.SrcPacket.m_oSourceVPort == null || 
+			CachedResponses.RemoveAll(x =>
+				x.SrcPacket == null ||
+				x.SrcPacket.m_oSourceVPort == null ||
 				x.SrcPacket.m_oDestinationVPort == null);
 
-			// FIXME: check packet type?
 			return CachedResponses.FirstOrDefault(cr =>
 					cr.SrcPacket.type == packet.type &&
 					cr.SrcPacket.m_uiSignature == packet.m_uiSignature &&
@@ -240,29 +221,28 @@ namespace QNetZ
 		{
 			QLog.WriteLine(5, "Re-sending reliable packets...");
 
-			foreach (var crp in cache.ResponseList.Where(x => x.GotAck == false))
+			int minResendTimes = 0;
+			foreach (var crp in cache.ResponseList)
 			{
 				var data = crp.Packet.toBuffer();
-				crp.ReSendCount++;
 				UDP.Send(data, data.Length, cache.Endpoint);
+
+				crp.ReSendCount++;
+				minResendTimes = Math.Min(minResendTimes, crp.ReSendCount);
 			}
+
+			cache.ResendTime = DateTime.UtcNow.AddMilliseconds(Constants.PacketResendTimeSeconds * 1000 + minResendTimes * 250);
 		}
 
 		private void CheckResendPackets()
 		{
+			var reliableResend = new List<QReliableResponse>();
 			CachedResponses.RemoveAll(x => x.SrcPacket == null);
-
-			foreach(var crp in CachedResponses)
-			{
-				if (DateTime.UtcNow >= crp.ResendTime)
-				{
-					RetrySend(crp);
-					crp.ResendTime = DateTime.UtcNow.AddSeconds(Constants.PacketResendTimeSeconds);
-				}
-			}
-
-			// drop packets
+			reliableResend.AddRange(CachedResponses.Where(x => DateTime.UtcNow >= x.ResendTime));
 			CachedResponses.RemoveAll(x => DateTime.UtcNow >= x.DropTime);
+
+			foreach (var crp in reliableResend)
+				RetrySend(crp);
 		}
 	}
 }
