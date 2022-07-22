@@ -3,6 +3,7 @@ using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
+using QNetZ.Connection;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -35,7 +36,7 @@ namespace DSFServices.Services
 				return Result(new { gatheringId = gathering.m_idMyself });
 			}
 
-			return Error((uint)RMCErrorCode.RendezVous_DDLMismatch);
+			return Error((uint)ErrorCode.RendezVous_DDLMismatch);
 		}
 
 		[RMCMethod(2)]

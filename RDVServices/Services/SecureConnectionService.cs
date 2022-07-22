@@ -3,6 +3,7 @@ using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
+using QNetZ.Connection;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,7 +26,7 @@ namespace RDVServices.Services
 			var result = new RegisterResult()
 			{
 				pidConnectionID = Context.Client.Info.RVCID,
-				retval = (int)RMCErrorCode.Core_NoError,
+				retval = (int)ErrorCode.Core_NoError,
 				urlPublic = rdvConnectionUrl
 			};
 
@@ -57,7 +58,7 @@ namespace RDVServices.Services
 				var result = new RegisterResult()
 				{
 					pidConnectionID = Context.Client.Info.RVCID,
-					retval = (int)RMCErrorCode.Core_NoError,
+					retval = (int)ErrorCode.Core_NoError,
 					urlPublic = rdvConnectionUrl
 				};
 
@@ -68,7 +69,7 @@ namespace RDVServices.Services
 				QLog.WriteLine(1, $"[RMC Secure] Error: Unknown Custom Data class {hCustomData.className}");
 			}
 
-			return Error((int)RMCErrorCode.RendezVous_ClassNotFound);
+			return Error((int)ErrorCode.RendezVous_ClassNotFound);
 		}
 
 		[RMCMethod(5)]

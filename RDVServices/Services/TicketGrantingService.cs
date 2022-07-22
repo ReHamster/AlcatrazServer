@@ -3,6 +3,7 @@ using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.DDL;
 using QNetZ.Interfaces;
+using QNetZ.Connection;
 using System.Collections.Generic;
 using System;
 
@@ -109,7 +110,7 @@ namespace RDVServices.Services
 
 			if (oExtraData.data != null)
 			{
-				RMCErrorCode loginCode = RMCErrorCode.Core_NoError;
+				ErrorCode loginCode = ErrorCode.Core_NoError;
 
 				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
@@ -120,7 +121,7 @@ namespace RDVServices.Services
 						(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
 					{
 						QLog.WriteLine(1, $"User login request {userName} - concurrent login!");
-						loginCode = RMCErrorCode.RendezVous_ConcurrentLoginDenied;
+						loginCode = ErrorCode.RendezVous_ConcurrentLoginDenied;
 					}
 					else
 					{
@@ -140,16 +141,16 @@ namespace RDVServices.Services
 					{
 						QLog.WriteLine(1, $"User login request {userName} - invalid password");
 
-						loginCode = RMCErrorCode.RendezVous_InvalidPassword;
+						loginCode = ErrorCode.RendezVous_InvalidPassword;
 					}
 				}
 				else
 				{
 					QLog.WriteLine(1, $"User login request {userName} - invalid user name");
-					loginCode = RMCErrorCode.RendezVous_InvalidUsername;
+					loginCode = ErrorCode.RendezVous_InvalidUsername;
 				}
 
-				if(loginCode != RMCErrorCode.Core_NoError)
+				if(loginCode != ErrorCode.Core_NoError)
 				{
 					var loginData = new Login(0)
 					{
@@ -193,7 +194,7 @@ namespace RDVServices.Services
 				QLog.WriteLine(1, $"[RMC Authentication] Error: Unknown Custom Data class '{oExtraData.className}'");
 			}
 
-			return Error((int)RMCErrorCode.RendezVous_ClassNotFound);
+			return Error((int)ErrorCode.RendezVous_ClassNotFound);
 		}
 
 		[RMCMethod(3)]
@@ -203,7 +204,7 @@ namespace RDVServices.Services
 
 			var ticketData = new TicketData()
 			{
-				retVal = (int)RMCErrorCode.Core_NoError,
+				retVal = (int)ErrorCode.Core_NoError,
 				pbufResponse = kerberos.toBuffer()
 			};
 

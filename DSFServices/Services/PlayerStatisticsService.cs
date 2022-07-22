@@ -66,9 +66,8 @@ namespace DSFServices.Services
 						if(variant.UpdateValueWithPolicy(writeStat.value, (StatisticPolicy)writeStat.writePolicy))
                         {
 							var statDesc = SeedStatistics.AllStatisticDescriptions.FirstOrDefault(x => x.statBoard == writeBoard.boardId && x.statInBoardId == writeStat.propertyId);
-							QLog.WriteLine(1, $"player {Context.Client.Info.Name} { statDesc.statName } ({writeBoard.boardId}:{writeStat.propertyId}) changed to '{writeStat.value.ToString()}' with policy {(StatisticPolicy)writeStat.writePolicy}");
+							QLog.WriteLine(2, $"player {Context.Client.Info.Name} { statDesc.statName } ({writeBoard.boardId}:{writeStat.propertyId}) changed to '{writeStat.value.ToString()}' with policy {(StatisticPolicy)writeStat.writePolicy}");
 						}
-						
 
 						// put back the values
 						variantJSON.RankingCriterionIndex = variant.rankingCriterionIndex;

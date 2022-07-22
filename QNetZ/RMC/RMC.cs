@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace QNetZ
 {
@@ -102,14 +103,18 @@ namespace QNetZ
 					handler.SendACK(rmcContext.Packet, client);
 				}
 			}
-			catch (Exception ex)
+			catch (TargetInvocationException tie)
 			{
 				handler.SendACK(rmcContext.Packet, client);
 
-				WriteLog(client, 1, $"Error: {rmc.proto}.{bestMethod.Name} exception occurred:" + ex.Message);
-				if(ex.StackTrace != null)
+				WriteLog(client, 1, $"Error: exception occurred in {rmc.proto}.{bestMethod.Name}");
+				var inner = tie.InnerException;
+				if (inner != null)
                 {
-					WriteLog(client, 1, "Error:" + ex.StackTrace);
+					WriteLog(client, 1, $"Error: {inner.Message}");
+
+					if (inner.StackTrace != null)
+						WriteLog(client, 1, $"Error: { inner.StackTrace }");
 				}
 			}
 		}
