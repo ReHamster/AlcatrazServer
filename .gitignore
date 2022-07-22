@@ -10,6 +10,7 @@
 *.config.xml
 **/net5.0*
 packages/*
-AlcatrazLoader/bin*
+*/bin*
 AlcatrazLoader/project_*
 AlcatrazInnoSetup/Output*
+_RESEARCH/*
