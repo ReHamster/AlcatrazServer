@@ -58,6 +58,12 @@ namespace DSFServices.DDL.Models
 			return playerBoard;
 		}
 
+		public static StatisticsBoardValue GetStatisticBoardValueByPropertyId(int boardId, int propertyId)
+		{
+			var boardValue = AllStatisticDescriptions.FirstOrDefault(x => x.statBoard == boardId && x.statInBoardId == propertyId);
+			return boardValue;
+		}
+
 		//-----------------------------------------------------------------
 
 

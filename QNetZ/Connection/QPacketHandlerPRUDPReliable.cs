@@ -222,15 +222,17 @@ namespace QNetZ
 			QLog.WriteLine(5, "Re-sending reliable packets...");
 
 			int minResendTimes = 0;
-			foreach (var crp in cache.ResponseList)
+			lock(cache.ResponseList)
 			{
-				var data = crp.Packet.toBuffer();
-				UDP.Send(data, data.Length, cache.Endpoint);
+				foreach (var crp in cache.ResponseList)
+				{
+					var data = crp.Packet.toBuffer();
+					UDP.Send(data, data.Length, cache.Endpoint);
 
-				crp.ReSendCount++;
-				minResendTimes = Math.Min(minResendTimes, crp.ReSendCount);
+					crp.ReSendCount++;
+					minResendTimes = Math.Min(minResendTimes, crp.ReSendCount);
+				}
 			}
-
 			cache.ResendTime = DateTime.UtcNow.AddMilliseconds(Constants.PacketResendTimeSeconds * 1000 + minResendTimes * 250);
 		}
 

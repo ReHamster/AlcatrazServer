@@ -1,4 +1,5 @@
-﻿using DSFServices.DDL.Models;
+﻿using Alcatraz.Context.Entities;
+using DSFServices.DDL.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using QNetZ;
@@ -54,26 +55,54 @@ namespace DSFServices.Services
 					{
 						var variantJSON = properties.FirstOrDefault(x => x.PropertyId == writeStat.propertyId);
 
-						var variant = new StatisticsBoardValue()
+						if(variantJSON != null)
 						{
-							value = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.ValueJSON),
-							rankingCriterionIndex = (byte)variantJSON.RankingCriterionIndex,
-							scoreLostForNextSlice = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.ScoreLostForNextSliceJSON),
-							sliceScore = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.SliceScoreJSON)
-						};
+							var boardValue = new StatisticsBoardValue()
+							{
+								value = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.ValueJSON),
+								rankingCriterionIndex = (byte)variantJSON.RankingCriterionIndex,
+								scoreLostForNextSlice = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.ScoreLostForNextSliceJSON),
+								sliceScore = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.SliceScoreJSON)
+							};
 
-						// Update variant value
-						if(variant.UpdateValueWithPolicy(writeStat.value, (StatisticPolicy)writeStat.writePolicy))
-                        {
-							var statDesc = SeedStatistics.AllStatisticDescriptions.FirstOrDefault(x => x.statBoard == writeBoard.boardId && x.statInBoardId == writeStat.propertyId);
-							QLog.WriteLine(2, $"player {Context.Client.Info.Name} { statDesc.statName } ({writeBoard.boardId}:{writeStat.propertyId}) changed to '{writeStat.value.ToString()}' with policy {(StatisticPolicy)writeStat.writePolicy}");
+							// Update variant value
+							if (boardValue.UpdateValueWithPolicy(writeStat.value, (StatisticPolicy)writeStat.writePolicy))
+							{
+								var statDesc = SeedStatistics.AllStatisticDescriptions.FirstOrDefault(x => x.statBoard == writeBoard.boardId && x.statInBoardId == writeStat.propertyId);
+								QLog.WriteLine(2, $"player {Context.Client.Info.Name} {statDesc.statName} ({writeBoard.boardId}:{writeStat.propertyId}) changed to '{writeStat.value.ToString()}' with policy {(StatisticPolicy)writeStat.writePolicy}");
+							}
+
+							// put back the values
+							variantJSON.RankingCriterionIndex = boardValue.rankingCriterionIndex;
+							variantJSON.ValueJSON = JsonConvert.SerializeObject(boardValue.value);
+							variantJSON.ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(boardValue.scoreLostForNextSlice);
+							variantJSON.SliceScoreJSON = JsonConvert.SerializeObject(boardValue.sliceScore);
 						}
+						else
+						{
+							QLog.WriteLine(1, $"WARNING: stats property id ({writeBoard.boardId}:{writeStat.propertyId}) was not found, creating new one...");
 
-						// put back the values
-						variantJSON.RankingCriterionIndex = variant.rankingCriterionIndex;
-						variantJSON.ValueJSON = JsonConvert.SerializeObject(variant.value);
-						variantJSON.ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(variant.scoreLostForNextSlice);
-						variantJSON.SliceScoreJSON = JsonConvert.SerializeObject(variant.sliceScore);
+							var newBoardValue = SeedStatistics.GetStatisticBoardValueByPropertyId(writeBoard.boardId, writeStat.propertyId);
+							if(newBoardValue != null)
+							{
+								newBoardValue.value = writeStat.value;
+
+								variantJSON = new PlayerStatisticsBoardValue()
+								{
+									PropertyId = writeStat.propertyId,
+									RankingCriterionIndex = newBoardValue.rankingCriterionIndex,
+									ValueJSON = JsonConvert.SerializeObject(newBoardValue.value),
+									ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(newBoardValue.scoreLostForNextSlice),
+									SliceScoreJSON = JsonConvert.SerializeObject(newBoardValue.sliceScore)
+								};
+
+								db.PlayerStatisticBoardValues.Add(variantJSON);
+							}
+							else
+							{
+								QLog.WriteLine(1, $"WARNING: UNKNOWN stats property id ({writeBoard.boardId}:{writeStat.propertyId})");
+							}
+						}
 					}
 
 					playerBoard.LastUpdate = DateTime.UtcNow;
