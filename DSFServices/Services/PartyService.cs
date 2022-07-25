@@ -415,7 +415,7 @@ namespace DSFServices.Services
 			if(plInfo != null)
 			{
 				if (plInfo.GameData().CurrentGatheringId != oldGathering)
-					QLog.WriteLine(1, $"Error : PartyService.MigrateTo - player {pid} old gathering is {plInfo.GameData().CurrentGatheringId}, expected {oldGathering}");
+					QLog.WriteLine(1, $"Warning : PartyService.MigrateTo - player {pid} old gathering is {plInfo.GameData().CurrentGatheringId}, expected {oldGathering}");
 
 				PartySessions.UpdateGatheringParticipation(plInfo, newGathering);
 			}
