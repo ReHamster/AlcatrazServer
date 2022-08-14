@@ -379,6 +379,7 @@ namespace QNetZ
 
 		private void DropClients()
 		{
+			Clients.RemoveAll(client => client == null);
 			for (var i = 0; i < Clients.Count; i++)
 			{
 				var client = Clients[i];
@@ -387,12 +388,9 @@ namespace QNetZ
 				{
 					QLog.WriteLine(2, $"[{SourceName}] dropping client: 0x{client.IDsend.ToString("X8")}");
 					client.State = QClient.StateType.Dropped;
-
-					// also drop network players
-					Clients.RemoveAt(i);
-					i--;
 				}
 			}
+			Clients.RemoveAll(client => client.State == QClient.StateType.Dropped);
 		}
 
 		public QClient GetQClientByIDrecv(uint id)
