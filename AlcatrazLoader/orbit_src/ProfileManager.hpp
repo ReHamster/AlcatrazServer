@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Discord.h>
+
 #include "Objects/OrbitConfig.hpp"
 #include "Helpers/Failure.hpp"
 #include "Utils/Singleton.hpp"
@@ -7,6 +9,7 @@
 #include "HF/HackingFrameworkFWD.h"
 
 #include "HF/HackingFramework.hpp"
+
 
 namespace AlcatrazUplayR2
 {

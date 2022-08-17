@@ -57,7 +57,20 @@ usage "libnstd"
 		"dependencies/libnstd/include"
 	}
 	links "libnstd"
-			
+
+-- Discord
+usage "discord"
+	includedirs {
+		"dependencies/discord"
+	}
+	links {
+		"dependencies/discord/lib/discord-rpc.lib"
+	}
+	files {
+		"dependencies/discord/**.cpp",
+		"dependencies/discord/**.h",
+	}
+				
 
 group "Main"
 
@@ -66,7 +79,8 @@ project "ubiorbitapi_r2_loader"
 
 	uses { 
 		"libnstd", 
-		"HackingFramework"
+		"HackingFramework",
+		"discord"
 	}
 
 	includedirs {
