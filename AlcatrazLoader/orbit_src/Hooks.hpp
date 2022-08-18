@@ -74,7 +74,7 @@ namespace AlcatrazUplayR2
 
 		// parse for presence
 		if (strstr(msg, "Finished task")) {
-			if (strstr(msg, "TaskRDV_Signin")) {
+			if (strstr(msg, "TaskRDV_Signin") || strstr(msg, "TaskRDV_LeaveParty")) {
 				message = "In game";
 			} else if (strstr(msg, "TaskRDV_CreateParty") || strstr(msg, "TaskRDV_JoinParty") || strstr(msg, "TaskRDV2_LeaveSession")) {
 				message = "In online lobby";
