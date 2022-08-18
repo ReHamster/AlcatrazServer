@@ -17,23 +17,20 @@ namespace DSFServices.Services
 		public RMCResult SetPresence(int phraseId, qBuffer argument)
 		{
 			var plInfo = Context.Client.Info;
-			var existingPresence = plInfo.GameData().Presence.FirstOrDefault(x => x.phraseId == phraseId && x.principalId == plInfo.PID);
+			var presence = plInfo.GameData().CurrentPresence;
 
-			if(existingPresence != null)
+			QLog.WriteLine(1, $"Presence set to {phraseId}, {argument.data}");
+
+			if(presence == null)
 			{
-				existingPresence.argument = argument;
-				existingPresence.isConnected = true;
+				presence = new PresenceElement();
+				plInfo.GameData().CurrentPresence = presence;
 			}
-			else
-			{
-				plInfo.GameData().Presence.Add(new PresenceElement()
-				{
-					isConnected = true,
-					phraseId = phraseId,
-					principalId = plInfo.PID,
-					argument = argument,
-				});
-			}
+
+			presence.principalId = plInfo.PID;
+			presence.phraseId = phraseId;
+			presence.argument = argument;
+			presence.isConnected = true;
 
 			return Error(0);
 		}
@@ -41,23 +38,22 @@ namespace DSFServices.Services
 		[RMCMethod(2)]
 		public RMCResult GetPresence(IEnumerable<uint> pids)
 		{
-			var players = pids.Select(x => new Tuple<uint, PlayerInfo>(x, NetworkPlayers.GetPlayerInfoByPID(x)));
-
 			var presenceResult = new List<PresenceElement>();
 
-			foreach(var tuple in players)
+			foreach(var principalId in pids)
 			{
-				if(tuple.Item2 != null)
+				var playerInfo = NetworkPlayers.GetPlayerInfoByPID(principalId);
+				if (playerInfo != null && playerInfo.GameData().CurrentPresence != null)
 				{
-					presenceResult.AddRange(tuple.Item2.GameData().Presence);
+					presenceResult.Add(playerInfo.GameData().CurrentPresence);
 				}
 				else
 				{
 					presenceResult.Add(new PresenceElement()
 					{
-						phraseId = 11,
+						phraseId = 2,
 						isConnected = false,
-						principalId = tuple.Item1,
+						principalId = principalId,
 						argument = new qBuffer()
 					});
 				}

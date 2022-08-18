@@ -14,7 +14,6 @@ namespace DSFServices
 			CurrentGatheringId = uint.MaxValue;
 			CurrentSessionTypeID = uint.MaxValue;
 			CurrentSessionID = uint.MaxValue;
-			Presence = new List<PresenceElement>();
 		}
 
 		// when player dropped, game data will be destroyed
@@ -31,7 +30,7 @@ namespace DSFServices
 		public uint CurrentGatheringId { get; set; }
 		public uint CurrentSessionTypeID { get; set; }
 		public uint CurrentSessionID { get; set; }
-		public List<PresenceElement> Presence { get; set; }
+		public PresenceElement CurrentPresence { get; set; }
 	}
 
 	public static class DSFPlayerInfoExtensions
