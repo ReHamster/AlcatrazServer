@@ -3,12 +3,41 @@ using QNetZ;
 using QNetZ.DDL;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace DSFServices
 {
 	public static class GameSessions
 	{
 		public static readonly List<GameSessionData> SessionList = new List<GameSessionData>();
+
+		// NOTE: returns true when session is no longer valid
+		public static bool RemovePlayerFromSession(GameSessionData session, uint principalId)
+		{
+			session.PublicParticipants.Remove(principalId);
+			session.Participants.Remove(principalId);
+
+			session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
+			session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
+
+			if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		public static void AddPlayerToSession(GameSessionData session, uint principalId, bool isPrivate)
+		{
+			if (isPrivate)
+				session.Participants.Add(principalId);
+			else
+				session.PublicParticipants.Add(principalId);
+
+			session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
+			session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
+		}
 
 		public static void UpdateSessionParticipation(PlayerInfo player, uint newSessionId, uint newSessionTypeId, bool isPrivate)
 		{
@@ -18,23 +47,6 @@ namespace DSFServices
 			if (oldSessionId == newSessionId)
 				return;
 
-			// remove participation from old session
-			var oldSession = SessionList.FirstOrDefault(x => x.Id == oldSessionId && x.TypeID == oldSessionTypeId);
-			if (oldSession != null)
-			{
-				oldSession.PublicParticipants.Remove(player.PID);
-				oldSession.Participants.Remove(player.PID);
-
-				oldSession.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)oldSession.PublicParticipants.Count;
-				oldSession.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)oldSession.Participants.Count;
-
-				if (oldSession.PublicParticipants.Count == 0 && oldSession.Participants.Count == 0)
-				{
-					QLog.WriteLine(1, $"Auto-deleted session {oldSessionId}");
-					SessionList.Remove(oldSession);
-				}
-			}
-
 			// set new participation
 			player.GameData().CurrentSessionID = newSessionId;
 			player.GameData().CurrentSessionTypeID = newSessionTypeId;
@@ -42,13 +54,18 @@ namespace DSFServices
 			var newSession = SessionList.FirstOrDefault(x => x.Id == newSessionId && x.TypeID == newSessionTypeId);
 			if (newSession != null)
 			{
-				if(isPrivate)
-					newSession.Participants.Add(player.PID);
-				else
-					newSession.PublicParticipants.Add(player.PID);
+				AddPlayerToSession(newSession, player.PID, isPrivate);
+			}
 
-				newSession.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)newSession.PublicParticipants.Count;
-				newSession.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)newSession.Participants.Count;
+			// remove participation from old session
+			var oldSession = SessionList.FirstOrDefault(x => x.Id == oldSessionId && x.TypeID == oldSessionTypeId);
+			if (oldSession != null)
+			{
+				if (RemovePlayerFromSession(oldSession, player.PID))
+				{
+					QLog.WriteLine(1, $"UpdateSessionParticipation - Auto-deleted session {oldSession.Id}");
+					SessionList.Remove(oldSession);
+				}
 			}
 		}
 	}

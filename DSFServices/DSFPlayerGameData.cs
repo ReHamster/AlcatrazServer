@@ -21,6 +21,7 @@ namespace DSFServices
 
 		public void OnDropped()
 		{
+			// BUG: there is a bug in dropping sessions
 			PartySessions.UpdateGatheringParticipation(Owner, uint.MaxValue);
 			GameSessions.UpdateSessionParticipation(Owner, uint.MaxValue, uint.MaxValue, false);
 		}

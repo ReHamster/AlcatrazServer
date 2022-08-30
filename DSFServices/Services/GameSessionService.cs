@@ -90,13 +90,13 @@ namespace DSFServices.Services
 		[RMCMethod(4)]
 		public RMCResult MigrateSession(GameSessionKey gameSessionKey)
 		{
-			var srcSession = GameSessions.SessionList
+			var oldSession = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID &&
 									 x.TypeID == gameSessionKey.m_typeID);
 
 			var gameSessionKeyMigrated = new GameSessionKey();
 
-			if (srcSession != null)
+			if (oldSession != null)
 			{
 				var plInfo = Context.Client.Info;
 				var newSession = new GameSessionData();
@@ -104,7 +104,7 @@ namespace DSFServices.Services
 
 				newSession.Id = ++GameSessionCounter;
 				newSession.HostPID = plInfo.PID;
-				newSession.TypeID = srcSession.TypeID;
+				newSession.TypeID = oldSession.TypeID;
 
 				// ????
 				// "notification": {
@@ -117,36 +117,34 @@ namespace DSFServices.Services
 				//   }
 				
 				// move all participants too
-				foreach (var pid in srcSession.PublicParticipants)
+				foreach (var pid in oldSession.PublicParticipants)
 				{
 					var participantPlInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
 
 					if(participantPlInfo != null)
-					{
 						participantPlInfo.GameData().CurrentSessionID = newSession.Id;
-						//GameSessions.UpdateSessionParticipation(participantPlInfo, newSession.Id, newSession.TypeID, false);
-					}
 				}
 
-				foreach (var pid in srcSession.Participants)
+				foreach (var pid in oldSession.Participants)
 				{
 					var participantPlInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
 
 					if (participantPlInfo != null)
-					{
 						participantPlInfo.GameData().CurrentSessionID = newSession.Id;
-						//GameSessions.UpdateSessionParticipation(participantPlInfo, newSession.Id, newSession.TypeID, true);
-					}
 				}
 
-				newSession.Participants = srcSession.Participants;
-				newSession.PublicParticipants = srcSession.PublicParticipants;
+				newSession.Participants = oldSession.Participants;
+				newSession.PublicParticipants = oldSession.PublicParticipants;
 
-				foreach (var attr in srcSession.Attributes)
+				foreach (var attr in oldSession.Attributes)
 					newSession.Attributes[attr.Key] = attr.Value;
 
 				gameSessionKeyMigrated.m_sessionID = newSession.Id;
 				gameSessionKeyMigrated.m_typeID = newSession.TypeID;
+
+				// drop old session
+				QLog.WriteLine(1, $"MigrateSession - Auto-deleted session {oldSession.Id}");
+				GameSessions.SessionList.Remove(oldSession);
 			}
 			else
 			{
@@ -291,7 +289,9 @@ namespace DSFServices.Services
 
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
+					{
 						GameSessions.UpdateSessionParticipation(player, session.Id, session.TypeID, false);
+					}
 				}
 
 				foreach (var pid in privateParticipantIDs)
@@ -300,7 +300,9 @@ namespace DSFServices.Services
 
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
+					{
 						GameSessions.UpdateSessionParticipation(player, session.Id, session.TypeID, true);
+					}
 				}
 
 				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
@@ -340,18 +342,34 @@ namespace DSFServices.Services
 				{
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
+					{
 						GameSessions.UpdateSessionParticipation(player, uint.MaxValue, uint.MaxValue, false);
+					}
 					else
-						session.Participants.Remove(pid);
+					{
+						if (GameSessions.RemovePlayerFromSession(session, pid))
+						{
+							QLog.WriteLine(1, $"RemoveParticipants - Auto-deleted session {session.Id}");
+							GameSessions.SessionList.Remove(session);
+						}
+					}
 				}
 
 				foreach (var pid in participantIDs)
 				{
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
-						GameSessions.UpdateSessionParticipation(player, uint.MaxValue, uint.MaxValue, false);
+					{
+						GameSessions.UpdateSessionParticipation(player, uint.MaxValue, uint.MaxValue, true);
+					}
 					else
-						session.Participants.Remove(pid);
+					{
+						if (GameSessions.RemovePlayerFromSession(session, pid))
+						{
+							QLog.WriteLine(1, $"RemoveParticipants - Auto-deleted session {session.Id}");
+							GameSessions.SessionList.Remove(session);
+						}
+					}
 				}
 
 				session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
