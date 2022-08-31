@@ -127,18 +127,16 @@ namespace AlcatrazUplayR2
 		InitDiscordRichPresence();
 	}
 
+	inline void __stdcall OnSandboxSelectorConstructorDiscordOnly(SandboxSelector* self)
+	{
+		InitDiscordRichPresence();
+	}
+
 	inline void InitHooks()
 	{
 		auto& profile = Singleton<ProfileData>::Instance().Get();
 
 		HookProcess proc;
-
-		// do not initialize hook
-		if (profile.ServiceUrl.length() == 0)
-		{
-			Singleton<HookProcess>::Instance().Set(proc);
-			return;
-		}
 
 		proc.MainProcess = std::make_shared<HF::Win32::Process>(std::string_view(GAME_PROCESS_NAME));
 
@@ -159,23 +157,42 @@ namespace AlcatrazUplayR2
 		// hook to sandbox selector
 		// 
 		//-------------------------------------------
-		// disable strcpy calls
-		HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0xd, 5);
-		HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0x1f, 5);
-		HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0x31, 5);
-		proc.SandboxSelectorConstructorHook = HF::Hook::HookFunction<void(__stdcall)(SandboxSelector*), kSandboxSelectorConstructorPatchSize>(
-			proc.MainProcess,
-			kSandboxSelectorConstructorAddr,
-			&OnSandboxSelectorConstructor,
-			{
-				HF::X86::PUSH_AD,
-				HF::X86::PUSH_FD,
-				HF::X86::PUSH_EAX
-			},
+		if (profile.ServiceUrl.length() > 0)
+		{
+			// disable strcpy calls
+			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0xd, 5);
+			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0x1f, 5);
+			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0x31, 5);
+			proc.SandboxSelectorConstructorHook = HF::Hook::HookFunction<void(__stdcall)(SandboxSelector*), kSandboxSelectorConstructorPatchSize>(
+				proc.MainProcess,
+				kSandboxSelectorConstructorAddr,
+				&OnSandboxSelectorConstructor,
+				{
+					HF::X86::PUSH_AD,
+					HF::X86::PUSH_FD,
+					HF::X86::PUSH_EAX
+				},
 			{
 				HF::X86::POP_FD,
 				HF::X86::POP_AD
 			});
+		}
+		else
+		{
+			proc.SandboxSelectorConstructorHook = HF::Hook::HookFunction<void(__stdcall)(SandboxSelector*), kSandboxSelectorConstructorPatchSize>(
+				proc.MainProcess,
+				kSandboxSelectorConstructorAddr,
+				&OnSandboxSelectorConstructorDiscordOnly,
+				{
+					HF::X86::PUSH_AD,
+					HF::X86::PUSH_FD,
+					HF::X86::PUSH_EAX
+				},
+			{
+				HF::X86::POP_FD,
+				HF::X86::POP_AD
+			});
+		}
 
 		if (!proc.SandboxSelectorConstructorHook->setup())
 		{
