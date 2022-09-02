@@ -81,6 +81,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.m_loginText.Name = "m_loginText";
 			this.m_loginText.Size = new System.Drawing.Size(151, 20);
 			this.m_loginText.TabIndex = 1;
+			this.m_loginText.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.m_loginText_KeyPress);
 			// 
 			// m_passText
 			// 

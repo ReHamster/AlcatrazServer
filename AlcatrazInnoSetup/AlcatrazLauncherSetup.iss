@@ -8,6 +8,7 @@
 #define MyAppExeName "AlcatrazLauncher.exe"
 
 [Setup]
+; SignTool=MsSign $f
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{67DF25AB-7EF6-42C6-91BD-A0FC2513B6B8}

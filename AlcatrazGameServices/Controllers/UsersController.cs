@@ -26,7 +26,7 @@ namespace Alcatraz.GameServices.Controllers
 
 			if (response == null)
 			{
-				return Unauthorized(new ErrorModel { Message = "Username or password is incorrect" });
+				return Unauthorized(new ResultModel("Username or password is incorrect"));
 			}
 
 			return Ok(response);
@@ -35,12 +35,12 @@ namespace Alcatraz.GameServices.Controllers
 		[HttpPost("Register")]
 		public IActionResult Register([FromBody] UserRegisterModel model)
 		{
-			var response = _userService.Register(model);
+			var result = _userService.Register(model);
 
-			if (response == 0)
-				return BadRequest(new ErrorModel { Message = "Unable to register user" });
+			if (!result.Success)
+				return BadRequest(result);
 
-			return Ok(response);
+			return Ok(result.Id);
 		}
 
 		[Authorize]
@@ -50,14 +50,14 @@ namespace Alcatraz.GameServices.Controllers
 			var user = (UserModel)HttpContext.Items["User"];
 
 			if (user == null)
-				return Unauthorized(new ErrorModel { Message = "Unable to update user" });
+				return Unauthorized(new ResultModel("Unable to update user"));
 
 			model.Id = user.Id;
 
-			var response = _userService.Update(model);
+			var result = _userService.Update(model);
 
-			if (!response)
-				return BadRequest(new ErrorModel { Message = "Unable to update user" });
+			if (!result.Success)
+				return BadRequest(result);
 
 			// pasword change successful so generate jwt token
 			var token = _userService.GenerateJwtToken(user);
@@ -72,12 +72,12 @@ namespace Alcatraz.GameServices.Controllers
 			var user = (UserModel)HttpContext.Items["User"];
 
 			if (user == null)
-				return Unauthorized(new ErrorModel { Message = "Unable to change user password" });
+				return Unauthorized(new ResultModel("Unable to change user password"));
 
-			var response = _userService.ChangePassword(user.Id, model.NewPassword);
+			var result = _userService.ChangePassword(user.Id, model.NewPassword);
 
-			if (!response)
-				return BadRequest(new ErrorModel { Message = "Unable to change user password" });
+			if (!result.Success)
+				return BadRequest(result);
 
 			// pasword change successful so generate jwt token
 			var token = _userService.GenerateJwtToken(user);

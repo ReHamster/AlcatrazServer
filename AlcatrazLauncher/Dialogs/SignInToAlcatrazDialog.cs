@@ -56,17 +56,14 @@ namespace AlcatrazLauncher.Dialogs
 
 					if (response.StatusCode != HttpStatusCode.OK)
 					{
-						if (response.StatusCode == HttpStatusCode.Unauthorized)
+						if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.BadRequest)
 						{
-							var errorData = JsonConvert.DeserializeObject<ErrorModel>(response.Content);
-
-							// messagebox (bad login)
-							MessageBox.Show(this, errorData.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+							var errorData = JsonConvert.DeserializeObject<ResultModel>(response.Content);
+							MessageBox.Show(this, errorData.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 							return;
 						}
 
 						MessageBox.Show(this, "Unknown authorization error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-
 						return;
 					}
 

@@ -76,6 +76,7 @@ namespace AlcatrazLauncher.Dialogs
 			this.m_gameNickname.Name = "m_gameNickname";
 			this.m_gameNickname.Size = new System.Drawing.Size(151, 20);
 			this.m_gameNickname.TabIndex = 20;
+			this.m_gameNickname.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.m_gameNickname_KeyPress);
 			// 
 			// label2
 			// 

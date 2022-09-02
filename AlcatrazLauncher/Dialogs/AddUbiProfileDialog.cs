@@ -56,5 +56,10 @@ namespace AlcatrazLauncher.Dialogs
 		{
 			AcceptButton = m_doneBtn;
 		}
+
+		private void m_loginText_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			e.Handled = !Helpers.Utils.CheckLoginCharacterAllowed(e.KeyChar) && e.KeyChar != (char)Keys.Back && e.KeyChar != (char)Keys.Delete;
+		}
 	}
 }

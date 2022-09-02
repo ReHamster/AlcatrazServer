@@ -75,10 +75,7 @@ namespace AlcatrazLauncher.Session
 							return;
 						}
 
-						if (response.StatusCode == HttpStatusCode.OK)
-							onComplete(response);
-						else
-							ThrowRequestError(request.Resource, response.Content, response.StatusCode);
+						onComplete(response);
 					})
 
 				);
@@ -118,10 +115,7 @@ namespace AlcatrazLauncher.Session
 							return;
 						}
 
-						if (response.StatusCode == HttpStatusCode.OK)
-							onComplete(response);
-						else
-							ThrowRequestError(request.Resource, response.Content, response.StatusCode);
+						onComplete(response);
 					})
 
 				);
@@ -204,10 +198,7 @@ namespace AlcatrazLauncher.Session
 							return;
 						}
 
-						if (response.StatusCode == HttpStatusCode.OK)
-							onComplete(response);
-						else
-							ThrowRequestError(request.Resource, response.Content, response.StatusCode);
+						onComplete(response);
 					})
 				);
 			});
@@ -243,16 +234,16 @@ namespace AlcatrazLauncher.Session
 
 		}
 
-		protected void ThrowRequestError(string resource, string errorContent, HttpStatusCode statusCode)
+		public static void ThrowRequestError(string resource, string errorContent, HttpStatusCode statusCode)
 		{
 			// если это BadRequest, а BadRequest задаю я в API, то это ErrorDto
 			// ошибка для программиста фронтенда
 			if (statusCode == HttpStatusCode.BadRequest)
 			{
-				var errorJson = JsonConvert.DeserializeObject<ErrorModel>(errorContent);
+				var errorJson = JsonConvert.DeserializeObject<ResultModel>(errorContent);
 
 				// may be send error to the USER???
-				MessageBox.Show($"{resource} request error: {errorJson.Message}", "Error");
+				MessageBox.Show($"{resource} request error: {errorJson.ErrorMessage}", "Error");
 			}
 			else if (statusCode == HttpStatusCode.Unauthorized)
 			{

@@ -74,9 +74,16 @@ namespace AlcatrazLauncher.Dialogs
 				{
 					m_registerBtn.Enabled = true;
 
-					if (response.StatusCode != HttpStatusCode.OK)
+					if(response.StatusCode != HttpStatusCode.OK)
 					{
-						MessageBox.Show(this, "Registration error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+						if (response.StatusCode != HttpStatusCode.BadRequest || response.StatusCode == HttpStatusCode.BadRequest)
+						{
+							var errorData = JsonConvert.DeserializeObject<ResultModel>(response.Content);
+							MessageBox.Show(this, errorData.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+							return;
+						}
+
+						MessageBox.Show(this, "Unknown authorization error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 						return;
 					}
 
@@ -98,6 +105,11 @@ namespace AlcatrazLauncher.Dialogs
 		private void RegisterAlcatrazUserDialog_Load(object sender, EventArgs e)
 		{
 			AcceptButton = m_registerBtn;
+		}
+
+		private void m_gameNickname_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			e.Handled = !Utils.CheckLoginCharacterAllowed(e.KeyChar) && e.KeyChar != (char)Keys.Back && e.KeyChar != (char)Keys.Delete;
 		}
 	}
 }

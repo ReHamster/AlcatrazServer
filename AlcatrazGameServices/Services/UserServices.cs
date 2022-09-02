@@ -18,9 +18,9 @@ namespace Alcatraz.GameServices.Services
 	public interface IUserService
 	{
 		AuthenticateResponse Authenticate(AuthenticateRequest model);
-		uint Register(UserRegisterModel model);
-		bool Update(UserModel model);
-		bool ChangePassword(uint userId, string newPassword);
+		ResultModel Register(UserRegisterModel model);
+		ResultModel Update(UserModel model);
+		ResultModel ChangePassword(uint userId, string newPassword);
 		IEnumerable<UserModel> GetAll();
 		UserModel GetById(uint id);
 		string GenerateJwtToken(UserModel userModel);
@@ -91,16 +91,16 @@ namespace Alcatraz.GameServices.Services
 			return _dbContext.Users.FirstOrDefault(x => x.Id == id);
 		}
 
-		public uint Register(UserRegisterModel model)
+		public ResultModel Register(UserRegisterModel model)
 		{
 			if (string.IsNullOrWhiteSpace(model.Username))
-				return 0;
+				return new ResultModel("Username is incorrect or empty");
 
 			if (string.IsNullOrWhiteSpace(model.PlayerNickName))
-				return 0;
+				return new ResultModel("PlayerNickName is incorrect or empty");
 
 			if (string.IsNullOrWhiteSpace(model.Password))
-				return 0;
+				return new ResultModel("Password is incorrect or empty");
 
 			var newUser = new User()
 			{
@@ -110,7 +110,7 @@ namespace Alcatraz.GameServices.Services
 			};
 
 			if (_dbContext.Users.Any(x => x.Username == model.Username || x.PlayerNickName == model.PlayerNickName))
-				return 0;
+				return new ResultModel("User with same name or nickname is already present");
 
 			try
 			{
@@ -119,39 +119,56 @@ namespace Alcatraz.GameServices.Services
 			}
 			catch
 			{
-				return 0;
+				return new ResultModel("Unable to add user (internal error)");
 			}
 
-			return newUser.Id;
+			return new ResultModel(newUser.Id);
 		}
 
-		public bool Update(UserModel model)
+		public ResultModel Update(UserModel model)
 		{
 			var user = GetByIdInternal(model.Id);
 
 			if (user == null)
-				return false;
+				return new ResultModel("User with that Id was not found");
+
+			if(user.Username == model.Username && user.PlayerNickName == model.PlayerNickName)
+			{
+				// User name and nickname remains unchanged
+				return new ResultModel();
+			}
+
+			if (user.Username != model.Username && _dbContext.Users.Any(x => x.Username == model.Username))
+			{
+				return new ResultModel("User with same name is already present");
+			}
+
+			if (user.PlayerNickName != model.PlayerNickName && _dbContext.Users.Any(x => x.PlayerNickName == model.PlayerNickName))
+			{
+				return new ResultModel("User with same nickname is already present");
+			}
 
 			try
 			{
 				user.Username = model.Username;
 				user.PlayerNickName = model.PlayerNickName;
+
 				_dbContext.SaveChanges();
 			}
 			catch
 			{
-				return false;
+				return new ResultModel("Unable to update user (internal error)");
 			}
 
-			return true;
+			return new ResultModel();
 		}
 
-		public bool ChangePassword(uint userId, string newPassword)
+		public ResultModel ChangePassword(uint userId, string newPassword)
 		{
 			var user = GetByIdInternal(userId);
 
 			if (user == null)
-				return false;
+				return new ResultModel("User with that Id was not found");
 
 			try
 			{
@@ -160,10 +177,10 @@ namespace Alcatraz.GameServices.Services
 			}
 			catch
 			{
-				return false;
+				return new ResultModel("Unable to update user (internal error)");
 			}
 
-			return true;
+			return new ResultModel();
 		}
 
 		// helper methods

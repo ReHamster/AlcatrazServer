@@ -104,6 +104,7 @@
     </Compile>
     <Compile Include="Helpers\FileChecksumHelper.cs" />
     <Compile Include="Helpers\InstallationHelper.cs" />
+    <Compile Include="Helpers\Utils.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

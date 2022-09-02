@@ -29,11 +29,15 @@ namespace AlcatrazLauncher.Dialogs
 			DialogResult = DialogResult.Cancel;
 		}
 
+		private APISession CreateProfileAPISession(ProfileConfig config)
+		{
+			return new APISession(UIEventQueue.Get(), config.ServiceUrl);
+		}
+
 		private void ChangePasswordRequest()
 		{
 			var config = AlcatrazClientConfig.Instance.Profiles[AlcatrazProfileKey];
-
-			var api = new APISession(UIEventQueue.Get());
+			var api = CreateProfileAPISession(config);
 
 			var model = new ChangePasswordRequest
 			{
@@ -49,12 +53,12 @@ namespace AlcatrazLauncher.Dialogs
 
 					if (response.StatusCode != HttpStatusCode.OK)
 					{
-						if (response.StatusCode == HttpStatusCode.Unauthorized)
+						if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.BadRequest)
 						{
-							var errorData = JsonConvert.DeserializeObject<ErrorModel>(response.Content);
+							var errorData = JsonConvert.DeserializeObject<ResultModel>(response.Content);
 
 							// messagebox (bad login)
-							MessageBox.Show(this, errorData.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+							MessageBox.Show(this, errorData.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 							return;
 						}
 
@@ -79,12 +83,14 @@ namespace AlcatrazLauncher.Dialogs
 		private void UpdateUserRequest()
 		{
 			var config = AlcatrazClientConfig.Instance.Profiles[AlcatrazProfileKey];
+			var api = CreateProfileAPISession(config);
 
-			var api = new APISession(UIEventQueue.Get());
+			var sessionInfo = SessionInfo.Get();
+			var curLoginData = sessionInfo.LoginData;
 
 			var model = new UserModel
 			{
-				Id = SessionInfo.Get().LoginData.Id,
+				Id = curLoginData.Id,
 				Username = m_loginText.Text,
 				PlayerNickName = m_gameNickname.Text
 			};
@@ -98,16 +104,16 @@ namespace AlcatrazLauncher.Dialogs
 
 					if (response.StatusCode != HttpStatusCode.OK)
 					{
-						if (response.StatusCode == HttpStatusCode.Unauthorized)
+						if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.BadRequest)
 						{
-							var errorData = JsonConvert.DeserializeObject<ErrorModel>(response.Content);
+							var errorData = JsonConvert.DeserializeObject<ResultModel>(response.Content);
 
 							// messagebox (bad login)
-							MessageBox.Show(this, errorData.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+							MessageBox.Show(this, errorData.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 							return;
 						}
 
-						MessageBox.Show(this, "Unknown authorization error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+						MessageBox.Show(this, "Unknown request error", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 
 						return;
 					}
@@ -134,6 +140,18 @@ namespace AlcatrazLauncher.Dialogs
 
 		private void m_saveBtn_Click(object sender, EventArgs e)
 		{
+			if (m_loginText.Text.Length < 1)
+			{
+				MessageBox.Show(this, "Login cannot be empty", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+				return;
+			}
+
+			if (m_gameNickname.Text.Length < 1)
+			{
+				MessageBox.Show(this, "Game nickname cannot be empty", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+				return;
+			}
+
 			UpdateUserRequest();
 
 			if (m_passText.Text.Length > 0)
@@ -143,8 +161,7 @@ namespace AlcatrazLauncher.Dialogs
 		private void EditAlcatrazProfileDialog_Load(object sender, EventArgs e)
 		{
 			var config = AlcatrazClientConfig.Instance.Profiles[AlcatrazProfileKey];
-
-			var api = new APISession(UIEventQueue.Get(), config.ServiceUrl);
+			var api = CreateProfileAPISession(config);
 
 			var model = new AuthenticateRequest
 			{
@@ -160,12 +177,12 @@ namespace AlcatrazLauncher.Dialogs
 				{
 					if (response.StatusCode != HttpStatusCode.OK)
 					{
-						if (response.StatusCode == HttpStatusCode.Unauthorized)
+						if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.BadRequest)
 						{
-							var errorData = JsonConvert.DeserializeObject<ErrorModel>(response.Content);
+							var errorData = JsonConvert.DeserializeObject<ResultModel>(response.Content);
 
 							// messagebox (bad login)
-							MessageBox.Show(this, "Unable to authenticate with selected profile - " + errorData.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+							MessageBox.Show(this, "Unable to authenticate with selected profile - " + errorData.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 							DialogResult = DialogResult.Cancel;
 							return;
 						}
@@ -185,6 +202,11 @@ namespace AlcatrazLauncher.Dialogs
 				error => {
 					MessageBox.Show(this, error.ErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				});
+		}
+
+		private void m_gameNickname_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			e.Handled = !Utils.CheckLoginCharacterAllowed(e.KeyChar) && e.KeyChar != (char)Keys.Back && e.KeyChar != (char)Keys.Delete;
 		}
 	}
 }

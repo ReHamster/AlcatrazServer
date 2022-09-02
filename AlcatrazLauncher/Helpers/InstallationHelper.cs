@@ -91,6 +91,9 @@ namespace AlcatrazLauncher.Helpers
 			{
 				using (var view32 = RegistryKey.OpenBaseKey(gameInstallProp.RegistryHive, RegistryView.Registry32))
                 {
+					if (view32 == null)
+						continue;
+
 					using (var regPath = view32.OpenSubKey(gameInstallProp.RegistryPath, false))
 					{
 						if (regPath == null)
