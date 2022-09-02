@@ -89,23 +89,30 @@ namespace AlcatrazLauncher.Helpers
 			// search entry in regedit
 			foreach (var gameInstallProp in Constants.GameInstallRegProperties)
 			{
-				using (var view32 = RegistryKey.OpenBaseKey(gameInstallProp.RegistryHive, RegistryView.Registry32))
-                {
-					if (view32 == null)
-						continue;
-
-					using (var regPath = view32.OpenSubKey(gameInstallProp.RegistryPath, false))
+				try
+				{
+					using (var view32 = RegistryKey.OpenBaseKey(gameInstallProp.RegistryHive, RegistryView.Registry32))
 					{
-						if (regPath == null)
+						if (view32 == null)
 							continue;
 
-						var installPath = regPath.GetValue(gameInstallProp.InstallPathKey);
-						if (installPath != null)
+						using (var regPath = view32.OpenSubKey(gameInstallProp.RegistryPath, false))
 						{
-							GameInstallPath = installPath.ToString();
-							break;
+							if (regPath == null)
+								continue;
+
+							var installPath = regPath.GetValue(gameInstallProp.InstallPathKey);
+							if (installPath != null)
+							{
+								GameInstallPath = installPath.ToString();
+								break;
+							}
 						}
 					}
+				}
+				catch(Exception ex)
+				{
+					// skip
 				}
 			}
 
