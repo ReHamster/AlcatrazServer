@@ -5,15 +5,38 @@ using System.Linq;
 
 namespace DSFServices.DDL.Models
 {
+	public enum GameType
+	{
+		FreeForAll = 1,
+		Race = 2,
+		Takedown = 3,
+		Team = 4,
+		ShiftRace = 5,
+		TeamRace = 6
+	}
 
-	public enum GameSessionAttributeType
+	public enum GameSessionAttributeType : uint
 	{
 		PublicSlots = 3,
 		PrivateSlots = 4,
 		FilledPublicSlots = 5,
 		FilledPrivateSlots = 6,
+
+		IsPrivate = 7,			// supposed to be, not even checked yet
+
 		FreePublicSlots = 50,	// used internally by game
 		FreePrivateSlots = 51,  // used internally by game
+
+		UnknownAttribute102 = 102, // always 201313820
+		UnknownAttribute103 = 103, // always 0
+		UnknownAttribute105 = 105, // always 769844
+		UnknownAttribute106 = 106, // totally unknown, different values - qm=4 ffa=4 race=1 takedown=4 ffa=0 team=0 sr=0 tr=4
+		UnknownAttribute107 = 107, // always 3
+		UnknownAttribute108 = 108, // always 0
+		GameType = 109,
+		GameTypeMin = 110,
+		GameTypeMax = 111,
+		UnknownAttribute112 = 112, // always 1
 
 		// TODO: other parameters
 

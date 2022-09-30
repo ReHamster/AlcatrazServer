@@ -19,7 +19,7 @@ namespace DSFServices.Services
 			var plInfo = Context.Client.Info;
 			var presence = plInfo.GameData().CurrentPresence;
 
-			QLog.WriteLine(1, $"Presence set to {phraseId}, {argument.data}");
+			//QLog.WriteLine(1, $"Presence set to {phraseId}, {argument.data}");
 
 			if(presence == null)
 			{
