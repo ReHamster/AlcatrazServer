@@ -35,16 +35,31 @@ namespace DSFServices.Services
 
 			GameSessions.UpdateSessionParticipation(plInfo, newSession.Id, newSession.TypeID, true);
 
-			newSession.Attributes[(uint)GameSessionAttributeType.PublicSlots] = 0;
-			newSession.Attributes[(uint)GameSessionAttributeType.PrivateSlots] = 8;
+			uint temp;
+			if(!newSession.Attributes.TryGetValue((uint)GameSessionAttributeType.PublicSlots, out temp))
+				newSession.Attributes[(uint)GameSessionAttributeType.PublicSlots] = 0;
+
+			if (!newSession.Attributes.TryGetValue((uint)GameSessionAttributeType.PrivateSlots, out temp))
+				newSession.Attributes[(uint)GameSessionAttributeType.PrivateSlots] = 8;
+
+			if (!newSession.Attributes.TryGetValue((uint)GameSessionAttributeType.GameType, out temp))
+				newSession.Attributes[(uint)GameSessionAttributeType.GameType] = (uint)GameType.FreeForAll;
+
 			newSession.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)newSession.PublicParticipants.Count;
 			newSession.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)newSession.Participants.Count;
 
 			// TODO: give names to attributes
-			newSession.Attributes[100] = 0;
-			newSession.Attributes[101] = 0;
-			newSession.Attributes[104] = 0;
-			newSession.Attributes[113] = 0;
+			if (!newSession.Attributes.TryGetValue(100, out temp))
+				newSession.Attributes[100] = 0;
+
+			if (!newSession.Attributes.TryGetValue(101, out temp))
+				newSession.Attributes[101] = 0;
+
+			if (!newSession.Attributes.TryGetValue(104, out temp))
+				newSession.Attributes[104] = 0;
+
+			if (!newSession.Attributes.TryGetValue(113, out temp))
+				newSession.Attributes[113] = 0;
 
 			// return key
 			var result = new GameSessionKey();
@@ -243,18 +258,26 @@ namespace DSFServices.Services
 
 			var resultList = new List<GameSessionSearchResult>();
 
-			// BUG BUG: this works incorrectly
-			// reproduction:
-			//		first player searches for Racing, second searches for Team or Takedown
-			// result:
-			//		they will find each other:
-			// expected:
-			//		the will not find each other
-
 			foreach (var ses in sessions)
 			{
-				// if any parameters match the attributes, add a search result
-				if (m_parameters.Any(p => ses.Attributes.Any(sa => p.ID == sa.Key && p.Value == sa.Value)))
+				uint value;
+
+				// cut out *private* sessions completely
+				if (ses.Attributes.TryGetValue((uint)GameSessionAttributeType.FreePrivateSlots, out value) && value > 0 ||
+					ses.Attributes.TryGetValue((uint)GameSessionAttributeType.PrivateSlots, out value) && value > 0 ||
+					ses.Attributes.TryGetValue((uint)GameSessionAttributeType.FilledPrivateSlots, out value) && value > 0)
+					continue;
+
+				var gameTypeMinParam = m_parameters.FirstOrDefault(x => x.ID == (uint)GameSessionAttributeType.GameTypeMin);
+				var gameTypeMaxParam = m_parameters.FirstOrDefault(x => x.ID == (uint)GameSessionAttributeType.GameTypeMax);
+				var totalPublicSlotsParam = m_parameters.FirstOrDefault(x => x.ID == (uint)GameSessionAttributeType.PublicSlots);
+
+				uint sessionGameType = ses.Attributes[(uint)GameSessionAttributeType.GameType];
+
+				// check game mode matches criteria
+				// and if there are free slots
+				if(sessionGameType >= gameTypeMinParam.Value && sessionGameType <= gameTypeMaxParam.Value &&
+					ses.PublicParticipants.Count < totalPublicSlotsParam.Value)
 				{
 					resultList.Add(new GameSessionSearchResult()
 					{
