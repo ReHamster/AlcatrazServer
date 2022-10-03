@@ -25,12 +25,14 @@ namespace Alcatraz.GameServices.Pages
 		public StatisticsModel(MainDbContext dbContext)
 		{
 			_dbContext = dbContext;
+			CurPage = 0;
 		}
 
 		public IEnumerable<PlayerStat> PlayerStats { get; set; }
 		public int NumRegisteredUsers { get; set; }
 		public int NumPlayersOnline { get; set; }
 		public int NumPages { get; set; }
+		public int CurPage { get; set; }
 
 		private StatisticValueVariant GetStatisticsValue(IEnumerable<PlayerStatisticsBoardValue> boardValues, StatisticDesc desc)
 		{
@@ -44,7 +46,9 @@ namespace Alcatraz.GameServices.Pages
 
 		public void OnGet(int p = 1)
         {
-			int pageSize = 50;
+			CurPage = p;
+
+			int pageSize = 10;
 			NumRegisteredUsers = _dbContext.Users.Count();
 			NumPlayersOnline = QNetZ.NetworkPlayers.Players.Count;
 			NumPages = (NumRegisteredUsers / pageSize)+1;

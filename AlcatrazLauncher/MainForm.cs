@@ -60,7 +60,7 @@ namespace AlcatrazLauncher
 
 			string alcatrazConfig = JsonConvert.SerializeObject(AlcatrazClientConfig.Instance, settings);
 
-			File.WriteAllText(Constants.ConfigFilename, alcatrazConfig);
+			File.WriteAllText(Alcatraz.DTO.Constants.ConfigFilename, alcatrazConfig);
 		}
 
 		private void MainForm_Load(object sender, EventArgs e)
@@ -71,7 +71,7 @@ namespace AlcatrazLauncher
 
 			RefreshProfileList();
 
-			if (AlcatrazClientConfig.Instance.UseProfile == Constants.NoProfile)
+			if (AlcatrazClientConfig.Instance.UseProfile == Alcatraz.DTO.Constants.NoProfile)
 			{
 				var result = MessageBox.Show(null, "Would you like to configure your profiles?", "Alcatraz", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 

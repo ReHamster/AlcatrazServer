@@ -9,6 +9,8 @@
     <Import_RootNamespace>Alcatraz.DTO</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Utilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AlcatrazClientConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AuthenticateRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AuthenticateResponse.cs" />
@@ -17,5 +19,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\OnlineConfigEntry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\UserModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\UserRegisterModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Helpers\" />
   </ItemGroup>
 </Project>

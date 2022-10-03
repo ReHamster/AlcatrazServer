@@ -1,0 +1,27 @@
+﻿@page
+@model Alcatraz.GameServices.Pages.Account.SignInModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewBag.Title = "Sign In";
+}
+
+<h3>Sign In to Alcatraz</h3>
+
+<div class="row">
+    <div class="col-md-4">
+        <form method="post" asp-route="SignUp">
+            <div class="form-group mb-3">
+                <label class="control-label">Login</label> <input class="form-control" asp-for="@Model.AuthModel.Username" />
+                <label class="control-label">Password</label> <input class="form-control" type="password" asp-for="@Model.AuthModel.Password" />
+
+                <span class="text-danger">@Model.ErrorMessage</span>
+            </div>
+            <div class="form-group mb-3">
+                <input type="submit" value="Sign In" class="btn btn-primary" />
+            </div>
+            <div class="form-group mb-3">
+                <span>Don't have an account? <a href="@Url.Page("/Account/SignUp")">Sign Up</a></span>
+            </div>
+        </form>
+    </div>
+</div>

@@ -25,9 +25,9 @@ namespace AlcatrazLauncher.Dialogs
 		{
 			var profiles = AlcatrazClientConfig.Instance.Profiles.Keys.ToArray();
 
-			m_addUbiProfile.Enabled = !profiles.Contains(Constants.OfficialProfileKey);
-			m_registerBtn.Enabled = !profiles.Contains(Constants.AlcatrazProfileKey);
-			//m_signInToAlcatraz.Enabled = !profiles.Contains(Constants.AlcatrazProfileKey);
+			//m_addUbiProfile.Enabled = !profiles.Contains(Alcatraz.DTO.Constants.OfficialProfileKey);
+			m_registerBtn.Enabled = !profiles.Contains(Alcatraz.DTO.Constants.AlcatrazProfileKey);
+			//m_signInToAlcatraz.Enabled = !profiles.Contains(Alcatraz.DTO.Constants.AlcatrazProfileKey);
 
 			m_profileList.Items.Clear();
 			m_profileList.Items.AddRange(profiles.Select(x => $" {x} : { AlcatrazClientConfig.Instance.Profiles[x].Username ?? AlcatrazClientConfig.Instance.Profiles[x].AccountId }").ToArray());
@@ -78,7 +78,7 @@ namespace AlcatrazLauncher.Dialogs
 			var splitArr = str.Split(':');
 			var profileKey = splitArr[0].Trim();
 
-			if (profileKey != Constants.OfficialProfileKey)
+			if (profileKey != Alcatraz.DTO.Constants.OfficialProfileKey)
 			{
 				var dlg = new EditAlcatrazProfileDialog();
 
@@ -112,7 +112,7 @@ namespace AlcatrazLauncher.Dialogs
 					AlcatrazClientConfig.Instance.Profiles.Remove(profileKey);
 
 					if (AlcatrazClientConfig.Instance.UseProfile == profileKey)
-						AlcatrazClientConfig.Instance.UseProfile = Constants.NoProfile;
+						AlcatrazClientConfig.Instance.UseProfile = Alcatraz.DTO.Constants.NoProfile;
 
 					RefreshProfileList();
 				}

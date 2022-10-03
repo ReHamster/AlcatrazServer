@@ -1,4 +1,5 @@
-﻿using AlcatrazLauncher.Helpers;
+﻿using Alcatraz.DTO.Models;
+using AlcatrazLauncher.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -79,15 +80,15 @@ namespace AlcatrazLauncher
 				ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
 			};
 
-			if(File.Exists(Constants.ConfigFilename))
+			if(File.Exists(Alcatraz.DTO.Constants.ConfigFilename))
 			{
-				string alcatrazConfig = File.ReadAllText(Constants.ConfigFilename);
+				string alcatrazConfig = File.ReadAllText(Alcatraz.DTO.Constants.ConfigFilename);
 				AlcatrazClientConfig.Instance = JsonConvert.DeserializeObject<AlcatrazClientConfig>(alcatrazConfig);
 			}
 			else
 			{
 				AlcatrazClientConfig.Instance = new AlcatrazClientConfig();
-				AlcatrazClientConfig.Instance.UseProfile = Constants.NoProfile;
+				AlcatrazClientConfig.Instance.UseProfile = Alcatraz.DTO.Constants.NoProfile;
 			}
 
 			Application.Run(new MainForm());

@@ -2,8 +2,10 @@ using Alcatraz.Context;
 using Alcatraz.GameServices.Helpers;
 using Alcatraz.GameServices.Services;
 using DSFServices;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,8 +35,34 @@ namespace Alcatraz.GameServices
 
 			services.AddCors();
 			services.AddControllers();
+			services.AddSession();
+			services.AddHttpContextAccessor();
 
-			services.AddRazorPages();
+			services.AddRazorPages(options =>
+			{
+				options.Conventions.AuthorizePage("/Account/Manage");
+				options.Conventions.AllowAnonymousToPage("/Account/SignUp");
+				options.Conventions.AllowAnonymousToPage("/Account/SignIn");
+				options.Conventions.AllowAnonymousToPage("/Statistics");
+				options.Conventions.AllowAnonymousToPage("/PortUsage");
+			});
+
+			services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+				.AddCookie(options =>
+				{
+					options.LoginPath = "/Account/SignIn";
+					options.ExpireTimeSpan = new System.TimeSpan(0, 15, 0);
+					options.SlidingExpiration = true;
+
+					options.Cookie = new CookieBuilder
+					{
+						SameSite = SameSiteMode.Strict,
+						SecurePolicy = CookieSecurePolicy.Always,
+						IsEssential = true,
+						HttpOnly = true
+					};
+					options.Cookie.Name = "AuthToken";
+				});
 
 			services.AddSwaggerGen();
 
@@ -82,8 +110,8 @@ namespace Alcatraz.GameServices
 			app.UseRouting();
 
 			app.UseAuthentication();
-
 			app.UseAuthorization();
+			app.UseSession();
 
 			// custom jwt auth middleware
 			app.UseMiddleware<JwtMiddleware>();

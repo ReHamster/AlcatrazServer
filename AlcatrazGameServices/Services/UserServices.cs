@@ -12,6 +12,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Alcatraz.GameServices.Services
 {
@@ -23,6 +27,8 @@ namespace Alcatraz.GameServices.Services
 		ResultModel ChangePassword(uint userId, string newPassword);
 		IEnumerable<UserModel> GetAll();
 		UserModel GetById(uint id);
+
+		public IEnumerable<Claim> GetUserClaims(UserModel user);
 		string GenerateJwtToken(UserModel userModel);
 	}
 
@@ -187,20 +193,27 @@ namespace Alcatraz.GameServices.Services
 
 		public string GenerateJwtToken(UserModel user)
 		{
+			var claims = GetUserClaims(user);
+
 			// generate token that is valid for 7 days
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
-				Subject = new ClaimsIdentity(new[] {
-					new Claim("uid", user.Id.ToString()),
-					new Claim(ClaimTypes.Name, user.Username), // FIXME: Email?
-				}),
+				Subject = new ClaimsIdentity(claims),
 				Expires = DateTime.UtcNow.AddDays(1),
 				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
 			};
 			var token = tokenHandler.CreateToken(tokenDescriptor);
 			return tokenHandler.WriteToken(token);
+		}
+
+		public IEnumerable<Claim> GetUserClaims(UserModel user)
+		{
+			return new[] {
+				new Claim("uid", user.Id.ToString()),
+				new Claim(ClaimTypes.Name, user.Username), // FIXME: Email?
+			};
 		}
 	}
 }

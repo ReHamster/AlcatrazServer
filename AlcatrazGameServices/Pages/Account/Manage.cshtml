@@ -1,0 +1,36 @@
+﻿@page
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model Alcatraz.GameServices.Pages.Account.ManageModel
+@{
+    ViewBag.Title = "Manage Account";
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <h3>Manage Account - <b>@Model.CurrentUserName</b></h3>
+        <form method="post" asp-route="SignUp">
+            <div class="form-group mb-3">
+                <label class="control-label">Login</label> <input class="form-control" asp-for="@Model.EditModel.Username" value='@Model.EditModel.Username' />
+                <label class="control-label">In-game Nickname</label> <input class="form-control" asp-for="@Model.EditModel.PlayerNickName" value='@Model.EditModel.PlayerNickName' />
+
+                <span class="text-danger">@Model.ErrorMessage</span>
+            </div>
+            <div class="form-group mb-3">
+                <label class="control-label">New Password</label> <input class="form-control" type="password" asp-for="@Model.NewPassword" />
+                <label class="control-label">Retype New Password</label> <input class="form-control" type="password" asp-for="@Model.NewPasswordRetype" />
+
+                <span class="text-danger">@Model.PasswordErrorMessage</span>
+            </div>
+            <div class="form-group mb-3">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+
+        </form>
+    </div>
+    <div class="col-md-4">
+        <h3>Configuration Download</h3>
+        <div class="form-group mb-3">
+            <a class="btn btn-secondary" href="@Url.Page("Manage", new { getConfig = true })">Download Alcatraz.json</a>
+        </div>
+    </div>
+</div>

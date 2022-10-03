@@ -24,9 +24,9 @@ namespace AlcatrazLauncher.Dialogs
 		}
 		private void m_loginBtn_Click(object sender, EventArgs e)
 		{
-			var serviceUrl = ConfigurationManager.AppSettings.Get(Constants.SERVICE_URL_KEY);
-			var accessKey = ConfigurationManager.AppSettings.Get(Constants.SANDBOX_ACCESSKEY_KEY);
-			var configKey = ConfigurationManager.AppSettings.Get(Constants.SANDBOX_CONFIGKEY_KEY);
+			var serviceUrl = ConfigurationManager.AppSettings.Get(Alcatraz.DTO.Constants.SERVICE_URL_KEY);
+			var accessKey = ConfigurationManager.AppSettings.Get(Alcatraz.DTO.Constants.SANDBOX_ACCESSKEY_KEY);
+			var configKey = ConfigurationManager.AppSettings.Get(Alcatraz.DTO.Constants.SANDBOX_CONFIGKEY_KEY);
 
 			var config = new ProfileConfig
 			{
@@ -78,10 +78,10 @@ namespace AlcatrazLauncher.Dialogs
 
 					// add models
 					if (AlcatrazClientConfig.Instance.Profiles.Count == 0)
-						AlcatrazClientConfig.Instance.UseProfile = Constants.AlcatrazProfileKey;
+						AlcatrazClientConfig.Instance.UseProfile = Alcatraz.DTO.Constants.AlcatrazProfileKey;
 
 					// replace config
-					AlcatrazClientConfig.Instance.Profiles[Constants.AlcatrazProfileKey] = config;
+					AlcatrazClientConfig.Instance.Profiles[Alcatraz.DTO.Constants.AlcatrazProfileKey] = config;
 
 					DialogResult = DialogResult.OK;
 				},

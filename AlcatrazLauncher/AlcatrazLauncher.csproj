@@ -64,7 +64,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlcatrazClientConfig.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Dialogs\AddUbiProfileDialog.cs">
       <SubType>Form</SubType>
