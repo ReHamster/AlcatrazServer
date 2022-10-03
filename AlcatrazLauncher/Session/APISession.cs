@@ -289,7 +289,7 @@ namespace AlcatrazLauncher.Session
 		// constructor
 		public APISession(IEventQueue queue, string serviceUrl = null)
 		{
-			var apiServer = ConfigurationManager.AppSettings.Get(Constants.SERVICE_URL_KEY);
+			var apiServer = ConfigurationManager.AppSettings.Get(Alcatraz.DTO.Constants.SERVICE_URL_KEY);
 
 			_serviceUrl = serviceUrl ?? apiServer;
 			EventQueue = queue;

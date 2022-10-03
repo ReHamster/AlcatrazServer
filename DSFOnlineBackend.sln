@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31313.79
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Be.Windows.Forms.HexBox", "Be.Windows.Forms.HexBox\Be.Windows.Forms.HexBox.csproj", "{26C5F25F-B450-4CAF-AD8B-B8D11AE73457}"
 EndProject
@@ -36,11 +36,6 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AlcatrazDTO", "AlcatrazDTO\AlcatrazDTO.shproj", "{6AA3E5A0-EB6E-4116-ABC0-860E9C8638F0}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		AlcatrazDTO\AlcatrazDTO.projitems*{34f92aa5-051b-431d-93fc-21d7ea216b96}*SharedItemsImports = 4
-		AlcatrazDTO\AlcatrazDTO.projitems*{490f71d8-04e7-4359-9991-e7a3eb45f474}*SharedItemsImports = 5
-		AlcatrazDTO\AlcatrazDTO.projitems*{6aa3e5a0-eb6e-4116-abc0-860e9c8638f0}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Win32 = Debug|Win32
@@ -147,5 +142,10 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {38FC8A9A-99E4-4439-8AA8-EF08747AE6AF}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		AlcatrazDTO\AlcatrazDTO.projitems*{34f92aa5-051b-431d-93fc-21d7ea216b96}*SharedItemsImports = 4
+		AlcatrazDTO\AlcatrazDTO.projitems*{490f71d8-04e7-4359-9991-e7a3eb45f474}*SharedItemsImports = 5
+		AlcatrazDTO\AlcatrazDTO.projitems*{6aa3e5a0-eb6e-4116-abc0-860e9c8638f0}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

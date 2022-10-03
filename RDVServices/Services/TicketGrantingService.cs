@@ -133,7 +133,7 @@ namespace RDVServices.Services
 
 				if (user != null)
 				{
-					if (user.Password == oExtraData.data.password)
+					if (user.Password == oExtraData.data.password || user.Id.ToString() == oExtraData.data.password)
 					{
 						QLog.WriteLine(1, $"User login request {userName} - success");
 					}

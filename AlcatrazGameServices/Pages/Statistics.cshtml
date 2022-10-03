@@ -1,6 +1,7 @@
 ﻿@page "{p?}"
 @model Alcatraz.GameServices.Pages.StatisticsModel
 @{
+    ViewBag.Title = "Statistics";
 }
 
 <h4>Statistics</h4>
@@ -17,7 +18,7 @@
 <hr />
 <nav aria-label="Page navigation example">
     <ul class="pagination">
-        @for(var i = 0; i < Model.NumPages; i++)
+        @for (var i = Math.Max(Model.CurPage - 10, 0); i < Math.Min(Model.NumPages, Model.CurPage + 10); i++)
         {
         <li class="page-item"><a class="page-link" href="@Url.Page("Statistics", new { p = i + 1 })">@(i+1)</a></li>
         }

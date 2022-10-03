@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor Accessor
+@{
+    string ActiveLink = Accessor.HttpContext.Request.Path.Value;
+    bool IsLoggedIn = Accessor.HttpContext.User.Identity.IsAuthenticated;
+}
+
+<!DOCTYPE html>
 
 <html class="h-100">
 <head>
@@ -7,25 +13,28 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Alcatraz @(ViewBag.Title ?? "")</title>
+    <title>ALCATRAZ @(ViewBag.Title != null ? (" - " + ViewBag.Title) : "")</title>
 </head>
 <body class="d-flex flex-column h-100">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
         <a href="/" class="d-flex align-items-center mx-2 col-md-4 mb-2 mb-md-0 text-dark text-decoration-none">
-            <h4>Alcatraz Server</h4>
+            <h4>ALCATRAZ</h4>
         </a>
 
-        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-            <li><a href="@Url.Page("Index")" class="nav-link px-2 link-secondary">Home</a></li>
-            <li><a href="@Url.Page("Statistics")" class="nav-link px-2 link-dark">Statistics</a></li>
-            <li><a href="@Url.Page("PortUsage")" class="nav-link px-2 link-dark">UDP ports</a></li>
+        <ul class="nav nav-pills nav-fill col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            <li><a href="@Url.Page("/Index")" class="nav-link px-2 link-secondary @(ActiveLink == "/" ? "active" : "")">Home</a></li>
+            <li><a href="@Url.Page("/Statistics")" class="nav-link px-2 link-dark @(ActiveLink == "/Statistics" ? "active" : "")">Statistics</a></li>
+            <li><a href="@Url.Page("/PortUsage")" class="nav-link px-2 link-dark @(ActiveLink == "/PortUsage" ? "active" : "")">UDP ports</a></li>
+            <li><a href="@Url.Page("/Account/Manage")" class="nav-link px-2 link-dark @(ActiveLink == "/Account/Manage" ? "active" : "")">Manage account</a></li>
         </ul>
-
         <div class="col-md-3 text-end">
-            <a class="btn btn-primary me-2" href="https://github.com/ReHamster/Alcatraz/releases" class="nav-link px-2 link-dark">Download</a>
-            @*<button type="button" class="btn btn-outline-primary me-2">Sign in</button>*@
+        @if (!IsLoggedIn) {
+            <a class="btn btn-primary me-2" href="@Url.Page("/Account/SignUp")">Sign Up</a>
+            <a class="btn btn-outline-primary me-2" href="@Url.Page("/Account/SignIn")">Sign In</a>
+        } else {
+            <a class="btn btn-primary me-2" href="https://github.com/ReHamster/Alcatraz/releases">Download</a>
+            <a class="btn btn-outline-primary me-2" href="@Url.Page("/Account/SignOut")">Sign Out</a>
+        }
         </div>
     </header>
     <main class="flex-shrink-0">
@@ -38,6 +47,9 @@
             <span class="text-muted">Alcatraz by Jellysoapy. <a href="https://www.buymeacoffee.com/SoapyMan">Buy Me A Coffee</a></span>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    @RenderSection("Scripts", required: false)
     <script>
         // process all markdown-tagged nodes
         const elements = document.querySelectorAll('markdown');

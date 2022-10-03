@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Alcatraz.DTO.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -45,9 +46,9 @@ namespace AlcatrazLauncher.Dialogs
 			};
 
 			if (AlcatrazClientConfig.Instance.Profiles.Count == 0)
-				AlcatrazClientConfig.Instance.UseProfile = Constants.OfficialProfileKey;
+				AlcatrazClientConfig.Instance.UseProfile = Alcatraz.DTO.Constants.OfficialProfileKey;
 
-			AlcatrazClientConfig.Instance.Profiles.Add(Constants.OfficialProfileKey, config);
+			AlcatrazClientConfig.Instance.Profiles.Add(Alcatraz.DTO.Constants.OfficialProfileKey, config);
 
 			DialogResult = DialogResult.OK;
 		}
