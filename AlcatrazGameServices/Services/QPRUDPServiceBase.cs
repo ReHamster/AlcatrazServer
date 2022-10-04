@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using QNetZ;
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace Alcatraz.GameServices.Services
 
 		public Task StartAsync(CancellationToken cancellationToken)
         {
-			_logger.LogInformation($"{ServiceName} is STARTED.");
+			_logger.LogInformation($"{ServiceName} is STARTED listening at {ListenPort}.");
 
 			listener = new UdpClient(ListenPort);
 			packetHandler = new QPacketHandlerPRUDP(listener, ServerPID, ListenPort, ServiceName);

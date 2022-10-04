@@ -35,7 +35,7 @@ namespace BackendDebugServer
 
         public static void tMainThread(object obj)
         {
-			var ip = QConfiguration.Instance.ServerBindAddress;
+			var ip = string.IsNullOrWhiteSpace(QConfiguration.Instance.ServerBindAddress) ? Dns.GetHostName() : QConfiguration.Instance.ServerBindAddress;
 			var targetPort = QConfiguration.Instance.RDVServerPort;
 
 			listener = new TcpListener(IPAddress.Parse(ip), listenPort);
@@ -64,7 +64,7 @@ namespace BackendDebugServer
 
         public static void tClientHandler(object obj)
         {
-			var ip = QConfiguration.Instance.ServerBindAddress;
+			var ip = string.IsNullOrWhiteSpace(QConfiguration.Instance.ServerBindAddress) ? Dns.GetHostName() : QConfiguration.Instance.ServerBindAddress;
 			var targetPort = QConfiguration.Instance.RDVServerPort;
 
 			TcpClient client = (TcpClient)obj;

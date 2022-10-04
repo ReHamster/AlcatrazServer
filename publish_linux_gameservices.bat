@@ -1,2 +1,1 @@
-cd AlcatrazGameServices
-dotnet publish -c release -r ubuntu.18.04-x64 --self-contained
+dotnet publish AlcatrazGameServices -c debug -r ubuntu.18.04-x64 --self-contained --output _publish/
