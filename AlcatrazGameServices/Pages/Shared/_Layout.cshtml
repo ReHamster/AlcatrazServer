@@ -28,6 +28,7 @@
             <li><a href="@Url.Page("/Account/Manage")" class="nav-link px-2 link-dark @(ActiveLink == "/Account/Manage" ? "active" : "")">Manage account</a></li>
         </ul>
         <div class="col-md-3 text-end">
+
         @if (!IsLoggedIn) {
             <a class="btn btn-primary me-2" href="@Url.Page("/Account/SignUp")">Sign Up</a>
             <a class="btn btn-outline-primary me-2" href="@Url.Page("/Account/SignIn")">Sign In</a>

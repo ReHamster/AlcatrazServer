@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using QNetZ;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Alcatraz.GameServices.Controllers
 {
@@ -24,12 +26,12 @@ namespace Alcatraz.GameServices.Controllers
 		{
 			{ "SandboxUrl",						@"prudp:/address=#ADDRESS#;port=#PORT#"},
 			{ "SandboxUrlWS",                   @"#ADDRESS#:#PORT#"},
-			{ "uplay_DownloadServiceUrl",       @"#ADDRESS#/UplayServices/UplayFacade/DownloadServicesRESTXML.svc/REST/XML/?url="},
-			{ "uplay_DynContentBaseUrl",        @"#ADDRESS#/u/Uplay/"},
-			{ "uplay_DynContentSecureBaseUrl",  @"#ADDRESS#/"},
-			{ "uplay_LinkappBaseUrl",           @"#ADDRESS#/u/Uplay/Packages/linkapp/1.1/"},
-			{ "uplay_PackageBaseUrl",           @"#ADDRESS#/u/Uplay/Packages/1.0.1/"},
-			{ "uplay_WebServiceBaseUrl",        @"#ADDRESS#/UplayServices/UplayFacade/ProfileServicesFacadeRESTXML.svc/REST/"},
+			{ "uplay_DownloadServiceUrl",       @"http://#ADDRESS#/UplayServices/UplayFacade/DownloadServicesRESTXML.svc/REST/XML/?url="},
+			{ "uplay_DynContentBaseUrl",        @"http://#ADDRESS#/u/Uplay/"},
+			{ "uplay_DynContentSecureBaseUrl",  @"http://#ADDRESS#/"},
+			{ "uplay_LinkappBaseUrl",           @"http://#ADDRESS#/u/Uplay/Packages/linkapp/1.1/"},
+			{ "uplay_PackageBaseUrl",           @"http://#ADDRESS#/u/Uplay/Packages/1.0.1/"},
+			{ "uplay_WebServiceBaseUrl",        @"http://#ADDRESS#/UplayServices/UplayFacade/ProfileServicesFacadeRESTXML.svc/REST/"},
 		};
 
 		[HttpGet("GetOnlineConfig")]
@@ -39,14 +41,16 @@ namespace Alcatraz.GameServices.Controllers
 
 			// TODO: database access for 'onlineConfigID'
 
-			var address = _configuration.Value.ServerBindAddress;
+			var hostAddress = string.IsNullOrWhiteSpace(_configuration.Value.ServerBindAddress) ? Dns.GetHostName() : _configuration.Value.ServerBindAddress;
 			var targetPort = _configuration.Value.RDVServerPort;
 
 			var list = new List<OnlineConfigEntry>();
 
 			foreach(var v in ResponseTemplates)
 			{
-				var value = v.Value.Replace("#ADDRESS#", address).Replace("#PORT#", targetPort.ToString());
+				var value = v.Value
+					.Replace("#ADDRESS#", hostAddress)
+					.Replace("#PORT#", targetPort.ToString());
 
 				list.Add(new OnlineConfigEntry
 				{

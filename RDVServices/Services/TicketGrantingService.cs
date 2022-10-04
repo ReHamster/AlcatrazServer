@@ -6,6 +6,7 @@ using QNetZ.Interfaces;
 using QNetZ.Connection;
 using System.Collections.Generic;
 using System;
+using System.Net;
 
 namespace RDVServices.Services
 {
@@ -26,10 +27,11 @@ namespace RDVServices.Services
 		[RMCMethod(1)]
 		public RMCResult Login(string userName)
 		{
+			var hostAddress = string.IsNullOrWhiteSpace(QConfiguration.Instance.ServerBindAddress) ? Dns.GetHostName() : QConfiguration.Instance.ServerBindAddress;
 #if false
 			var rdvConnectionString = new StationURL(
 				"prudps",
-				QConfiguration.Instance.ServerBindAddress,
+				hostAddress,
 				new Dictionary<string, int>() {
 					{ "port", Context.Client.sPort },
 					{ "CID", 1 },
@@ -96,9 +98,11 @@ namespace RDVServices.Services
 		[RMCMethod(2)]
 		public RMCResult LoginEx(string userName, AnyData<UbiAuthenticationLoginCustomData> oExtraData)
 		{
+			var hostAddress = string.IsNullOrWhiteSpace(QConfiguration.Instance.ServerBindAddress) ? Dns.GetHostName() : QConfiguration.Instance.ServerBindAddress;
+
 			var rdvConnectionString = new StationURL(
-				"prudps", 
-				QConfiguration.Instance.ServerBindAddress,
+				"prudps",
+				hostAddress,
 				new Dictionary<string, int>() {
 					{ "port", QConfiguration.Instance.BackendServiceServerPort },
 					{ "CID", 1 },
