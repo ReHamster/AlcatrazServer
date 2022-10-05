@@ -9,6 +9,7 @@ namespace QNetZ
 	// TODO: separate from QNetZ
     public enum RMCProtocolId
     {
+        RemoteLogDeviceService          = 1,
         NATTraversalService 			= 3,
         TicketGrantingService 			= 10,
         SecureConnectionService 		= 11,
