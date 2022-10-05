@@ -132,6 +132,40 @@ namespace AlcatrazUplayR2
 		InitDiscordRichPresence();
 	}
 
+	inline bool IsSupportedGameVersion()
+	{
+		enum class GameVersion {
+			DriverSanFrancisco_PC_1_0_4,
+			// Not a version
+			UnknownBuild = 0xDEAD
+		};
+
+		struct VersionDef
+		{
+			std::string_view Id;
+			std::intptr_t StrAddr;
+			bool Supported;
+		};
+
+		static constexpr size_t kMaxVersionLen = 32;
+		static constexpr std::intptr_t kUnknownAddr = 0xDEADB33F;
+
+		static std::pair<GameVersion, VersionDef> PossibleGameVersions[] = {
+			{ GameVersion::DriverSanFrancisco_PC_1_0_4, { "1.04.1114", 0x00DD6480, true } },
+		};
+
+		for (const auto& [gameVersion, versionInfo] : PossibleGameVersions)
+		{
+			if (versionInfo.StrAddr == kUnknownAddr) continue; // SKip, unable to check it
+
+			const auto valueInGame = std::string_view{ reinterpret_cast<const char*>(versionInfo.StrAddr) };
+			if (valueInGame == versionInfo.Id)
+				return true;
+		}
+
+		return false;
+	}
+
 	inline void InitHooks()
 	{
 		auto& profile = Singleton<ProfileData>::Instance().Get();
@@ -150,6 +184,12 @@ namespace AlcatrazUplayR2
 		if (!proc.MainModule)
 		{
 			Fail(String::fromPrintf("Failed to locate module for process '%s'!", GAME_PROCESS_NAME), false);
+			return;
+		}
+
+		if (!IsSupportedGameVersion())
+		{
+			Fail("Unsupported game version for Alcatraz. Your game must be 1.04.1114.", false);
 			return;
 		}
 

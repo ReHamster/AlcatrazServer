@@ -19,6 +19,8 @@
 #include "Interfaces/IGetSavegameListListener.hpp"
 #include "Interfaces/IGetSavegameWriterListener.hpp"
 #include "Interfaces/IGetSavegameReaderListener.hpp"
+#include "Interfaces/IGetOrbitServerListener.hpp"
+#include "Interfaces/IGetOrbitServerListener.hpp"
 
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppParameterMayBeConst
@@ -47,12 +49,14 @@ namespace mg::orbitclient
 							unsigned int productId, unsigned int saveGameId);
 
 		void GetLoginDetails(unsigned int requestId, IGetLoginDetailsListener *loginDetailsListenerCallBack);
+		void GetOrbitServer(unsigned int requestId, IGetOrbitServerListener*, unsigned int, unsigned int);
 
 		unsigned int GetRequestUniqueId();
 		unsigned short *GetInstallationErrorString(char const *);
 		unsigned int GetInstallationErrorNum();
 
 		void Update();
+		
 		~OrbitClient();
 	};
 } // namespace mg::orbitclient
@@ -166,6 +170,12 @@ inline void mg::orbitclient::OrbitClient::GetLoginDetails(unsigned int requestId
 
 	callBack(loginDetailsListenerCallBack, requestId, profile.AccountId, passwordWstr.c_str(), profile.GameKey);
 	
+}
+
+//------------------------------------------------------------------------------
+void mg::orbitclient::OrbitClient::GetOrbitServer(unsigned int requestId, IGetOrbitServerListener* callback, unsigned int, unsigned int)
+{
+
 }
 
 //------------------------------------------------------------------------------
