@@ -9,6 +9,7 @@
 #include "HF/HackingFrameworkFWD.h"
 
 #include "HF/HackingFramework.hpp"
+#include <minidumpapiset.h>
 
 namespace Hermes
 {
@@ -91,6 +92,75 @@ namespace AlcatrazUplayR2
 			DiscordRichPresence passMe = { 0 };
 			GetDiscordManager()->SetStatus(passMe, (const char*)profile.AccountId, message);
 		}
+	}
+
+	inline void WriteMiniDump(EXCEPTION_POINTERS* exception = nullptr)
+	{
+		//
+		//	Credits https://stackoverflow.com/questions/5028781/how-to-write-a-sample-code-that-will-crash-and-produce-dump-file
+		//
+		auto hDbgHelp = LoadLibraryA("dbghelp");
+		if (hDbgHelp == nullptr)
+			return;
+		auto pMiniDumpWriteDump = (decltype(&MiniDumpWriteDump))GetProcAddress(hDbgHelp, "MiniDumpWriteDump");
+		if (pMiniDumpWriteDump == nullptr)
+			return;
+
+		char name[MAX_PATH];
+		{
+			auto nameEnd = name + GetModuleFileNameA(GetModuleHandleA(0), name, MAX_PATH);
+			SYSTEMTIME t;
+			GetSystemTime(&t);
+
+			wsprintfA(nameEnd - strlen(".exe"),
+				"_%4d%02d%02d_%02d%02d%02d.dmp",
+				t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
+		}
+
+		auto hFile = CreateFileA(name, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+		if (hFile == INVALID_HANDLE_VALUE)
+			return;
+
+		MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
+		exceptionInfo.ThreadId = GetCurrentThreadId();
+		exceptionInfo.ExceptionPointers = exception;
+		exceptionInfo.ClientPointers = FALSE;
+
+		auto dumped = pMiniDumpWriteDump(
+			GetCurrentProcess(),
+			GetCurrentProcessId(),
+			hFile,
+			MINIDUMP_TYPE(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory),
+			exception ? &exceptionInfo : nullptr,
+			nullptr,
+			nullptr);
+
+		CloseHandle(hFile);
+	}
+
+	inline void NotifyAboutException(EXCEPTION_POINTERS* exceptionInfoFrame)
+	{
+		MessageBox(
+			NULL,
+			"We got an fatal error.\nMinidump will be saved near exe.",
+			"Driver San Francisco",
+			MB_ICONERROR | MB_OK
+		);
+
+		WriteMiniDump(exceptionInfoFrame);
+		exit(0);
+	}
+
+	inline LONG __stdcall ExceptionFilterWin32(EXCEPTION_POINTERS* exceptionInfoFrame)
+	{
+		if (exceptionInfoFrame->ExceptionRecord->ExceptionCode < 0x80000000)
+		{
+			return EXCEPTION_CONTINUE_EXECUTION;
+		}
+
+		NotifyAboutException(exceptionInfoFrame);
+
+		return EXCEPTION_EXECUTE_HANDLER;
 	}
 
 	inline void InitDiscordRichPresence()
@@ -192,6 +262,8 @@ namespace AlcatrazUplayR2
 			Fail("Unsupported game version for Alcatraz. Your game must be 1.04.1114.", false);
 			return;
 		}
+
+		AddVectoredExceptionHandler(0UL, ExceptionFilterWin32);
 
 		//
 		// hook to sandbox selector
