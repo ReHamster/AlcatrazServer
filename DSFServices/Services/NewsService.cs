@@ -22,18 +22,14 @@ namespace DSFServices.Services
 
 			var funNews = new List<string>{
 				"Actumcnally",
-				$"Hello { plInfo.Name }! Welcome to Driver Madness Alcatraz server!",
-				$"Players online: { NetworkPlayers.Players.Count }",
-				$"SoapyMan overtakes the DSF and reduces taxes on coffee by {random.Next(10, 400)}%!",
-				"Play Driver 2 at opendriver2.github.io!",
-				$"Inspiration Byte stocks has raisen by { random.Next(1, 40) }% last trading day!",
+				$"Hello { plInfo.Name }! Welcome to Alcatraz server!",
+				$"Players online: { NetworkPlayers.Players.Count-1 }",
+				"Need Deluxe Edition content? Enter IWantDeluxeCars and IWantDeluxeChallenges in Extras > Exclusive Content menu!",
+				"All UPlay Rewards were unlocked for you!",
+				"Play Driver 2 in Web Browser at opendriver2.github.io!",
 				"Subscribe to VortexStory on YouTube!",
+				"Support SoapyMan with coffee!",
 			};
-
-			if (NetworkPlayers.GetPlayerInfoByUsername("Olanov") != null)
-			{
-				funNews.Insert(2, $"Shocking! Olanov started playing DSF again! Stocks has risen by { random.Next(4, 40) }");
-			}
 
 			var headers = funNews.Select((x, idx) => new NewsHeader
 			{

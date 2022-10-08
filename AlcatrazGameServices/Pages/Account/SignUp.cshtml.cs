@@ -12,14 +12,18 @@ using System.Threading.Tasks;
 
 namespace Alcatraz.GameServices.Pages.Account
 {
+	public class UserRegisterExtModel : UserRegisterModel
+	{
+		public string PasswordRetype { get; set; }
+	}
+
 	[BindProperties(SupportsGet = true)]
 	public class SignUpModel : PageModel
     {
 		[BindProperty]
-		public UserRegisterModel RegisterModel { get; set; }
+		public UserRegisterExtModel RegisterModel { get; set; }
 
 		public string ErrorMessage;
-		public string PasswordRetype;
 
 		IUserService _userService;
 
@@ -30,7 +34,7 @@ namespace Alcatraz.GameServices.Pages.Account
 
 		public void OnGet()
 		{
-			RegisterModel = new UserRegisterModel();
+			RegisterModel = new UserRegisterExtModel();
 		}
 
         public async Task<IActionResult> OnPost()
@@ -41,7 +45,7 @@ namespace Alcatraz.GameServices.Pages.Account
 				return Page();
 			}
 
-			if(PasswordRetype != RegisterModel.Password)
+			if(RegisterModel.PasswordRetype != RegisterModel.Password)
 			{
 				ErrorMessage = "Password mismatch";
 				return Page();
