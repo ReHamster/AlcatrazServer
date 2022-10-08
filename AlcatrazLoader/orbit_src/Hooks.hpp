@@ -48,19 +48,25 @@ public:
 
 namespace AlcatrazUplayR2
 {
+	static constexpr std::intptr_t kOriginalWndProcAddr = 0x008641C0;
 	static constexpr uintptr_t kFriendsListPageLimitAddress = 0x009E24DE;
 	static constexpr uintptr_t kOnlineConfigServiceHostPRODAddress = 0x016DD358;
 	static constexpr uintptr_t kSandboxSelectorConstructorAddr = 0x004CF530;
+	static constexpr size_t kRegisterClassAPatchSize = 6;
 	static constexpr size_t kSandboxSelectorConstructorPatchSize = 10;
 	static constexpr size_t kPlatformListenerServiceRDVProcessSize = 10;
 	static constexpr uintptr_t kHermesLogCallbackAddr = 0x016DB558;
+	static constexpr intptr_t kRegisterClassAAddr = 0x00864FBE;
 	static Hermes::LogCallback& hermesLogCallbackVar = *reinterpret_cast<Hermes::LogCallback*>(kHermesLogCallbackAddr);
 	static Hermes::LogCallback origOrDNGHookLogCallback = nullptr;
+	typedef LRESULT(__stdcall* WndProc_t)(HWND, UINT, WPARAM, LPARAM);
 
 	struct HookProcess
 	{
 		HF::Win32::ProcessPtr MainProcess;
 		HF::Win32::ModulePtr MainModule;
+
+		HF::Hook::TrampolinePtr<kRegisterClassAPatchSize> RegisterClassAHook;
 		HF::Hook::TrampolinePtr<kSandboxSelectorConstructorPatchSize> SandboxSelectorConstructorHook;
 		HF::Hook::TrampolinePtr<kPlatformListenerServiceRDVProcessSize> PlatformListenerServiceRDVProcessHook;
 	};
@@ -236,12 +242,38 @@ namespace AlcatrazUplayR2
 		return false;
 	}
 
+	LRESULT WINAPI Hamster_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		auto hamsterWndProc = (WndProc_t)kOriginalWndProcAddr;
+
+		switch (msg)
+		{
+		case WM_SETCURSOR:
+			if ((HWND)wParam != hWnd || (WORD)lParam != 1) // this also fixes very rare crash
+				return DefWindowProcA(hWnd, msg, wParam, lParam);
+			SetCursor(0);
+			return 1;
+		}
+
+		return hamsterWndProc(hWnd, msg, wParam, lParam);
+	}
+
+	ATOM __stdcall RegisterClassA_Hooked(WNDCLASSA* wndClass)
+	{
+		// only replace if DriverNGHook was not installed
+		if(wndClass->lpfnWndProc == (WndProc_t)kOriginalWndProcAddr)
+			wndClass->lpfnWndProc = Hamster_WndProc;
+
+		return RegisterClassA(wndClass);
+	}
+
 	inline void InitHooks()
 	{
 		auto& profile = Singleton<ProfileData>::Instance().Get();
 
-		HookProcess proc;
+		const bool isDriverNGHookConnected = GetModuleHandleA("DriverNGHook.asi") != NULL;
 
+		HookProcess proc;
 		proc.MainProcess = std::make_shared<HF::Win32::Process>(std::string_view(GAME_PROCESS_NAME));
 
 		if (!proc.MainProcess->isValid())
@@ -264,6 +296,23 @@ namespace AlcatrazUplayR2
 		}
 
 		AddVectoredExceptionHandler(0UL, ExceptionFilterWin32);
+
+		if (!isDriverNGHookConnected)
+		{
+			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kRegisterClassAAddr, kRegisterClassAPatchSize);
+			proc.RegisterClassAHook = HF::Hook::HookFunction<ATOM(__stdcall*)(WNDCLASSA*), kRegisterClassAPatchSize>(
+				proc.MainProcess,
+				kRegisterClassAAddr,
+				&RegisterClassA_Hooked,
+				{},
+				{});
+
+			if (!proc.RegisterClassAHook->setup())
+			{
+				Fail("Failed to setup patch to RegisterClassA!\n", false);
+				return;
+			}
+		}
 
 		//
 		// hook to sandbox selector

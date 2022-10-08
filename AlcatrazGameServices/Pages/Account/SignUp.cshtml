@@ -14,7 +14,7 @@
                 <label class="control-label">Login</label> <input class="form-control" asp-for="@Model.RegisterModel.Username" />
                 <label class="control-label">In-game Nickname</label> <input class="form-control" asp-for="@Model.RegisterModel.PlayerNickName" />
                 <label class="control-label">Password</label> <input class="form-control" type="password" asp-for="@Model.RegisterModel.Password" />
-                <label class="control-label">Retype Password</label> <input class="form-control" type="password" asp-for="@Model.PasswordRetype" />
+                <label class="control-label">Retype Password</label> <input class="form-control" type="password" asp-for="@Model.RegisterModel.PasswordRetype" />
                
                 <span class="text-danger">@Model.ErrorMessage</span>
             </div>
