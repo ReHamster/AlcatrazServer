@@ -8,7 +8,7 @@
 #include "ProfileManager.hpp"
 
 #include "Utils/Singleton.hpp"
-#include "Objects/OrbitConfig.hpp"
+#include "Objects/AlcatrazConfig.hpp"
 
 #include "SavegameInfo.hpp"
 #include "SavegameReader.hpp"

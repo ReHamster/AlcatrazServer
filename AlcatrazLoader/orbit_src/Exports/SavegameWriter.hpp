@@ -4,7 +4,7 @@
 
 #include "Macro.hpp"
 #include "Utils/Singleton.hpp"
-#include "Objects/OrbitConfig.hpp"
+#include "Objects/AlcatrazConfig.hpp"
 
 #include "Interfaces/ISavegameWriteListener.hpp"
 
