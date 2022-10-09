@@ -2,7 +2,7 @@
 
 #include <Discord.h>
 
-#include "Objects/OrbitConfig.hpp"
+#include "Objects/AlcatrazConfig.hpp"
 #include "Helpers/Failure.hpp"
 #include "Utils/Singleton.hpp"
 
@@ -33,7 +33,7 @@ namespace AlcatrazUplayR2
 
 		ProfileData profile;
 
-		auto& config = Singleton<OrbitConfig>::Instance().Get();
+		auto& config = Singleton<AlcatrazConfig>::Instance().Get();
 		auto& AllProfiles = config.dataVariant.toMap().find("Profiles")->toMap();
 
 		profile.Name = config.dataVariant.toMap().find("UseProfile")->toString();

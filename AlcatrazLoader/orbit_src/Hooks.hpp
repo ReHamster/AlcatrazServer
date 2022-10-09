@@ -1,20 +1,18 @@
 #pragma once
 
-#include "Objects/OrbitConfig.hpp"
+#include "Objects/AlcatrazConfig.hpp"
 #include "Helpers/Failure.hpp"
 #include "Utils/Singleton.hpp"
 
 #include "ProfileManager.hpp"
+#include "ExceptionHandler.hpp"
 
 #include "HF/HackingFrameworkFWD.h"
-
 #include "HF/HackingFramework.hpp"
-#include <minidumpapiset.h>
 
-namespace Hermes
-{
-	enum LogChannel
-	{
+
+namespace Hermes {
+	enum LogChannel {
 		LC_error = 0,
 		LC_warning = 1,
 		LC_info = 2,
@@ -28,8 +26,7 @@ namespace Hermes
 	typedef void(__cdecl* LogCallback)(Hermes::LogChannel, const char*);
 }
 
-class SandboxSelector
-{
+class SandboxSelector {
 public:
 	// Default constructor in case if needed
 	SandboxSelector()
@@ -46,20 +43,79 @@ public:
 	unsigned __int8 m_iSandboxTrackingID;
 };
 
+struct SDisplayMode
+{
+	uint width;
+	uint height;
+	uint frequency;
+	uint bitsPerPixel;
+};
+
+namespace driveplatform {
+	enum EFilteringMode : int
+	{
+		EFilteringMode_None = 0x0,
+		EFilteringMode_BiLinear = 0x1,
+		EFilteringMode_TriLinear = 0x2,
+		EFilteringMode_Invalid = 0x3,
+	};
+}
+
+struct SRendererSettings
+{
+	SDisplayMode displayMode;
+	float gammaR;
+	float gammaG;
+	float gammaB;
+	bool enableVSync;
+	bool enablePreciseVSync;
+	bool enableAntialiasing;
+	bool enableRadialBlur;
+	driveplatform::EFilteringMode filteringMode;
+	uint vsyncCount;
+	int _unknown;
+	int pcRenderQuality;
+};
+
+struct SInitialisationParams
+{
+	SRendererSettings* settings;
+	void* hWindow;
+	bool bWindowed;
+};
+
+class IRenderer {
+	void* vtbl;
+public:
+	SInitialisationParams m_InitialisationParams;
+	// others aren't yet needed...
+};
+
 namespace AlcatrazUplayR2
 {
-	static constexpr std::intptr_t kOriginalWndProcAddr = 0x008641C0;
+	// QoL patches
+	static constexpr uintptr_t kOriginalWndProcAddr = 0x008641C0;
+	static constexpr uintptr_t kRegisterClassAAddr = 0x00864FBE;
+	static constexpr uintptr_t kIRendererLoadGraphicsIniCallAddr = 0x00BAB4BE;
+	static constexpr uintptr_t kIRendererLoadGraphicsIniAddr = 0x00BAA8F0;
+	static constexpr size_t kRegisterClassAPatchSize = 6;
+	static constexpr size_t kIRendererLoadGraphicsIniPatchSize = 5;
+
+	// Online patches
 	static constexpr uintptr_t kFriendsListPageLimitAddress = 0x009E24DE;
 	static constexpr uintptr_t kOnlineConfigServiceHostPRODAddress = 0x016DD358;
 	static constexpr uintptr_t kSandboxSelectorConstructorAddr = 0x004CF530;
-	static constexpr size_t kRegisterClassAPatchSize = 6;
-	static constexpr size_t kSandboxSelectorConstructorPatchSize = 10;
-	static constexpr size_t kPlatformListenerServiceRDVProcessSize = 10;
 	static constexpr uintptr_t kHermesLogCallbackAddr = 0x016DB558;
-	static constexpr intptr_t kRegisterClassAAddr = 0x00864FBE;
+	static constexpr size_t kSandboxSelectorConstructorPatchSize = 10;
+
 	static Hermes::LogCallback& hermesLogCallbackVar = *reinterpret_cast<Hermes::LogCallback*>(kHermesLogCallbackAddr);
 	static Hermes::LogCallback origOrDNGHookLogCallback = nullptr;
-	typedef LRESULT(__stdcall* WndProc_t)(HWND, UINT, WPARAM, LPARAM);
+	static char** s_OnlineConfigServiceHostPROD = reinterpret_cast<char**>(kOnlineConfigServiceHostPRODAddress);
+
+	using WndProc_t = LRESULT(__stdcall* )(HWND, UINT, WPARAM, LPARAM);
+	using RegisterClassA_t = ATOM(__stdcall*)(WNDCLASSA*);
+	using SandboxSelectorConstructor_t = void(__stdcall*)(SandboxSelector*);
+	using IRendererLoadGraphicsIni_t = bool(__fastcall*)(IRenderer*);
 
 	struct HookProcess
 	{
@@ -68,7 +124,7 @@ namespace AlcatrazUplayR2
 
 		HF::Hook::TrampolinePtr<kRegisterClassAPatchSize> RegisterClassAHook;
 		HF::Hook::TrampolinePtr<kSandboxSelectorConstructorPatchSize> SandboxSelectorConstructorHook;
-		HF::Hook::TrampolinePtr<kPlatformListenerServiceRDVProcessSize> PlatformListenerServiceRDVProcessHook;
+		HF::Hook::TrampolinePtr<kIRendererLoadGraphicsIniPatchSize> IRendererLoadGraphicsIniHook;
 	};
 
 	void OnlineLogCallback(Hermes::LogChannel channel, const char* msg)
@@ -92,94 +148,24 @@ namespace AlcatrazUplayR2
 			}
 		}
 
-		if (message.length()) {
+		if (message.length())
+		{
 			auto& profile = Singleton<ProfileData>::Instance().Get();
-
-			DiscordRichPresence passMe = { 0 };
-			GetDiscordManager()->SetStatus(passMe, (const char*)profile.AccountId, message);
+			GetDiscordManager()->SetStatus({ 0 }, (const char*)profile.AccountId, message);
 		}
-	}
-
-	inline void WriteMiniDump(EXCEPTION_POINTERS* exception = nullptr)
-	{
-		//
-		//	Credits https://stackoverflow.com/questions/5028781/how-to-write-a-sample-code-that-will-crash-and-produce-dump-file
-		//
-		auto hDbgHelp = LoadLibraryA("dbghelp");
-		if (hDbgHelp == nullptr)
-			return;
-		auto pMiniDumpWriteDump = (decltype(&MiniDumpWriteDump))GetProcAddress(hDbgHelp, "MiniDumpWriteDump");
-		if (pMiniDumpWriteDump == nullptr)
-			return;
-
-		char name[MAX_PATH];
-		{
-			auto nameEnd = name + GetModuleFileNameA(GetModuleHandleA(0), name, MAX_PATH);
-			SYSTEMTIME t;
-			GetSystemTime(&t);
-
-			wsprintfA(nameEnd - strlen(".exe"),
-				"_%4d%02d%02d_%02d%02d%02d.dmp",
-				t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
-		}
-
-		auto hFile = CreateFileA(name, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-		if (hFile == INVALID_HANDLE_VALUE)
-			return;
-
-		MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
-		exceptionInfo.ThreadId = GetCurrentThreadId();
-		exceptionInfo.ExceptionPointers = exception;
-		exceptionInfo.ClientPointers = FALSE;
-
-		auto dumped = pMiniDumpWriteDump(
-			GetCurrentProcess(),
-			GetCurrentProcessId(),
-			hFile,
-			MINIDUMP_TYPE(MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory),
-			exception ? &exceptionInfo : nullptr,
-			nullptr,
-			nullptr);
-
-		CloseHandle(hFile);
-	}
-
-	inline void NotifyAboutException(EXCEPTION_POINTERS* exceptionInfoFrame)
-	{
-		MessageBox(
-			NULL,
-			"We got an fatal error.\nMinidump will be saved near exe.",
-			"Driver San Francisco",
-			MB_ICONERROR | MB_OK
-		);
-
-		WriteMiniDump(exceptionInfoFrame);
-		exit(0);
-	}
-
-	inline LONG __stdcall ExceptionFilterWin32(EXCEPTION_POINTERS* exceptionInfoFrame)
-	{
-		if (exceptionInfoFrame->ExceptionRecord->ExceptionCode < 0x80000000)
-		{
-			return EXCEPTION_CONTINUE_EXECUTION;
-		}
-
-		NotifyAboutException(exceptionInfoFrame);
-
-		return EXCEPTION_EXECUTE_HANDLER;
 	}
 
 	inline void InitDiscordRichPresence()
 	{
+		auto& config = Singleton<AlcatrazConfig>::Instance().Get();
 		auto& profile = Singleton<ProfileData>::Instance().Get();
 
 		CDiscord::CreateInstance();
+		CDiscord* mgr = GetDiscordManager();
 
-		//Enable it, this needs to be set via a config file of some sort. 
-		GetDiscordManager()->SetUseDiscord(true);
-
-		DiscordRichPresence passMe = { 0 };
-		GetDiscordManager()->SetStatus(passMe, (const char*)profile.AccountId, "Started the game");
+		// Enable it, this needs to be set via a config file of some sort. 
+		mgr->SetUseDiscord(config.discordRichPresence);
+		mgr->SetStatus({0}, (const char*)profile.AccountId, "Started the game");
 
 		// DNGHook-friendly callback
 		Hermes::LogCallback oldCallback = hermesLogCallbackVar;
@@ -191,20 +177,21 @@ namespace AlcatrazUplayR2
 	{
 		auto& profile = Singleton<ProfileData>::Instance().Get();
 
-		char* str = *(char**)kOnlineConfigServiceHostPRODAddress;
-		strcpy_s(str, 28, profile.ServiceUrl);
+		if (profile.ServiceUrl.length() > 0)
+		{
+			// since it's pointer to string we can safely
+			// replace it without copying into 28 char buffer
+			*s_OnlineConfigServiceHostPROD = (char*)profile.ServiceUrl;
 
-		strcpy_s(self->m_cOnlineConfigKey, 64, profile.ConfigKey);
-		strcpy_s(self->m_cSandboxKey, 32, profile.SandboxAccessKey);
-		strcpy_s(self->m_cSandboxName, 32, "DriverMadness Sandbox A");
+			// not that necessary but we can play with that one too
+			// (maybe we have another Alcatraz server but on different port)
+			strcpy_s(self->m_cOnlineConfigKey, 64, profile.ConfigKey);
+			strcpy_s(self->m_cSandboxKey, 32, profile.SandboxAccessKey);
+			strcpy_s(self->m_cSandboxName, 32, "DriverMadness Sandbox A");
+		}
 
 		self->m_iSandboxTrackingID = 4;
 
-		InitDiscordRichPresence();
-	}
-
-	inline void __stdcall OnSandboxSelectorConstructorDiscordOnly(SandboxSelector* self)
-	{
 		InitDiscordRichPresence();
 	}
 
@@ -219,12 +206,12 @@ namespace AlcatrazUplayR2
 		struct VersionDef
 		{
 			std::string_view Id;
-			std::intptr_t StrAddr;
+			intptr_t StrAddr;
 			bool Supported;
 		};
 
 		static constexpr size_t kMaxVersionLen = 32;
-		static constexpr std::intptr_t kUnknownAddr = 0xDEADB33F;
+		static constexpr intptr_t kUnknownAddr = 0xDEADB33F;
 
 		static std::pair<GameVersion, VersionDef> PossibleGameVersions[] = {
 			{ GameVersion::DriverSanFrancisco_PC_1_0_4, { "1.04.1114", 0x00DD6480, true } },
@@ -242,29 +229,71 @@ namespace AlcatrazUplayR2
 		return false;
 	}
 
-	LRESULT WINAPI Hamster_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	inline void GetDesktopRes(int& width, int& height)
 	{
-		auto hamsterWndProc = (WndProc_t)kOriginalWndProcAddr;
+		HMONITOR monitor = MonitorFromWindow(GetDesktopWindow(), MONITOR_DEFAULTTONEAREST);
+		MONITORINFO info = {};
+		info.cbSize = sizeof(MONITORINFO);
+		GetMonitorInfo(monitor, &info);
 
-		switch (msg)
+		width = info.rcMonitor.right - info.rcMonitor.left;
+		height = info.rcMonitor.bottom - info.rcMonitor.top;
+	}
+
+	inline LRESULT WINAPI Hamster_WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		auto& config = Singleton<AlcatrazConfig>::Instance().Get();
+
+		if (config.borderlessWindow && (msg == WM_SIZE || msg == WM_MOVE))
 		{
-		case WM_SETCURSOR:
-			if ((HWND)wParam != hWnd || (WORD)lParam != 1) // this also fixes very rare crash
-				return DefWindowProcA(hWnd, msg, wParam, lParam);
-			SetCursor(0);
+			int desktopResW, desktopResH;
+			GetDesktopRes(desktopResW, desktopResH);
+
+			LONG lStyle = GetWindowLong(hWnd, GWL_STYLE);
+			lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+			SetWindowLong(hWnd, GWL_STYLE, lStyle);
+
+			static tagRECT REKT;
+			REKT.left = 0;
+			REKT.top = 0;
+			REKT.right = desktopResW;
+			REKT.bottom = desktopResH;
+			SetWindowPos(hWnd, NULL, REKT.left, REKT.top, REKT.right, REKT.bottom, SWP_NOACTIVATE | SWP_NOZORDER);
+
 			return 1;
 		}
 
+		auto hamsterWndProc = (WndProc_t)kOriginalWndProcAddr;
 		return hamsterWndProc(hWnd, msg, wParam, lParam);
 	}
 
-	ATOM __stdcall RegisterClassA_Hooked(WNDCLASSA* wndClass)
+	inline ATOM __stdcall RegisterClassA_Hooked(WNDCLASSA* wndClass)
 	{
 		// only replace if DriverNGHook was not installed
 		if(wndClass->lpfnWndProc == (WndProc_t)kOriginalWndProcAddr)
 			wndClass->lpfnWndProc = Hamster_WndProc;
 
 		return RegisterClassA(wndClass);
+	}
+
+	inline bool __fastcall IRendererLoadGraphicsIni_Hooked(IRenderer* _this)
+	{
+		auto origLoadGraphicsIniFunc = (IRendererLoadGraphicsIni_t)kIRendererLoadGraphicsIniAddr;
+
+		const bool result = origLoadGraphicsIniFunc(_this);
+
+		auto& config = Singleton<AlcatrazConfig>::Instance().Get();
+
+		if (config.borderlessWindow)
+		{
+			int desktopResW, desktopResH;
+			GetDesktopRes(desktopResW, desktopResH);
+			_this->m_InitialisationParams.bWindowed = true;
+			_this->m_InitialisationParams.settings->displayMode.width = desktopResW;
+			_this->m_InitialisationParams.settings->displayMode.height = desktopResH;
+		}
+
+		return result;
 	}
 
 	inline void InitHooks()
@@ -295,12 +324,12 @@ namespace AlcatrazUplayR2
 			return;
 		}
 
-		AddVectoredExceptionHandler(0UL, ExceptionFilterWin32);
+		InitExceptionHandler();
 
 		if (!isDriverNGHookConnected)
 		{
 			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kRegisterClassAAddr, kRegisterClassAPatchSize);
-			proc.RegisterClassAHook = HF::Hook::HookFunction<ATOM(__stdcall*)(WNDCLASSA*), kRegisterClassAPatchSize>(
+			proc.RegisterClassAHook = HF::Hook::HookFunction<RegisterClassA_t, kRegisterClassAPatchSize>(
 				proc.MainProcess,
 				kRegisterClassAAddr,
 				&RegisterClassA_Hooked,
@@ -314,6 +343,20 @@ namespace AlcatrazUplayR2
 			}
 		}
 
+		HF::Hook::FillMemoryByNOPs(proc.MainProcess, kIRendererLoadGraphicsIniCallAddr, kIRendererLoadGraphicsIniPatchSize);
+		proc.IRendererLoadGraphicsIniHook = HF::Hook::HookFunction<IRendererLoadGraphicsIni_t, kIRendererLoadGraphicsIniPatchSize>(
+			proc.MainProcess,
+			kIRendererLoadGraphicsIniCallAddr,
+			&IRendererLoadGraphicsIni_Hooked,
+			{},
+			{});
+		
+		if (!proc.IRendererLoadGraphicsIniHook->setup())
+		{
+			Fail("Failed to setup patch to IRenderer::LoadGraphicsIni!\n", false);
+			return;
+		}
+
 		//
 		// hook to sandbox selector
 		// 
@@ -324,36 +367,21 @@ namespace AlcatrazUplayR2
 			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0xd, 5);
 			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0x1f, 5);
 			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kSandboxSelectorConstructorAddr + 0x31, 5);
-			proc.SandboxSelectorConstructorHook = HF::Hook::HookFunction<void(__stdcall)(SandboxSelector*), kSandboxSelectorConstructorPatchSize>(
-				proc.MainProcess,
-				kSandboxSelectorConstructorAddr,
-				&OnSandboxSelectorConstructor,
-				{
-					HF::X86::PUSH_AD,
-					HF::X86::PUSH_FD,
-					HF::X86::PUSH_EAX
-				},
+		}
+
+		proc.SandboxSelectorConstructorHook = HF::Hook::HookFunction<SandboxSelectorConstructor_t, kSandboxSelectorConstructorPatchSize>(
+			proc.MainProcess,
+			kSandboxSelectorConstructorAddr,
+			&OnSandboxSelectorConstructor,
+			{
+				HF::X86::PUSH_AD,
+				HF::X86::PUSH_FD,
+				HF::X86::PUSH_EAX
+			},
 			{
 				HF::X86::POP_FD,
 				HF::X86::POP_AD
 			});
-		}
-		else
-		{
-			proc.SandboxSelectorConstructorHook = HF::Hook::HookFunction<void(__stdcall)(SandboxSelector*), kSandboxSelectorConstructorPatchSize>(
-				proc.MainProcess,
-				kSandboxSelectorConstructorAddr,
-				&OnSandboxSelectorConstructorDiscordOnly,
-				{
-					HF::X86::PUSH_AD,
-					HF::X86::PUSH_FD,
-					HF::X86::PUSH_EAX
-				},
-			{
-				HF::X86::POP_FD,
-				HF::X86::POP_AD
-			});
-		}
 
 		if (!proc.SandboxSelectorConstructorHook->setup())
 		{
