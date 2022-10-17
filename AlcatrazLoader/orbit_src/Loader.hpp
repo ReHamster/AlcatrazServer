@@ -18,6 +18,27 @@
 
 namespace AlcatrazUplayR2
 {
+	inline void UtilOpenURL(const char* url)
+	{
+		/*
+		CoInitialize(nullptr);
+
+		SHELLEXECUTEINFO info{ sizeof(info) };
+		info.fMask = SEE_MASK_NOASYNC; // because we exit process after ShellExecuteEx()
+		info.lpVerb = "open";
+		info.lpFile = url;
+		info.nShow = SW_SHOWNORMAL;
+
+		if (!ShellExecuteExA(&info))
+		{
+			DWORD err = ::GetLastError();
+			printf("ShellExecuteEx failed with error %d\n", err);
+		}
+
+		CoUninitialize();
+		*/
+	}
+
 	inline void InitConfig()
 	{
 		const auto currentPath = Directory::getCurrentDirectory();
@@ -27,7 +48,8 @@ namespace AlcatrazUplayR2
 
 		if (!File::exists(configPath))
 		{
-			Fail(String::fromPrintf("%s file not found.", CONFIG_NAME), false);
+			UtilOpenURL(String::fromPrintf("%s/Account/Manage", ALCATRAZ_PORTAL_URL));
+			Fail(String::fromPrintf("%s not found.\n\nPlease get one at Alcatraz portal and put to the game folder.", CONFIG_NAME), false);
 		}
 
 		File fs;
@@ -45,7 +67,7 @@ namespace AlcatrazUplayR2
 		AlcatrazConfig config;
 		if (!Json::parse(data, config.dataVariant))
 		{
-			Fail(String::fromPrintf("JSON %s parse error!", CONFIG_NAME), false);
+			Fail(String::fromPrintf("%s parse error!\n\nPlease get one at Alcatraz portal and put to the game folder.", CONFIG_NAME), false);
 		}
 
 		HashMap<String, Variant> configVariant = config.dataVariant.toMap();

@@ -9,18 +9,10 @@ namespace Alcatraz.DTO
 {
 	public class Constants
 	{
-#if DEBUG
-		public static string SERVICE_URL_KEY => "ServiceUrlDEV";
-		public static string SANDBOX_CONFIGKEY_KEY => "ConfigKeyDEV";
-		public static string SANDBOX_ACCESSKEY_KEY => "SandboxAccessKeyDEV";
-		public static string AlcatrazProfileKey => "AlcatrazDEV";
-#else
 		public static string SERVICE_URL_KEY => "ServiceUrl";
 		public static string SANDBOX_CONFIGKEY_KEY => "ConfigKey";
 		public static string SANDBOX_ACCESSKEY_KEY => "SandboxAccessKey";
 		public static string AlcatrazProfileKey => "Alcatraz";
-#endif
-
 		public static string ConfigFilename =>"Alcatraz.json";
 		public static string NoProfile => "None";
 		public static string OfficialProfileKey => "UbiOfficial";

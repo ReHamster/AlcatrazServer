@@ -37,14 +37,11 @@ namespace Alcatraz.GameServices.Pages.Account
 		public string NewPassword { get; set; }
 		public string NewPasswordRetype { get; set; }
 
-		IUserService _userService;
+		private IUserService _userService;
 
-		private readonly IOptions<QConfiguration> _configuration;
-
-		public ManageModel(IUserService userService, IOptions<QConfiguration> serverConfig)
+		public ManageModel(IUserService userService)
         {
             _userService = userService;
-			_configuration = serverConfig;
 		}
 
 		public IActionResult OnGet(bool getConfig = false)
@@ -64,43 +61,6 @@ namespace Alcatraz.GameServices.Pages.Account
 			};
 
 			CurrentUserName = HttpContext.User.Identity.Name;
-
-			if(getConfig)
-			{
-				var settings = new JsonSerializerSettings
-				{
-					Formatting = Formatting.Indented,
-					ContractResolver = new DefaultContractResolver(),
-					DefaultValueHandling = DefaultValueHandling.Include,
-					TypeNameHandling = TypeNameHandling.None,
-					NullValueHandling = NullValueHandling.Ignore,
-					ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor
-				};
-
-				var serviceUrl = "alcatraz.drivermadness.net";
-				var accessKey = _configuration.Value.SandboxAccessKey;
-				var configKey = "23ad683803a0457cabce83f905811dbc";
-
-				var profileConfig = new ProfileConfig
-				{
-					Username = CurrentUser.Username,
-					AccountId = CurrentUser.PlayerNickName,
-					Password = uidClaim.Value,
-
-					ServiceUrl = serviceUrl,
-					AccessKey = accessKey,
-					ConfigKey = configKey
-				};
-
-				var config = new AlcatrazClientConfig();
-				config.UseProfile = "Alcatraz";
-				config.Profiles.Add("Alcatraz", profileConfig);
-
-				string alcatrazConfig = JsonConvert.SerializeObject(config, settings);
-				byte[] bytes = Encoding.ASCII.GetBytes(alcatrazConfig);
-
-				return File(bytes, "application/json", "Alcatraz.json");
-			}
 
 			return Page();
 		}

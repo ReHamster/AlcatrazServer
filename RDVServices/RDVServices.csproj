@@ -13,4 +13,6 @@
     <ProjectReference Include="..\QNetZ\QNetZ.csproj" />
   </ItemGroup>
 
+  <Import Project="..\AlcatrazDTO\AlcatrazDTO.projitems" Label="Shared" />
+
 </Project>

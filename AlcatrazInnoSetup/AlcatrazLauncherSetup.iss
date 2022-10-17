@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Alcatraz Launcher"
-#define MyAppVersion "1.1"
+#define MyAppVersion "1.5"
 #define MyAppPublisher "Inspiration Byte"
 #define MyAppURL "http://alcatraz.drivermadness.net/"
 #define MyAppExeName "AlcatrazLauncher.exe"
@@ -38,7 +38,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "..\AlcatrazLauncher\bin\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\AlcatrazLauncher\bin\Release\AlcatrazLauncher.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\AlcatrazLauncher\bin\Release\AlcatrazLauncher.pdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\AlcatrazLauncher\bin\Release\AlcatrazLauncher_SkipGameSearch.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\AlcatrazLauncher\bin\Release\AlcatrazLauncher_Uninstall.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\AlcatrazLauncher\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion

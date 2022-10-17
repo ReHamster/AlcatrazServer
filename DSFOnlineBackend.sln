@@ -145,6 +145,7 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		AlcatrazDTO\AlcatrazDTO.projitems*{34f92aa5-051b-431d-93fc-21d7ea216b96}*SharedItemsImports = 4
+		AlcatrazDTO\AlcatrazDTO.projitems*{40ce0d70-eee5-4e17-bd16-e897f60fb0b5}*SharedItemsImports = 5
 		AlcatrazDTO\AlcatrazDTO.projitems*{490f71d8-04e7-4359-9991-e7a3eb45f474}*SharedItemsImports = 5
 		AlcatrazDTO\AlcatrazDTO.projitems*{6aa3e5a0-eb6e-4116-abc0-860e9c8638f0}*SharedItemsImports = 13
 	EndGlobalSection
