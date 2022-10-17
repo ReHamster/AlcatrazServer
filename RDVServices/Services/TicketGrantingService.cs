@@ -1,4 +1,5 @@
-﻿using RDVServices.DDL.Models;
+﻿using Alcatraz.DTO.Helpers;
+using RDVServices.DDL.Models;
 using QNetZ;
 using QNetZ.Attributes;
 using QNetZ.DDL;
@@ -137,7 +138,8 @@ namespace RDVServices.Services
 
 				if (user != null)
 				{
-					if (user.Password == oExtraData.data.password || user.Id.ToString() == oExtraData.data.password)
+					var hashPassword = $"{user.Id}-{user.PlayerNickName}";
+					if (SecurePasswordHasher.Verify(hashPassword, oExtraData.data.password) || user.Password == oExtraData.data.password)
 					{
 						QLog.WriteLine(1, $"User login request {userName} - success");
 					}

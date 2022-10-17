@@ -270,7 +270,7 @@ namespace AlcatrazLauncher.Session
 			{
 				if(_client == null)
 				{
-					_client = new RestClient("http://" + _serviceUrl);
+					_client = new RestClient("https://" + _serviceUrl);
 					_client.UseNewtonsoftJson();
 				}
 

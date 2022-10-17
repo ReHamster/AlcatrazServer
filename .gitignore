@@ -14,3 +14,6 @@ packages/*
 AlcatrazLoader/project_*
 AlcatrazInnoSetup/Output*
 _RESEARCH/*
+Docker/server/publish/*
+Docker/init-letsencrypt.sh
+data/database.sqlite

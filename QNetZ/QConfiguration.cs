@@ -11,7 +11,9 @@ namespace QNetZ
 		public ushort RDVServerPort { get; set; }
 		public ushort BackendServiceServerPort { get; set; }
 		public string ServerFilesPath { get; set; }
+		public string ServiceURLHostName { get; set; }          // Affects Alcatraz.json file downloaded from server in GetAlcatrazConfig
 		public string SandboxAccessKey { get; set; }            // Server access key. Affects packet checksum;
+		public string OnlineConfigKey { get; set; }
 		public string DbConnectionString { get; set; }
 		public int DbType { get; set; }
 		public int LogLevel { get; set; }						// not used in debug server. See Services/RendezVousServer.cs
@@ -49,7 +51,7 @@ namespace QNetZ
 
 			cfg.ServerFilesPath = "ServerFiles/";
 
-			cfg.SandboxAccessKey = "8dtRv2oj";            // Server access key. Affects packet checksum;
+			cfg.SandboxAccessKey = "w6kAtr3T";            // Server access key. Affects packet checksum;
 
 			cfg.DbType = 0;
 			cfg.DbConnectionString = "Data Source=database.sqlite";

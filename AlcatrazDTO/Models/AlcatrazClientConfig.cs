@@ -20,7 +20,12 @@ namespace Alcatraz.DTO.Models
 		public AlcatrazClientConfig()
 		{
 			Profiles = new Dictionary<string, ProfileConfig>();
+			BorderlessWindow = true;
+			DiscordRichPresence = true;
 		}
+
+		public bool BorderlessWindow { get; set; }
+		public bool DiscordRichPresence { get; set; }
 
 		public string UseProfile { get; set; }
 		public Dictionary<string,ProfileConfig> Profiles { get; set; }
