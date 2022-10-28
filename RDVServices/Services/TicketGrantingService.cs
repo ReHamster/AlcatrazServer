@@ -138,8 +138,19 @@ namespace RDVServices.Services
 
 				if (user != null)
 				{
-					var hashPassword = $"{user.Id}-{user.PlayerNickName}";
-					if (SecurePasswordHasher.Verify(hashPassword, oExtraData.data.password) || user.Password == oExtraData.data.password)
+					bool passwordCheckResult;
+					try
+					{
+						var hashPassword = $"{user.Id}-{user.PlayerNickName}";
+						passwordCheckResult = oExtraData.data.password == user.Password || SecurePasswordHasher.Verify(hashPassword, oExtraData.data.password);
+					}
+					catch(Exception _)
+					{
+						passwordCheckResult = false;
+					}
+
+					
+					if (passwordCheckResult)
 					{
 						QLog.WriteLine(1, $"User login request {userName} - success");
 					}

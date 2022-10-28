@@ -16,12 +16,13 @@ using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
+using Alcatraz.DTO.Helpers;
 
 namespace Alcatraz.GameServices.Services
 {
 	public interface IUserService
 	{
-		AuthenticateResponse Authenticate(AuthenticateRequest model);
+		AuthenticateResponse Authenticate(AuthenticateRequest model, bool simplePasswordCheck);
 		ResultModel Register(UserRegisterModel model);
 		ResultModel Update(UserModel model);
 		ResultModel ChangePassword(uint userId, string newPassword);
@@ -44,15 +45,29 @@ namespace Alcatraz.GameServices.Services
 			_dbContext = dbContext;
 		}
 
-		public AuthenticateResponse Authenticate(AuthenticateRequest model)
+		public AuthenticateResponse Authenticate(AuthenticateRequest model, bool simplePasswordCheck)
 		{
 			var user = _dbContext.Users
 				.AsNoTracking()
-				.SingleOrDefault(x => x.Username == model.Username && x.Password == model.Password);
+				.SingleOrDefault(x => x.Username == model.Username);
 
 			// return null if user not found
 			if (user == null) 
 				return null;
+
+			if(simplePasswordCheck)
+			{
+				if (user.Password != model.Password)
+					return null;
+			}
+			else
+			{
+				var hashPassword = $"{user.Id}-{user.PlayerNickName}";
+				if (!SecurePasswordHasher.Verify(hashPassword, model.Password))
+				{
+					return null;
+				}
+			}
 
 			var userModel = new UserModel
 			{

@@ -32,7 +32,7 @@ namespace Alcatraz.GameServices.Controllers
 		[HttpPost("Authenticate")]
 		public IActionResult Authenticate([FromBody] AuthenticateRequest model)
 		{
-			var response = _userService.Authenticate(model);
+			var response = _userService.Authenticate(model, true);
 
 			if (response == null)
 			{

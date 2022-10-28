@@ -9,7 +9,6 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            <th scope="col">Id</th>
             <th scope="col">UDP port</th>
             <th scope="col">Users</th>
         </tr>
@@ -18,7 +17,6 @@
         @foreach(var port in Model.UsageList)
 		{
         <tr>
-            <th scope="row">@port.Id</th>
             <td>@port.Port</td>
             <td>@string.Join(", ", port.Users)</td>
         </tr>

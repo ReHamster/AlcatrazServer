@@ -1,5 +1,6 @@
 ﻿@page "{p?}"
 @model Alcatraz.GameServices.Pages.StatisticsModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     ViewBag.Title = "Statistics";
 }
@@ -16,19 +17,21 @@
 </div>
 <br />
 <hr />
-<nav aria-label="Page navigation example">
-    <ul class="pagination">
-        @for (var i = Math.Max(Model.CurPage - 10, 0); i < Math.Min(Model.NumPages, Model.CurPage + 10); i++)
-        {
-        <li class="page-item"><a class="page-link" href="@Url.Page("Statistics", new { p = i + 1 })">@(i+1)</a></li>
-        }
-    </ul>
-</nav>
+<form class="row g-3" method="get" asp-page-handler="OnSearch">
+    <div class="col-md-4">
+        <input class="form-control" name="search" value="@Model.SearchStats" />
+    </div>
+    <div class="col-md-4">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
 <table class="table table-striped">
     <thead>
         <tr>
-            <th scope="col">Nick name</th>
+            <th scope="col">Nickname</th>
+            <th scope="col">Level</th>
             <th scope="col">XP</th>
+            <th scope="col">Overall wins</th>
         </tr>
     </thead>
     <tbody>
@@ -36,9 +39,18 @@
 		{
         <tr>
             <th scope="row">@player.PlayerNickname</th>
+            <td>@player.MP_LEVEL</td>
             <td>@player.XP</td>
+            <td>@player.OverallWins</td>
         </tr>
 		}
-
     </tbody>
 </table>
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        @for (var i = Math.Max(Model.CurPage - 20, 0); i < Math.Min(Model.NumPages, Model.CurPage + 20); i++)
+        {
+            <li class="page-item"><a class="page-link" href="@Url.Page("Statistics", new { p = i + 1, search = Model.SearchStats })">@(i+1)</a></li>
+        }
+    </ul>
+</nav>
