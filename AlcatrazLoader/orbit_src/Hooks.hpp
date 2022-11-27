@@ -263,6 +263,14 @@ namespace AlcatrazUplayR2
 			return 1;
 		}
 
+		// This one should fixes a bug that prevents launching the game 
+		// BEFORE IFramework::Initialise() is called
+		// otherwise original WndProc will try to access non-existent ESingletonType_OSControl (by poor programming)
+		if(HIWORD(lParam) == WM_MOUSEMOVE)
+		{
+			return DefWindowProc(hWnd, msg, wParam, lParam);
+		}
+
 		auto hamsterWndProc = (WndProc_t)kOriginalWndProcAddr;
 		return hamsterWndProc(hWnd, msg, wParam, lParam);
 	}
