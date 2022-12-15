@@ -12,7 +12,7 @@ namespace DSFServices.DDL.Models
 		{
 			statInstantBroadcast = false;
 			statFriendComparison = false;
-			statRankingOrder = RankingOrder.Ascending;
+			statRankingOrder = RankingOrder.NotRanked;
 			statDisplayType = VariantType.None;
 		}
 		public int statBoard;
