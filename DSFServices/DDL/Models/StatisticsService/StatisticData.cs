@@ -26,6 +26,8 @@ namespace DSFServices.DDL.Models
 
 	public enum RankingOrder
 	{
+		NotRanked = -1,
+
 		Ascending = 0,
 		Descending = 1,
 	}
@@ -208,6 +210,23 @@ namespace DSFServices.DDL.Models
 					break;
 			}
 			return false;
+		}
+
+		public double GetAsFloat()
+		{
+			switch ((VariantType)typeValue)
+			{
+				case VariantType.int32:
+					return valueInt32;
+				case VariantType.int64:
+					return valueInt64;
+				case VariantType.Float:
+				case VariantType.Double:
+					return valueDouble;
+				case VariantType.String:
+					return 0.0;
+			}
+			return 0.0;
 		}
 
 		public override string? ToString()
