@@ -29,7 +29,7 @@ namespace DSFServices.DDL.Models
 
 		UnknownAttribute102 = 102, // always 201313820
 		UnknownAttribute103 = 103, // always 0
-		UnknownAttribute105 = 105, // always 769844
+		HostRVCID = 105,
 		UnknownAttribute106 = 106, // totally unknown, different values - qm=4 ffa=4 race=1 takedown=4 ffa=0 team=0 sr=0 tr=4
 		UnknownAttribute107 = 107, // always 3
 		UnknownAttribute108 = 108, // always 0
