@@ -1,8 +1,8 @@
 ﻿using Alcatraz.Context;
 using Alcatraz.Context.Entities;
-using Alcatraz.GameServices.Helpers;
+using Alcatraz.DTO.Helpers;
 using Alcatraz.DTO.Models;
-using Microsoft.AspNetCore.Mvc;
+using Alcatraz.GameServices.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -12,11 +12,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using Alcatraz.DTO.Helpers;
 
 namespace Alcatraz.GameServices.Services
 {
@@ -129,6 +124,20 @@ namespace Alcatraz.GameServices.Services
 				PlayerNickName = model.PlayerNickName,
 				Password = model.Password,
 			};
+
+			if(!_dbContext.Users.Any())
+			{
+				// Add dummy user with starting ID == 1000
+				_dbContext.Users.Add(new User()
+				{
+					Id = 1000,
+					Username = "dummy",
+					PlayerNickName = "dummy",
+					Password = "dummy",
+					RewardFlags = 0,
+				});
+				_dbContext.SaveChanges();
+			}
 
 			if (_dbContext.Users.Any(x => x.Username == model.Username || x.PlayerNickName == model.PlayerNickName))
 				return new ResultModel("User with same name or nickname is already present");

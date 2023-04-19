@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace QNetZ
 {
