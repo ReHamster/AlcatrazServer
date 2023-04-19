@@ -33,8 +33,6 @@ namespace DSFServices.Services
 			foreach (var attr in gameSession.m_attributes)
 				newSession.Attributes[attr.ID] = attr.Value;
 
-			GameSessions.UpdateSessionParticipation(plInfo, newSession.Id, newSession.TypeID, true);
-
 			uint temp;
 			if(!newSession.Attributes.TryGetValue((uint)GameSessionAttributeType.PublicSlots, out temp))
 				newSession.Attributes[(uint)GameSessionAttributeType.PublicSlots] = 0;
