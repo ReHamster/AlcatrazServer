@@ -25,7 +25,7 @@ on:
       - '**/premake*.lua'
       
 env:
-  SOLUTION_FILE_PATH: ./AlcatrazLoader/project_vs2015_windows/AlcatrazUPlay.sln
+  SOLUTION_FILE_PATH: project_vs2015_windows/AlcatrazUPlay.sln
   BUILD_CONFIGURATION: Release
 
 permissions:
