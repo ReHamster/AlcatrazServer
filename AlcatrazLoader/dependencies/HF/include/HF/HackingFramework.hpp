@@ -95,7 +95,7 @@ namespace HF
         public:
             VProtect() = default;
 
-            [[maybe_unused]] VProtect(uint32_t at, uint32_t size, uint32_t newMask)
+            VProtect(uint32_t at, uint32_t size, uint32_t newMask)
                     : m_ptr(at)
                     , m_size(size)
                     , m_oldMask(0x0)
@@ -110,7 +110,7 @@ namespace HF
                 m_inited = true;
             }
 
-            [[maybe_unused]] ~VProtect()
+            ~VProtect()
             {
                 if (m_inited)
                 {
@@ -148,9 +148,9 @@ namespace HF
             using Ptr = std::shared_ptr<Module>;
             using Ref = std::weak_ptr<Module>;
 
-            [[nodiscard]] const std::string& getName() const { return m_name; }
-            [[nodiscard]] std::uintptr_t getBaseAddress() const { return m_baseAddr; }
-            [[nodiscard]] std::uintptr_t getSize() const { return m_size; }
+            const std::string& getName() const { return m_name; }
+            std::uintptr_t getBaseAddress() const { return m_baseAddr; }
+            std::uintptr_t getSize() const { return m_size; }
         };
 
         class Process
@@ -167,7 +167,7 @@ namespace HF
 
             Process() = default;
 
-            explicit Process(std::string name)
+            Process(const std::string& name)
                     : m_name(std::move(name))
             {
                 HANDLE handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
@@ -191,8 +191,6 @@ namespace HF
                 FindModules();
             }
 
-            explicit Process(std::string_view name) : Process(std::string(name)) {}
-
             ~Process()
             {
                 if (m_handle)
@@ -207,12 +205,12 @@ namespace HF
                 return m_valid;
             }
 
-            [[nodiscard]] bool isValid() const
+            bool isValid() const
             {
                 return m_valid;
             }
 
-            [[nodiscard]] Module::Ptr getModule(const std::string& name) const
+            Module::Ptr getModule(const std::string& name) const
             {
                 auto it = m_modules.find(name);
                 if (it != std::end(m_modules))
@@ -222,18 +220,12 @@ namespace HF
                 return nullptr;
             }
 
-            [[nodiscard]] Module::Ptr getModule(std::string_view name) const
-            {
-                //TODO: Rewrite to std::string_view?
-                return getModule(std::string(name));
-            }
-
-            [[nodiscard]] Module::Ptr getSelfModule() const
+            Module::Ptr getSelfModule() const
             {
                 if (!m_valid)
                     return nullptr;
 
-                if (!m_modules.contains(m_name))
+                if (m_modules.find(m_name) == std::end(m_modules))
                     return nullptr;
 
                 return m_modules.at(m_name);
@@ -246,9 +238,9 @@ namespace HF
                     return;
                 }
 
-                for (const auto& [_name, mod] : m_modules)
+                for (const auto it : m_modules)
                 {
-                    predicate(mod);
+                    predicate(it.second);
                 }
             }
 
@@ -296,7 +288,7 @@ namespace HF
             };
 
             template <typename TData = void>
-            [[nodiscard]] TData* allocateMemory(size_t size, MemoryPolicy memPolicy = MemoryPolicy::ReadWrite) const
+            TData* allocateMemory(size_t size, MemoryPolicy memPolicy = MemoryPolicy::ReadWrite) const
             {
                 auto ptr = VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE, static_cast<DWORD>(memPolicy));
                 if (!ptr)
@@ -314,7 +306,7 @@ namespace HF
                 }
             }
 
-            [[nodiscard]] DWORD getPid() const { return m_pid; }
+            DWORD getPid() const { return m_pid; }
 
             static Process::Ptr getSelf()
             {
@@ -455,7 +447,7 @@ namespace HF
                 remove();
             }
 
-            [[nodiscard]] std::intptr_t getOriginalPtr() const { return m_originalFunction; }
+            std::intptr_t getOriginalPtr() const { return m_originalFunction; }
 
             void reset(std::intptr_t newAddr)
             {
@@ -681,7 +673,7 @@ namespace HF
                 m_inited = false;
             }
 
-            [[nodiscard]] std::intptr_t at() const { return m_targetAddr; }
+            std::intptr_t at() const { return m_targetAddr; }
 
             ~Trampoline()
             {
@@ -732,7 +724,9 @@ namespace HF
                 Functor to,
                 const X86::AssemblyPayload& patchBeforeJump,
                 const X86::AssemblyPayload& patchAfterReturnFromTrampoline
-        ) requires (PatchSize >= X86::DEFAULT_JMP_SIZE) {
+        )
+        {
+            static_assert(PatchSize >= X86::DEFAULT_JMP_SIZE, "Patch size is required to be bigger than Default JMP size");
             return std::make_shared<Trampoline<PatchSize>>(
                     process,
                     addr,
@@ -764,8 +758,10 @@ namespace HF
         }
 
         template <size_t OpCodesCount>
-        static bool MoveInstructions(const std::shared_ptr<Win32::Process>& process, const Addr& from, const Addr& to) requires (OpCodesCount > 0)
+        static bool MoveInstructions(const std::shared_ptr<Win32::Process>& process, const Addr& from, const Addr& to)
         {
+            static_assert(OpCodesCount > 0, "Must have opcodes specified");
+
             auto buffer = std::make_unique<uint8_t[]>(OpCodesCount);
             if (process->readMemory(from, OpCodesCount, buffer.get()) != OpCodesCount)
                 return false;

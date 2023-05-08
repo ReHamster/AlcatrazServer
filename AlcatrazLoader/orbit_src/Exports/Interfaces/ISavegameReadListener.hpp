@@ -1,13 +1,12 @@
 #pragma once
 
-// ReSharper disable CppInconsistentNaming
-namespace mg::orbitclient
-// ReSharper restore CppInconsistentNaming
+namespace mg {
+namespace orbitclient {
+class ISavegameReadListener
 {
-	class ISavegameReadListener
-	{
-	public:
-		typedef void(__thiscall *CallBackPtrType)(void *, unsigned int requestId, unsigned int bytesRead);
-		void (**CallBackPtr)(unsigned int requestId, unsigned int bytesRead);
-	};
+public:
+	typedef void(__thiscall* CallBackPtrType)(void*, unsigned int requestId, unsigned int bytesRead);
+	void (**CallBackPtr)(unsigned int requestId, unsigned int bytesRead);
+};
+}
 }

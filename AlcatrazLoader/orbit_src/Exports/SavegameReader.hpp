@@ -9,20 +9,21 @@
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppMemberFunctionMayBeConst
-namespace mg::orbitclient
+namespace mg {
+namespace orbitclient {
+using namespace AlcatrazUplayR2;
+
+class UPLAY_CPP_API SavegameReader
 {
-	using namespace AlcatrazUplayR2;
+	String FilePath;
 
-	class UPLAY_CPP_API SavegameReader
-	{
-		String FilePath;
-
-	public:
-		SavegameReader();
-		void Close();
-		void Read(unsigned int requestId, ISavegameReadListener* savegameReadListenerCallBack,
-		          unsigned int offset, void* buff, unsigned int numberOfBytes);
-	};
+public:
+	SavegameReader();
+	void Close();
+	void Read(unsigned int requestId, ISavegameReadListener* savegameReadListenerCallBack,
+		unsigned int offset, void* buff, unsigned int numberOfBytes);
+};
+}
 } // namespace mg::orbitclient
 
 //------------------------------------------------------------------------------
