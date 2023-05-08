@@ -3,7 +3,7 @@
 #include "HF/HackingFrameworkFWD.h"
 #include "HF/HackingFramework.hpp"
 
-#include <minidumpapiset.h>
+#include <DbgHelp.h>
 
 // Taken from: http://msdn.microsoft.com/en-us/library/s975zw7k(VS.71).aspx
 #ifdef __cplusplus

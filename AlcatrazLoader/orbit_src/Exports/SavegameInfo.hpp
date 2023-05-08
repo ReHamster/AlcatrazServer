@@ -5,21 +5,24 @@
 
 // ReSharper disable CppInconsistentNaming
 // ReSharper disable CppMemberFunctionMayBeConst
-namespace mg::orbitclient
-{
-	class UPLAY_CPP_API SavegameInfo
-	{
-		std::wstring Name;
-		unsigned int Id;
-		unsigned long Size;
+namespace mg {
+namespace orbitclient {
 
-	public:
-		SavegameInfo(unsigned int, unsigned long, const std::wstring &);
-		unsigned int GetSavegameId();
-		unsigned int GetProductId(void);
-		unsigned int GetSize();
-		unsigned short const *GetName();
-	};
+class UPLAY_CPP_API SavegameInfo
+{
+	std::wstring Name;
+	unsigned int Id;
+	unsigned long Size;
+
+public:
+	SavegameInfo(unsigned int, unsigned long, const std::wstring&);
+	unsigned int GetSavegameId();
+	unsigned int GetProductId(void);
+	unsigned int GetSize();
+	unsigned short const* GetName();
+};
+
+}
 } // namespace mg::orbitclient
 
 //------------------------------------------------------------------------------

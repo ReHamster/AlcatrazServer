@@ -2,15 +2,14 @@
 
 #include "Exports/SavegameWriter.hpp"
 
-// ReSharper disable CppInconsistentNaming
-namespace mg::orbitclient
-// ReSharper restore CppInconsistentNaming
+namespace mg {
+namespace orbitclient {
+class IGetSavegameWriterListener
 {
-	class IGetSavegameWriterListener
-	{
-	public:
-		typedef void (__thiscall *CallBackPtrType)(void*, unsigned int requestId, int unk,
-		                                       SavegameWriter* saveGameWriter);
-		void (**CallBackPtr)(unsigned int requestId, int unk, SavegameWriter* saveGameWriter);
-	};
+public:
+	typedef void(__thiscall* CallBackPtrType)(void*, unsigned int requestId, int unk,
+		SavegameWriter* saveGameWriter);
+	void (**CallBackPtr)(unsigned int requestId, int unk, SavegameWriter* saveGameWriter);
+};
+}
 }

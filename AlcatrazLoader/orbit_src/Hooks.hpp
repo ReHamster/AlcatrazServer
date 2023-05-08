@@ -167,10 +167,13 @@ namespace AlcatrazUplayR2
 		mgr->SetUseDiscord(config.discordRichPresence);
 		mgr->SetStatus({0}, (const char*)profile.AccountId, "Started the game");
 
-		// DNGHook-friendly callback
-		Hermes::LogCallback oldCallback = hermesLogCallbackVar;
-		hermesLogCallbackVar = OnlineLogCallback;
-		origOrDNGHookLogCallback = oldCallback;
+		if (config.discordRichPresence)
+		{
+			// DNGHook-friendly callback
+			Hermes::LogCallback oldCallback = hermesLogCallbackVar;
+			hermesLogCallbackVar = OnlineLogCallback;
+			origOrDNGHookLogCallback = oldCallback;
+		}
 	}
 
 	inline void __stdcall OnSandboxSelectorConstructor(SandboxSelector* self)
@@ -185,6 +188,8 @@ namespace AlcatrazUplayR2
 
 			// not that necessary but we can play with that one too
 			// (maybe we have another Alcatraz server but on different port)
+			// 
+			// Please note patch below before constructor override.
 			strcpy_s(self->m_cOnlineConfigKey, 64, profile.ConfigKey);
 			strcpy_s(self->m_cSandboxKey, 32, profile.SandboxAccessKey);
 			strcpy_s(self->m_cSandboxName, 32, "DriverMadness Sandbox A");
@@ -205,24 +210,24 @@ namespace AlcatrazUplayR2
 
 		struct VersionDef
 		{
-			std::string_view Id;
+			std::string Id;
 			intptr_t StrAddr;
 			bool Supported;
 		};
 
 		static constexpr size_t kMaxVersionLen = 32;
-		static constexpr intptr_t kUnknownAddr = 0xDEADB33F;
+		static constexpr intptr_t kUnknownAddr = 0xDEADBEEF;
 
 		static std::pair<GameVersion, VersionDef> PossibleGameVersions[] = {
 			{ GameVersion::DriverSanFrancisco_PC_1_0_4, { "1.04.1114", 0x00DD6480, true } },
 		};
 
-		for (const auto& [gameVersion, versionInfo] : PossibleGameVersions)
+		for (const auto p : PossibleGameVersions)
 		{
-			if (versionInfo.StrAddr == kUnknownAddr) continue; // SKip, unable to check it
+			if (p.second.StrAddr == kUnknownAddr) continue; // SKip, unable to check it
 
-			const auto valueInGame = std::string_view{ reinterpret_cast<const char*>(versionInfo.StrAddr) };
-			if (valueInGame == versionInfo.Id)
+			const auto valueInGame = reinterpret_cast<const char*>(p.second.StrAddr);
+			if (valueInGame == p.second.Id)
 				return true;
 		}
 
@@ -287,31 +292,24 @@ namespace AlcatrazUplayR2
 	inline bool __fastcall IRendererLoadGraphicsIni_Hooked(IRenderer* _this)
 	{
 		auto origLoadGraphicsIniFunc = (IRendererLoadGraphicsIni_t)kIRendererLoadGraphicsIniAddr;
-
 		const bool result = origLoadGraphicsIniFunc(_this);
 
-		auto& config = Singleton<AlcatrazConfig>::Instance().Get();
-
-		if (config.borderlessWindow)
-		{
-			int desktopResW, desktopResH;
-			GetDesktopRes(desktopResW, desktopResH);
-			_this->m_InitialisationParams.bWindowed = true;
-			_this->m_InitialisationParams.settings->displayMode.width = desktopResW;
-			_this->m_InitialisationParams.settings->displayMode.height = desktopResH;
-		}
+		int desktopResW, desktopResH;
+		GetDesktopRes(desktopResW, desktopResH);
+		_this->m_InitialisationParams.bWindowed = true;
+		_this->m_InitialisationParams.settings->displayMode.width = desktopResW;
+		_this->m_InitialisationParams.settings->displayMode.height = desktopResH;
 
 		return result;
 	}
 
 	inline void InitHooks()
 	{
+		auto& config = Singleton<AlcatrazConfig>::Instance().Get();
 		auto& profile = Singleton<ProfileData>::Instance().Get();
 
-		const bool isDriverNGHookConnected = GetModuleHandleA("DriverNGHook.asi") != NULL;
-
 		HookProcess proc;
-		proc.MainProcess = std::make_shared<HF::Win32::Process>(std::string_view(GAME_PROCESS_NAME));
+		proc.MainProcess = std::make_shared<HF::Win32::Process>(GAME_PROCESS_NAME);
 
 		if (!proc.MainProcess->isValid())
 		{
@@ -334,6 +332,7 @@ namespace AlcatrazUplayR2
 
 		InitExceptionHandler();
 
+		const bool isDriverNGHookConnected = GetModuleHandleA("DriverNGHook.asi") != NULL;
 		if (!isDriverNGHookConnected)
 		{
 			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kRegisterClassAAddr, kRegisterClassAPatchSize);
@@ -351,18 +350,21 @@ namespace AlcatrazUplayR2
 			}
 		}
 
-		HF::Hook::FillMemoryByNOPs(proc.MainProcess, kIRendererLoadGraphicsIniCallAddr, kIRendererLoadGraphicsIniPatchSize);
-		proc.IRendererLoadGraphicsIniHook = HF::Hook::HookFunction<IRendererLoadGraphicsIni_t, kIRendererLoadGraphicsIniPatchSize>(
-			proc.MainProcess,
-			kIRendererLoadGraphicsIniCallAddr,
-			&IRendererLoadGraphicsIni_Hooked,
-			{},
-			{});
-		
-		if (!proc.IRendererLoadGraphicsIniHook->setup())
+		if (config.borderlessWindow)
 		{
-			Fail("Failed to setup patch to IRenderer::LoadGraphicsIni!\n", false);
-			return;
+			HF::Hook::FillMemoryByNOPs(proc.MainProcess, kIRendererLoadGraphicsIniCallAddr, kIRendererLoadGraphicsIniPatchSize);
+			proc.IRendererLoadGraphicsIniHook = HF::Hook::HookFunction<IRendererLoadGraphicsIni_t, kIRendererLoadGraphicsIniPatchSize>(
+				proc.MainProcess,
+				kIRendererLoadGraphicsIniCallAddr,
+				&IRendererLoadGraphicsIni_Hooked,
+				{},
+				{});
+
+			if (!proc.IRendererLoadGraphicsIniHook->setup())
+			{
+				Fail("Failed to setup patch to IRenderer::LoadGraphicsIni!\n", false);
+				return;
+			}
 		}
 
 		//
@@ -399,8 +401,11 @@ namespace AlcatrazUplayR2
 
 		// Patch friends list, limit to 16 for og server
 		// Alcatraz server itself will always send all friends
-		uchar maxFriendsList = 16;
-		proc.MainProcess->writeMemory(kFriendsListPageLimitAddress, sizeof(uchar), &maxFriendsList);
+		// 
+		// NOTE: Disabled since official server is gone.
+		// 
+		// const uchar maxFriendsList = 16;
+		// proc.MainProcess->writeMemory(kFriendsListPageLimitAddress, sizeof(uchar), &maxFriendsList);
 
 		Singleton<HookProcess>::Instance().Set(proc);
 	}

@@ -12,23 +12,26 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppMemberFunctionMayBeStatic
 // ReSharper disable CppParameterMayBeConst
-namespace mg::orbitclient
+namespace mg {
+namespace orbitclient {
+
+using namespace AlcatrazUplayR2;
+
+class UPLAY_CPP_API SavegameWriter
 {
-	using namespace AlcatrazUplayR2;
+	String FilePath;
+	String NamePath;
+	unsigned int SaveId;
 
-	class UPLAY_CPP_API SavegameWriter
-	{
-		String FilePath;
-		String NamePath;
-		unsigned int SaveId;
+public:
+	SavegameWriter();
+	void Close(bool arg);
+	void Write(unsigned int requestId, ISavegameWriteListener* savegameWriteListenerCallBack, void* buff,
+		unsigned int numberOfBytes);
+	bool SetName(unsigned short* name);
+};
 
-	public:
-		SavegameWriter();
-		void Close(bool arg);
-		void Write(unsigned int requestId, ISavegameWriteListener *savegameWriteListenerCallBack, void *buff,
-				   unsigned int numberOfBytes);
-		bool SetName(unsigned short *name);
-	};
+}
 } // namespace mg::orbitclient
 
 //------------------------------------------------------------------------------

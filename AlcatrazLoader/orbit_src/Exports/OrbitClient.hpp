@@ -26,39 +26,41 @@
 // ReSharper disable CppParameterMayBeConst
 // ReSharper disable CppMemberFunctionMayBeConst
 // ReSharper disable CppMemberFunctionMayBeStatic
-namespace mg::orbitclient
+namespace mg {
+namespace orbitclient {
+
+class UPLAY_CPP_API OrbitClient // NOLINT
 {
+	volatile int RequestId;
 
-	class UPLAY_CPP_API OrbitClient // NOLINT
-	{
-		volatile int RequestId;
+public:
+	OrbitClient();
 
-	public:
-		OrbitClient();
+	void StartProcess(unsigned short*, unsigned short*, unsigned short*);
+	bool StartLauncher(unsigned int, unsigned int, char const*, char const*);
 
-		void StartProcess(unsigned short *, unsigned short *, unsigned short *);
-		bool StartLauncher(unsigned int, unsigned int, char const *, char const *);
+	void GetSavegameList(unsigned int requestId, IGetSavegameListListener* savegameListListenerCallBack,
+		unsigned int productId);
+	void GetSavegameWriter(unsigned int requestId, IGetSavegameWriterListener* savegameWriterListenerCallBack,
+		unsigned int productId, unsigned int saveGameId, bool open);
+	void GetSavegameReader(unsigned int requestId, IGetSavegameReaderListener* savegameReaderListenerCallBack,
+		unsigned int productId, unsigned int saveGameId);
+	void RemoveSavegame(unsigned int requestId, IRemoveSavegameListener* removeSavegameListenerCallBack,
+		unsigned int productId, unsigned int saveGameId);
 
-		void GetSavegameList(unsigned int requestId, IGetSavegameListListener *savegameListListenerCallBack,
-							 unsigned int productId);
-		void GetSavegameWriter(unsigned int requestId, IGetSavegameWriterListener *savegameWriterListenerCallBack,
-							   unsigned int productId, unsigned int saveGameId, bool open);
-		void GetSavegameReader(unsigned int requestId, IGetSavegameReaderListener *savegameReaderListenerCallBack,
-							   unsigned int productId, unsigned int saveGameId);
-		void RemoveSavegame(unsigned int requestId, IRemoveSavegameListener *removeSavegameListenerCallBack,
-							unsigned int productId, unsigned int saveGameId);
+	void GetLoginDetails(unsigned int requestId, IGetLoginDetailsListener* loginDetailsListenerCallBack);
+	void GetOrbitServer(unsigned int requestId, IGetOrbitServerListener*, unsigned int, unsigned int);
 
-		void GetLoginDetails(unsigned int requestId, IGetLoginDetailsListener *loginDetailsListenerCallBack);
-		void GetOrbitServer(unsigned int requestId, IGetOrbitServerListener*, unsigned int, unsigned int);
+	unsigned int GetRequestUniqueId();
+	unsigned short* GetInstallationErrorString(char const*);
+	unsigned int GetInstallationErrorNum();
 
-		unsigned int GetRequestUniqueId();
-		unsigned short *GetInstallationErrorString(char const *);
-		unsigned int GetInstallationErrorNum();
+	void Update();
 
-		void Update();
-		
-		~OrbitClient();
-	};
+	~OrbitClient();
+};
+
+}
 } // namespace mg::orbitclient
 
 //------------------------------------------------------------------------------
