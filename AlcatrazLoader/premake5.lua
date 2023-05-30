@@ -93,3 +93,15 @@ project "ubiorbitapi_r2_loader"
 		"orbit_src/**.hpp",
 	}
 	
+project "DFEngine"
+	kind "SharedLib"
+
+	includedirs {
+		"./",
+	}
+
+	files {
+		"noads_src/**.cpp",
+		"noads_src/**.def",
+	}
+	
