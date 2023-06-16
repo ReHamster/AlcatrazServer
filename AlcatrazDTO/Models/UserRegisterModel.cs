@@ -1,4 +1,6 @@
-﻿namespace Alcatraz.DTO.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Alcatraz.DTO.Models
 {
 	public class UserRegisterModel
 	{
@@ -6,6 +8,7 @@
 
 		public string Password { get; set; }
 
+		[MaxLength(14, ErrorMessage = "Nickname can't be longer than 14 characters (sorry)")]
 		public string PlayerNickName { get; set; }
 	}
 }
