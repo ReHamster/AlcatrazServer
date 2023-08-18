@@ -9,6 +9,7 @@ namespace AlcatrazUplayR2
 		Variant dataVariant;
 		bool borderlessWindow = true;
 		bool discordRichPresence = true;
+		bool exceptionHandler = true;
 	};
 
 } // namespace AlcatrazUplayR2

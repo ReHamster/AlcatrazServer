@@ -74,12 +74,16 @@ namespace AlcatrazUplayR2
 
 		const auto& borderlessWindowVariant = configVariant.find("BorderlessWindow");
 		const auto& discordRichPresenceVariant = configVariant.find("DiscordRichPresence");
+		const auto& exceptionHandlerVariant = configVariant.find("ExceptionHandler");
 
 		if (!borderlessWindowVariant->isNull()) {
 			config.borderlessWindow = borderlessWindowVariant->toBool();
 		}
 		if (!discordRichPresenceVariant->isNull()) {
 			config.discordRichPresence = discordRichPresenceVariant->toBool();
+		}
+		if (!exceptionHandlerVariant->isNull()) {
+			config.exceptionHandler = exceptionHandlerVariant->toBool();
 		}
 
 		Singleton<AlcatrazConfig>::Instance().Set(config);
