@@ -330,7 +330,10 @@ namespace AlcatrazUplayR2
 			return;
 		}
 
-		InitExceptionHandler();
+		if(config.exceptionHandler)
+		{
+			InitExceptionHandler();
+		}
 
 		const bool isDriverNGHookConnected = GetModuleHandleA("DriverNGHook.asi") != NULL;
 		if (!isDriverNGHookConnected)
