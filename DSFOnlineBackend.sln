@@ -31,8 +31,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{3947A504-2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlcatrazContext", "AlcatrazDbContext\AlcatrazContext.csproj", "{63237AD4-1792-48B7-B345-884DC51240C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlcatrazLauncher", "AlcatrazLauncher\AlcatrazLauncher.csproj", "{34F92AA5-051B-431D-93FC-21D7EA216B96}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AlcatrazDTO", "AlcatrazDTO\AlcatrazDTO.shproj", "{6AA3E5A0-EB6E-4116-ABC0-860E9C8638F0}"
 EndProject
 Global
@@ -115,14 +113,6 @@ Global
 		{63237AD4-1792-48B7-B345-884DC51240C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{63237AD4-1792-48B7-B345-884DC51240C5}.Release|Win32.ActiveCfg = Release|Any CPU
 		{63237AD4-1792-48B7-B345-884DC51240C5}.Release|Win32.Build.0 = Release|Any CPU
-		{34F92AA5-051B-431D-93FC-21D7EA216B96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{34F92AA5-051B-431D-93FC-21D7EA216B96}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{34F92AA5-051B-431D-93FC-21D7EA216B96}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{34F92AA5-051B-431D-93FC-21D7EA216B96}.Debug|Win32.Build.0 = Debug|Any CPU
-		{34F92AA5-051B-431D-93FC-21D7EA216B96}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{34F92AA5-051B-431D-93FC-21D7EA216B96}.Release|Any CPU.Build.0 = Release|Any CPU
-		{34F92AA5-051B-431D-93FC-21D7EA216B96}.Release|Win32.ActiveCfg = Release|Any CPU
-		{34F92AA5-051B-431D-93FC-21D7EA216B96}.Release|Win32.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -144,7 +134,6 @@ Global
 		SolutionGuid = {38FC8A9A-99E4-4439-8AA8-EF08747AE6AF}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		AlcatrazDTO\AlcatrazDTO.projitems*{34f92aa5-051b-431d-93fc-21d7ea216b96}*SharedItemsImports = 4
 		AlcatrazDTO\AlcatrazDTO.projitems*{40ce0d70-eee5-4e17-bd16-e897f60fb0b5}*SharedItemsImports = 5
 		AlcatrazDTO\AlcatrazDTO.projitems*{490f71d8-04e7-4359-9991-e7a3eb45f474}*SharedItemsImports = 5
 		AlcatrazDTO\AlcatrazDTO.projitems*{6aa3e5a0-eb6e-4116-abc0-860e9c8638f0}*SharedItemsImports = 13
