@@ -22,7 +22,7 @@ namespace DSFServices.Services
 		[RMCMethod(1)]
 		public RMCResult RegisterGathering(AnyData<HermesPartySession> anyGathering)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var playerPid = plInfo.PID;
 
 			if(anyGathering.data != null)
@@ -107,7 +107,7 @@ namespace DSFServices.Services
 		[RMCMethod(5)]
 		public RMCResult Invite(uint idGathering, ICollection<uint> lstPrincipals, string strMessage)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			bool result = false;
 			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 
@@ -160,7 +160,7 @@ namespace DSFServices.Services
 		[RMCMethod(6)]
 		public RMCResult AcceptInvitation(uint idGathering, string strMessage)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			bool result = false;
 			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 			var invitation = InvitationList.FirstOrDefault(x => x.GatheringId == idGathering && x.GuestId == plInfo.PID);
@@ -230,7 +230,7 @@ namespace DSFServices.Services
 		[RMCMethod(7)]
 		public RMCResult DeclineInvitation(uint idGathering, string strMessage)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			bool result = false;
 			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 			var invitation = InvitationList.FirstOrDefault(x => x.GatheringId == idGathering && x.GuestId == plInfo.PID);
@@ -280,7 +280,7 @@ namespace DSFServices.Services
 		[RMCMethod(9)]
 		public RMCResult GetInvitationsSent(uint idGathering)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var myUserPid = plInfo.PID;
 			var list = InvitationList
 				.Where(x => x.GatheringId == idGathering && x.SentById == myUserPid)
@@ -297,7 +297,7 @@ namespace DSFServices.Services
 		[RMCMethod(10)]
 		public RMCResult GetInvitationsReceived()
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var myUserPid = plInfo.PID;
 			var list = InvitationList
 				.Where(x => x.GuestId == myUserPid)
@@ -314,7 +314,7 @@ namespace DSFServices.Services
 		[RMCMethod(11)]
 		public RMCResult Participate(uint idGathering, string strMessage)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			bool result = false;
 			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 
@@ -334,7 +334,7 @@ namespace DSFServices.Services
 		[RMCMethod(12)]
 		public RMCResult CancelParticipation(uint idGathering, string strMessage)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			bool result = false;
 			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == idGathering);
 
@@ -566,7 +566,7 @@ namespace DSFServices.Services
 		[RMCMethod(40)]
 		public RMCResult UpdateSessionHost(uint gid)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var gathering = PartySessions.GatheringList.FirstOrDefault(x => x.Session.m_idMyself == gid);
 
 			if (gathering != null)

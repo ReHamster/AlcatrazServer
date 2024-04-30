@@ -10,7 +10,7 @@ namespace RDVServices.Services
 		[RMCMethod(1)]
 		public RMCResult Log(string strLine)
 		{
-			QLog.WriteLine(1, $"Recieved from PID={Context.Client.Info.PID}: {strLine}");
+			QLog.WriteLine(1, $"Recieved from PID={Context.Client.PlayerInfo.PID}: {strLine}");
 			return Error(0);
 		}
 	}

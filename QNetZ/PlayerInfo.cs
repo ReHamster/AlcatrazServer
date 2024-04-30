@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QNetZ.DDL;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Net;
@@ -26,6 +27,23 @@ namespace QNetZ
 		public string AccountId;
 		public string Name { get; set; }
 
+		public StationURL Url
+		{
+			get
+			{
+				if (Client == null)
+					return null;
+
+				return new StationURL(
+					"prudp",
+					Client.Endpoint.Address.ToString(),
+					new Dictionary<string, int>() {
+						{ "port", Client.Endpoint.Port },
+						{ "RVCID", (int)RVCID },
+						//{ "type", 3 }	// TODO: IsPublic and Behind NAT flags
+					});
+			}
+		}
 		// game - specific stuff comes here
 		public T GetData<T>() where T: class
 		{

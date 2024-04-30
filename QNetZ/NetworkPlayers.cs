@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace QNetZ
 {
@@ -11,22 +11,12 @@ namespace QNetZ
 
 		public static PlayerInfo GetPlayerInfoByPID(uint pid)
 		{
-			foreach (PlayerInfo pl in Players)
-			{
-				if (pl.PID == pid)
-					return pl;
-			}
-			return null;
+			return Players.SingleOrDefault(pl => pl.PID == pid);
 		}
 
 		public static PlayerInfo GetPlayerInfoByUsername(string userName)
 		{
-			foreach (PlayerInfo pl in Players)
-			{
-				if (pl.Name == userName)
-					return pl;
-			}
-			return null;
+			return Players.SingleOrDefault(pl => pl.Name == userName);
 		}
 
 		public static PlayerInfo CreatePlayerInfo(QClient connection)
@@ -47,33 +37,34 @@ namespace QNetZ
 			Players.Clear();
 		}
 
-		public static void DropPlayerInfo(PlayerInfo plInfo)
+		public static void DropPlayerInfo(PlayerInfo playerInfo)
 		{
-			if(plInfo.Client != null)
-			{
-				plInfo.Client.Info = null;
-			}
+			QLog.WriteLine(1, $"dropping player: {playerInfo.Name}");
 
-			plInfo.OnDropped();
-			QLog.WriteLine(1, $"dropping player: {plInfo.Name}");
-			
-			Players.Remove(plInfo);
+			if (playerInfo.Client != null)
+				playerInfo.Client.PlayerInfo = null;
+
+			playerInfo.OnDropped();
+			Players.Remove(playerInfo);
 		}
 
 		public static void DropPlayers()
 		{
-			Players.RemoveAll(plInfo => { 
-				if(plInfo.Client.State == QClient.StateType.Dropped &&
-					(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
-				{
-					plInfo.OnDropped();
-					QLog.WriteLine(1, $"auto-dropping player: {plInfo.Name}");
+			Players.RemoveAll(playerInfo => {
+				if (playerInfo.Client.State != QClient.StateType.Dropped)
+					return false;
 
-					return true;
-				}
-				return false;
+				if (playerInfo.Client.TimeSinceLastPacket < Constants.ClientTimeoutSeconds)
+					return false;
+
+				QLog.WriteLine(1, $"Auto-Dropping player: {playerInfo.Name}");
+
+				if (playerInfo.Client != null)
+					playerInfo.Client.PlayerInfo = null;
+
+				playerInfo.OnDropped();
+				return true;
 			});
-
 		}
 	}
 }

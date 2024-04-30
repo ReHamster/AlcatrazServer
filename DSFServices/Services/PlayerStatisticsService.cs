@@ -1,6 +1,7 @@
 ﻿using Alcatraz.Context.Entities;
 using DSFServices.DDL.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using QNetZ;
 using QNetZ.Attributes;
@@ -28,7 +29,7 @@ namespace DSFServices.Services
 		[RMCMethod(2)]
 		public RMCResult WritePlayerStats(IEnumerable<StatisticWriteWithBoard> playerStats)
 		{
-			var playerId = Context.Client.Info.PID;
+			var playerId = Context.Client.PlayerInfo.PID;
 
 			using (var db = DBHelper.GetDbContext())
 			{
@@ -47,67 +48,95 @@ namespace DSFServices.Services
 					// avoid Client evaluation simply by converting it into int array
 					var propertyIdsOnly = writeBoard.statisticList.Select(ws => (int)ws.propertyId).ToArray();
 
-					var properties = db.PlayerStatisticBoardValues
+					var existingBoardValues = db.PlayerStatisticBoardValues
 						.Where(x => propertyIdsOnly.Contains(x.PropertyId) && x.PlayerBoardId == playerBoard.Id)
 						.ToArray();
 
+					float newBoardScore = 0.0f;
+
 					foreach (var writeStat in writeBoard.statisticList)
 					{
-						var variantJSON = properties.FirstOrDefault(x => x.PropertyId == writeStat.propertyId);
+						var existingVariantJSON = existingBoardValues.FirstOrDefault(x => x.PropertyId == writeStat.propertyId);
 
-						if(variantJSON != null)
+						if(existingVariantJSON != null)
 						{
-							var boardValue = new StatisticsBoardValue()
+							var valueToUpdate = new StatisticsBoardValue()
 							{
-								value = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.ValueJSON),
-								rankingCriterionIndex = (byte)variantJSON.RankingCriterionIndex,
-								scoreLostForNextSlice = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.ScoreLostForNextSliceJSON),
-								sliceScore = JsonConvert.DeserializeObject<StatisticValueVariant>(variantJSON.SliceScoreJSON)
+								value = JsonConvert.DeserializeObject<StatisticValueVariant>(existingVariantJSON.ValueJSON),
+								rankingCriterionIndex = (byte)existingVariantJSON.RankingCriterionIndex,
+								scoreLostForNextSlice = JsonConvert.DeserializeObject<StatisticValueVariant>(existingVariantJSON.ScoreLostForNextSliceJSON),
+								sliceScore = JsonConvert.DeserializeObject<StatisticValueVariant>(existingVariantJSON.SliceScoreJSON)
 							};
 
 							// Update variant value
-							if (boardValue.UpdateValueWithPolicy(writeStat.value, (StatisticPolicy)writeStat.writePolicy))
+							if (valueToUpdate.UpdateValueWithPolicy(writeStat.value, (StatisticPolicy)writeStat.writePolicy))
 							{
 								var statDesc = SeedStatistics.AllStatisticDescriptions.FirstOrDefault(x => x.statBoard == writeBoard.boardId && x.statInBoardId == writeStat.propertyId);
-								QLog.WriteLine(2, $"player {Context.Client.Info.Name} {statDesc.statName} ({writeBoard.boardId}:{writeStat.propertyId}) changed to '{writeStat.value.ToString()}' with policy {(StatisticPolicy)writeStat.writePolicy}");
+								QLog.WriteLine(2, $"player {Context.Client.PlayerInfo.Name} {statDesc.statName} ({writeBoard.boardId}:{writeStat.propertyId}) changed to '{writeStat.value.ToString()}' with policy {(StatisticPolicy)writeStat.writePolicy}");
 							}
 
+							newBoardScore += (float)valueToUpdate.value.GetAsFloat();
+
 							// put back the values
-							variantJSON.RankingCriterionIndex = boardValue.rankingCriterionIndex;
-							variantJSON.ValueJSON = JsonConvert.SerializeObject(boardValue.value);
-							variantJSON.ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(boardValue.scoreLostForNextSlice);
-							variantJSON.SliceScoreJSON = JsonConvert.SerializeObject(boardValue.sliceScore);
+							existingVariantJSON.RankingCriterionIndex = valueToUpdate.rankingCriterionIndex;
+							existingVariantJSON.ValueJSON = JsonConvert.SerializeObject(valueToUpdate.value);
+							existingVariantJSON.ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(valueToUpdate.scoreLostForNextSlice);
+							existingVariantJSON.SliceScoreJSON = JsonConvert.SerializeObject(valueToUpdate.sliceScore);
+
+							continue;
+						}
+
+						QLog.WriteLine(1, $"WARNING: stats property id ({writeBoard.boardId}:{writeStat.propertyId}) was not found, creating new one...");
+
+						var newBoardValue = SeedStatistics.GetStatisticBoardValueByPropertyId(writeBoard.boardId, writeStat.propertyId);
+						if(newBoardValue != null)
+						{
+							newBoardValue.value = writeStat.value;
+
+							var newVariantJSON = new PlayerStatisticsBoardValue()
+							{
+								PropertyId = writeStat.propertyId,
+								RankingCriterionIndex = newBoardValue.rankingCriterionIndex,
+								ValueJSON = JsonConvert.SerializeObject(newBoardValue.value),
+								ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(newBoardValue.scoreLostForNextSlice),
+								SliceScoreJSON = JsonConvert.SerializeObject(newBoardValue.sliceScore)
+							};
+
+							db.PlayerStatisticBoardValues.Add(newVariantJSON);
 						}
 						else
 						{
-							QLog.WriteLine(1, $"WARNING: stats property id ({writeBoard.boardId}:{writeStat.propertyId}) was not found, creating new one...");
-
-							var newBoardValue = SeedStatistics.GetStatisticBoardValueByPropertyId(writeBoard.boardId, writeStat.propertyId);
-							if(newBoardValue != null)
-							{
-								newBoardValue.value = writeStat.value;
-
-								variantJSON = new PlayerStatisticsBoardValue()
-								{
-									PropertyId = writeStat.propertyId,
-									RankingCriterionIndex = newBoardValue.rankingCriterionIndex,
-									ValueJSON = JsonConvert.SerializeObject(newBoardValue.value),
-									ScoreLostForNextSliceJSON = JsonConvert.SerializeObject(newBoardValue.scoreLostForNextSlice),
-									SliceScoreJSON = JsonConvert.SerializeObject(newBoardValue.sliceScore)
-								};
-
-								db.PlayerStatisticBoardValues.Add(variantJSON);
-							}
-							else
-							{
-								QLog.WriteLine(1, $"WARNING: UNKNOWN stats property id ({writeBoard.boardId}:{writeStat.propertyId})");
-							}
+							QLog.WriteLine(1, $"WARNING: UNKNOWN stats property id ({writeBoard.boardId}:{writeStat.propertyId})");
 						}
 					}
 
 					playerBoard.LastUpdate = DateTime.UtcNow;
+					playerBoard.Score = newBoardScore;
+
 					//UpdateBoardScoreAndRank(playerBoard);
+					{
+						// playerBoard.PlayerId
+
+					}
 				}
+				/*
+				// after score is calculated, recalc the rank
+				foreach (var writeBoard in playerStats)
+				{
+					var leaderBoardStat = SeedStatistics.AllStatisticDescriptions.FirstOrDefault(x => x.statBoard == writeBoard.boardId && x.statInBoardId == writeBoard.columnId);
+					if (leaderBoardStat.statRankingOrder == RankingOrder.Ascending)
+						playerStats.Sort((a, b) => (int)(a.scoresByBoard.First().score - b.scoresByBoard.First().score));
+					else
+						playerStats.Sort((a, b) => (int)(b.scoresByBoard.First().score - a.scoresByBoard.First().score));
+
+					var playerBoards = db.PlayerStatisticBoards.Where(x => x.BoardId == writeBoard.boardId).OrderByDescending(x => x.Score);
+
+					var playerBoard = db.PlayerStatisticBoards
+						.FirstOrDefault(x => x.PlayerId == playerId && x.BoardId == writeBoard.boardId);
+
+
+					playerBoard.Rank = db.PlayerStatisticBoards.Where(x => x.BoardId == writeBoard.boardId).Select(x => x.Score).OrderByDescending();
+				}*/
 
 				db.SaveChanges();
 			}
@@ -171,8 +200,6 @@ namespace DSFServices.Services
 							score = playerBoard.Score,
 						};
 
-						
-
 						readBoardValue.scores = playerBoard.Values.Where(x => statReqData.propertyIds.Contains(x.PropertyId)).Select(x => new StatisticReadValue()
 						{
 							propertyId = (byte)x.PropertyId,
@@ -205,8 +232,6 @@ namespace DSFServices.Services
 
 			var playerStats = new List<ScoreListRead>();
 			uint playersTotal = 0;
-
-			var leaderBoardStat = SeedStatistics.AllStatisticDescriptions.FirstOrDefault(x => x.statBoard == boardId && x.statInBoardId == columnId);
 
 			using (var db = DBHelper.GetDbContext())
             {
@@ -270,6 +295,7 @@ namespace DSFServices.Services
 					}
 				}
 
+				var leaderBoardStat = SeedStatistics.AllStatisticDescriptions.FirstOrDefault(x => x.statBoard == boardId && x.statInBoardId == columnId);
 				if (leaderBoardStat.statRankingOrder == RankingOrder.Ascending)
 					playerStats.Sort((a, b) => (int)(a.scoresByBoard.First().score - b.scoresByBoard.First().score));
 				else

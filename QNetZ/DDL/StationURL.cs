@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace QNetZ.DDL
 {
 	public class StationURL : IAnyData
 	{
-		public string _urlString;	// cached string
-	
+		public string _urlString;   // cached string
+
 		public string _urlScheme;
 		public string _address;
 		private Dictionary<string, int> _parameters;
@@ -35,9 +34,9 @@ namespace QNetZ.DDL
 			_urlScheme = scheme;
 			_address = address;
 
-			if(parameters != null)
+			if (parameters != null)
 			{
-				foreach(var key in parameters.Keys)
+				foreach (var key in parameters.Keys)
 				{
 					_parameters.TryAdd(key, parameters[key]);
 				}
@@ -50,7 +49,7 @@ namespace QNetZ.DDL
 			{
 				BuildUrlString();
 				return _urlString;
-			} 
+			}
 			set
 			{
 
@@ -73,10 +72,26 @@ namespace QNetZ.DDL
 			}
 		}
 
-		public string UrlScheme { get => _urlScheme; set{ _urlScheme = value; _dirty = true; } }  // "prudp" or "prudps"
+		public string UrlScheme { get => _urlScheme; set { _urlScheme = value; _dirty = true; } }  // "prudp" or "prudps"
 
 		public string Address { get => _address; set { _address = value; _dirty = true; } }
 		public Dictionary<string, int> Parameters { get => _parameters; set { _parameters = value; _dirty = true; } }
+
+		public bool IsPublic {
+			get {
+				int type = 0;
+				_parameters.TryGetValue("type", out type);
+				return (type & 2) != 0; 
+			}
+		}
+		public bool IsBehindNAT {
+			get {
+				int type = 0;
+				_parameters.TryGetValue("type", out type);
+				return (type & 1) != 0; 
+			}
+		}
+		public bool IsGlobal { get => IsPublic && IsBehindNAT; }
 
 		void BuildUrlString()
 		{
@@ -149,6 +164,33 @@ namespace QNetZ.DDL
 		public void Write(Stream s)
 		{
 			Helper.WriteString(s, urlString);
+		}
+
+		public bool Compare(StationURL otherUrl, IEnumerable<string> compareParameters = null)
+		{
+			if(otherUrl == null)
+				return false;
+
+			if (_urlScheme != otherUrl._urlScheme)
+				return false;
+
+			if (_address != otherUrl._address)
+				return false;
+
+			if (compareParameters == null)
+				return true;
+
+			foreach (var paramName in compareParameters)
+			{
+				int param = 0;
+				int otherParam = 0;
+				if(_parameters.TryGetValue(paramName, out param) && otherUrl._parameters.TryGetValue(paramName, out otherParam))
+				{
+					if (param != otherParam)
+						return false;
+				}
+			}
+			return true;
 		}
 	}
 }

@@ -30,7 +30,7 @@ namespace DSFServices.Services
 			int unlockFlags = 0;
 			using (var db = DBHelper.GetDbContext())
             {
-				var curPlayerId = Context.Client.Info.PID;
+				var curPlayerId = Context.Client.PlayerInfo.PID;
 				var curPlayer = db.Users.FirstOrDefault(x => x.Id == curPlayerId);
 				if(curPlayer != null)
                 {
@@ -66,7 +66,7 @@ namespace DSFServices.Services
 
 			using (var db = DBHelper.GetDbContext())
 			{
-				var curPlayerId = Context.Client.Info.PID;
+				var curPlayerId = Context.Client.PlayerInfo.PID;
 				var curPlayer = db.Users.FirstOrDefault(x => x.Id == curPlayerId);
 				if (curPlayer != null)
 				{

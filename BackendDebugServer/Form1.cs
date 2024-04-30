@@ -146,7 +146,7 @@ namespace BackendDebugServer
 					Name = x.Name,
 					RVCID = x.RVCID,
 					PartyId = x.GameData().CurrentGatheringId,
-					SesID = x.GameData().CurrentSessionID
+					SesID = x.GameData().CurrentSession != null ? x.GameData().CurrentSession.m_sessionID : uint.MaxValue
 				});
 			}
 			oldPlayerCount = NetworkPlayers.Players.Count;

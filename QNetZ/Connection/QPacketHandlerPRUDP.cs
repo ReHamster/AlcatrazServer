@@ -98,17 +98,17 @@ namespace QNetZ
 			if (playerInfo == null)
 			{
 				QLog.WriteLine(1, $"User pid={userPrincipalID} seem to be dropped but connect was received");
-				return new byte[0];
+				return [];
 			}
 
 			// drop player in case when of new account but same address
-			if (client.Info != null)
+			if (client.PlayerInfo != null)
 			{
-				NetworkPlayers.DropPlayerInfo(client.Info);
+				NetworkPlayers.DropPlayerInfo(client.PlayerInfo);
 			}
 
 			playerInfo.Client = client;
-			client.Info = playerInfo;
+			client.PlayerInfo = playerInfo;
 
 			uint responseCode = Helper.ReadU32(m);
 
@@ -164,7 +164,7 @@ namespace QNetZ
 			np.m_oSourceVPort = p.m_oDestinationVPort;
 			np.m_oDestinationVPort = p.m_oSourceVPort;
 			np.m_uiSignature = client.IDsend;
-			np.payload = new byte[0];
+			np.payload = [];
 			np.payloadSize = 0;
 			return np;
 		}
@@ -184,7 +184,7 @@ namespace QNetZ
 			int numFragments = 0;
 
 			if (stream.Length > Constants.PacketFragmentMaxSize)
-				newPacket.flags.AddRange(new[] { QPacket.PACKETFLAG.FLAG_HAS_SIZE });
+				newPacket.flags.AddRange([QPacket.PACKETFLAG.FLAG_HAS_SIZE]);
 
 			newPacket.uiSeqId = client.SeqCounterOut;
 			newPacket.m_byPartNumber = 1;
@@ -384,7 +384,7 @@ namespace QNetZ
 			{
 				var client = Clients[i];
 				if (client.State == QClient.StateType.Dropped ||
-					(DateTime.UtcNow - client.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+					client.TimeSinceLastPacket > Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(2, $"[{SourceName}] dropping client: 0x{client.IDsend.ToString("X8")}");
 					client.State = QClient.StateType.Dropped;
@@ -430,14 +430,14 @@ namespace QNetZ
 		{
 			foreach (var c in Clients)
 			{
-				if (c.Info == null)
+				if (c.PlayerInfo == null)
 					continue;
 
 				// also check if timed out
-				if ((DateTime.UtcNow - c.LastPacketTime).TotalSeconds > Constants.ClientTimeoutSeconds)
+				if (c.TimeSinceLastPacket > Constants.ClientTimeoutSeconds)
 					continue;
 
-				if (c.Info.PID == userPID)
+				if (c.PlayerInfo.PID == userPID)
 					return c;
 			}
 
