@@ -146,6 +146,19 @@ namespace DSFServices.Services
 			var plInfo = Context.Client.PlayerInfo;
 			var myUserPid = plInfo.PID;
 
+			// remove relationship from database
+			using (var db = DBHelper.GetDbContext())
+			{
+				var existringRequest = db.UserRelationships
+					.FirstOrDefault(x => x.User1Id == myUserPid && x.User2Id == uiPlayer ||
+										 x.User1Id == uiPlayer && x.User2Id == myUserPid);
+				if(existringRequest != null)
+				{
+					db.UserRelationships.Remove(existringRequest);
+					db.SaveChanges();
+				}
+			}
+
 			// send notification
 			var notification = new NotificationEvent(NotificationEventsType.FriendEvent, 0)
 			{
