@@ -171,21 +171,24 @@ namespace QNetZ
 				return null;
 			}
 
-			// delete all invalid messages
-			CachedResponses.RemoveAll(x =>
-				x.SrcPacket == null ||
-				x.SrcPacket.m_oSourceVPort == null ||
-				x.SrcPacket.m_oDestinationVPort == null);
+			lock (CachedResponses)
+			{
+				// delete all invalid messages
+				CachedResponses.RemoveAll(x =>
+					x.SrcPacket == null ||
+					x.SrcPacket.m_oSourceVPort == null ||
+					x.SrcPacket.m_oDestinationVPort == null);
 
-			return CachedResponses.FirstOrDefault(cr =>
-					cr.SrcPacket.type == packet.type &&
-					cr.SrcPacket.m_uiSignature == packet.m_uiSignature &&
-					cr.SrcPacket.m_oSourceVPort.type == packet.m_oSourceVPort.type &&
-					cr.SrcPacket.m_oSourceVPort.port == packet.m_oSourceVPort.port &&
-					cr.SrcPacket.m_oDestinationVPort.type == packet.m_oDestinationVPort.type &&
-					cr.SrcPacket.m_oDestinationVPort.port == packet.m_oDestinationVPort.port &&
-					cr.SrcPacket.uiSeqId == packet.uiSeqId &&
-					cr.SrcPacket.checkSum == packet.checkSum);
+				return CachedResponses.FirstOrDefault(cr =>
+						cr.SrcPacket.type == packet.type &&
+						cr.SrcPacket.m_uiSignature == packet.m_uiSignature &&
+						cr.SrcPacket.m_oSourceVPort.type == packet.m_oSourceVPort.type &&
+						cr.SrcPacket.m_oSourceVPort.port == packet.m_oSourceVPort.port &&
+						cr.SrcPacket.m_oDestinationVPort.type == packet.m_oDestinationVPort.type &&
+						cr.SrcPacket.m_oDestinationVPort.port == packet.m_oDestinationVPort.port &&
+						cr.SrcPacket.uiSeqId == packet.uiSeqId &&
+						cr.SrcPacket.checkSum == packet.checkSum);
+			}
 		}
 
 		// Caches the response which is going to be sent
@@ -205,8 +208,11 @@ namespace QNetZ
 			var cache = GetCachedResponseByRequestPacket(requestPacket);
 			if (cache == null)
 			{
-				cache = new QReliableResponse(requestPacket, ep);
-				CachedResponses.Add(cache);
+				lock (CachedResponses)
+				{
+					cache = new QReliableResponse(requestPacket, ep);
+					CachedResponses.Add(cache);
+				}
 			}
 			else
 			{
@@ -238,11 +244,12 @@ namespace QNetZ
 
 		private void CheckResendPackets()
 		{
-			var reliableResend = new List<QReliableResponse>();
-			CachedResponses.RemoveAll(x => x.SrcPacket == null);
-			reliableResend.AddRange(CachedResponses.Where(x => DateTime.UtcNow >= x.ResendTime));
-			CachedResponses.RemoveAll(x => DateTime.UtcNow >= x.DropTime);
-
+			QReliableResponse[] reliableResend;
+			lock (CachedResponses)
+			{
+				reliableResend = CachedResponses.Where(x => x.SrcPacket != null && DateTime.UtcNow >= x.ResendTime).ToArray();
+				CachedResponses.RemoveAll(x => x.SrcPacket == null || DateTime.UtcNow >= x.DropTime);
+			}
 			foreach (var crp in reliableResend)
 				RetrySend(crp);
 		}
