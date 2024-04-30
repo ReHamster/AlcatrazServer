@@ -17,14 +17,6 @@ namespace RDVServices.Services
 	[RMCService(RMCProtocolId.TicketGrantingService)]
 	public class TicketGrantingService : RMCServiceBase
 	{
-		private byte[] ticket = new byte[] {
-			0x76, 0x21, 0x4B, 0xA6, 0x21, 0x96, 0xD3, 0xF3, 0x9A,
-			0x8C, 0x7A, 0x27, 0x0D, 0xD9, 0xB3, 0xFA, 0x21, 0x0E,
-			0xED, 0xAF, 0x42, 0x63, 0x92, 0x95, 0xC1, 0x16, 0x54,
-			0x08, 0xEE, 0x6E, 0x69, 0x17, 0x35, 0x78, 0x2E, 0x6E
-		};
-
-
 		[RMCMethod(1)]
 		public RMCResult Login(string userName)
 		{
@@ -42,52 +34,61 @@ namespace RDVServices.Services
 					{ "type", 2 }	// Public, not BehindNAT
 				});
 
-			var user = DBHelper.GetUserByName(userName);
+			PlayerInfo playerInfo = null;
 
-			if (user != null)
+			if (userName == "guest" || userName == "Tracking")
 			{
-				// var trackingLoginData = "01 00 01 00 69 00 00 00 4C 00 00 00 99 39 C6 CB 93 13 50 8C 0B 02 C2 0B BC E4 94 6E B8 57 D0 15 A7 A1 AB 03 57 3F C1 69 F6 8E DC 55 0A A3 72 61 81 37 EB 6C A5 0C A2 C2 66 D5 B0 C6 23 15 E5 99 5A 3C 1F EC F7 90 55 2F 33 1E B7 C1 05 52 41 83 A0 1E 3F E8 18 02 7B 3B 4A 00 70 72 75 64 70 73 3A 2F 61 64 64 72 65 73 73 3D 31 38 35 2E 33 38 2E 32 31 2E 38 33 3B 70 6F 72 74 3D 32 31 30 30 36 3B 43 49 44 3D 31 3B 50 49 44 3D 32 3B 73 69 64 3D 31 3B 73 74 72 65 61 6D 3D 33 3B 74 79 70 65 3D 32 00 00 00 00 00 01 00 00 01 00 00";
-				// 
-				// var m = new MemoryStream(Helper.ParseByteArray(trackingLoginData));
-				// 
-				// var retModel = DDLSerializer.ReadObject<Login>(m);
+				QLog.WriteLine(1, $"User login request {userName}");
+
+				// TODO: do not create player info for Tracking
+
+				playerInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
+				if (userName == "Tracking")
+					playerInfo.PID = 0;
+				else if (userName == "guest")
+					playerInfo.PID = 100;
+
+				playerInfo.AccountId = userName;
+				playerInfo.Name = userName;
+			}
+			else
+			{
+				var user = DBHelper.GetUserByName(userName);
+				if (user == null)
+					return Error((int)ErrorCode.RendezVous_InvalidUsername);
 
 				// create tracking client info
-				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
+				playerInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
-				if (plInfo != null &&
-					!plInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
-					plInfo.Client.TimeSinceLastPacket < Constants.ClientTimeoutSeconds)
+				if (playerInfo != null &&
+					!playerInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
+					playerInfo.Client.TimeSinceLastPacket < Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
-					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
+					return Error((int)ErrorCode.RendezVous_ConcurrentLoginDenied);
 				}
 
 				QLog.WriteLine(1, $"User login request {userName}");
 
-				plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
-
-				plInfo.PID = user.Id;
-				plInfo.AccountId = user.Username;
-				plInfo.Name = user.Username;
-
-				var kerberos = new KerberosTicket(plInfo.PID, Context.Client.sPID, Constants.SessionKey, ticket);
-
-				var reply = new Login(plInfo.PID)
-				{
-					retVal = (int)RMCErrorCode.Core_NoError,
-					pConnectionData = new RVConnectionData()
-					{
-						m_urlRegularProtocols = rdvConnectionString,
-					},
-					strReturnMsg = "",
-					pbufResponse = kerberos.toBuffer()
-				};
-
-				return Result(reply);
+				playerInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
+				playerInfo.PID = user.Id;
+				playerInfo.AccountId = user.Username;
+				playerInfo.Name = user.Username;
 			}
 
-			return Error((int)RMCErrorCode.RendezVous_InvalidUsername);
+			var kerberos = new KerberosTicket(playerInfo.PID, Context.Client.sPID, Constants.SessionKey, Constants.TicketData);
+			var reply = new Login(playerInfo.PID)
+			{
+				retVal = (int)ErrorCode.Core_NoError,
+				pConnectionData = new RVConnectionData()
+				{
+					m_urlRegularProtocols = rdvConnectionString,
+				},
+				strReturnMsg = "",
+				pbufResponse = kerberos.ToBuffer(Constants.NetZJadePassword)
+			};
+
+			return Result(reply);
 #endif
 			return Error(0);
 		}
@@ -148,7 +149,6 @@ namespace RDVServices.Services
 					{
 						passwordCheckResult = false;
 					}
-
 					
 					if (passwordCheckResult)
 					{
@@ -185,12 +185,11 @@ namespace RDVServices.Services
 				else
 				{
 					playerInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
-
 					playerInfo.PID = user.Id;
 					playerInfo.AccountId = userName;
 					playerInfo.Name = oExtraData.data.username;
 
-					var kerberos = new KerberosTicket(playerInfo.PID, Context.Client.sPID, Constants.SessionKey, ticket);
+					var kerberos = new KerberosTicket(playerInfo.PID, Context.Client.sPID, Constants.SessionKey, Constants.TicketData);
 
 					var loginData = new Login(playerInfo.PID)
 					{
@@ -200,7 +199,7 @@ namespace RDVServices.Services
 							m_urlRegularProtocols = rdvConnectionString
 						},
 						strReturnMsg = "",
-						pbufResponse = kerberos.toBuffer()
+						pbufResponse = kerberos.ToBuffer(Constants.UbiDummyPassword)
 					};
 
 					return Result(loginData);
@@ -217,12 +216,18 @@ namespace RDVServices.Services
 		[RMCMethod(3)]
 		public RMCResult RequestTicket(uint sourcePID, uint targetPID)
 		{
-			var kerberos = new KerberosTicket(sourcePID, targetPID, Constants.SessionKey, ticket);
+			string ticketKey = Constants.UbiDummyPassword;
+			if (sourcePID == 0)
+				ticketKey = Constants.NetZJadePassword;
+			else if (sourcePID == 100)
+				ticketKey = Constants.NetZGuestPassword;
+
+			var kerberos = new KerberosTicket(sourcePID, targetPID, Constants.SessionKey, Constants.TicketData);
 
 			var ticketData = new TicketData()
 			{
 				retVal = (int)ErrorCode.Core_NoError,
-				pbufResponse = kerberos.toBuffer()
+				pbufResponse = kerberos.ToBuffer(ticketKey)
 			};
 
 			return Result(ticketData);
