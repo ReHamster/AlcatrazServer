@@ -22,7 +22,7 @@ namespace DSFServices.Services
 		[RMCMethod(1)]
 		public RMCResult CreateSession(GameSession gameSession)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var newSession = new GameSessionData();
 			GameSessions.SessionList.Add(newSession);
 
@@ -106,65 +106,60 @@ namespace DSFServices.Services
 			var oldSession = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID &&
 									 x.TypeID == gameSessionKey.m_typeID);
-
-			var gameSessionKeyMigrated = new GameSessionKey();
-
-			if (oldSession != null)
-			{
-				var plInfo = Context.Client.Info;
-				var newSession = new GameSessionData();
-				GameSessions.SessionList.Add(newSession);
-
-				newSession.Id = ++GameSessionCounter;
-				newSession.HostPID = plInfo.PID;
-				newSession.TypeID = oldSession.TypeID;
-
-				// ????
-				// "notification": {
-				// 	"m_pidSource": 539625,
-				// 	"m_uiType": 7001,
-				// 	"m_uiParam1": 31,
-				// 	"m_uiParam2": 30,
-				// 	"m_strParam": "",
-				// 	"m_uiParam3": 1
-				//   }
-				
-				// move all participants too
-				foreach (var pid in oldSession.PublicParticipants)
-				{
-					var participantPlInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
-
-					if(participantPlInfo != null)
-						participantPlInfo.GameData().CurrentSessionID = newSession.Id;
-				}
-
-				foreach (var pid in oldSession.Participants)
-				{
-					var participantPlInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
-
-					if (participantPlInfo != null)
-						participantPlInfo.GameData().CurrentSessionID = newSession.Id;
-				}
-
-				newSession.Participants = oldSession.Participants;
-				newSession.PublicParticipants = oldSession.PublicParticipants;
-
-				foreach (var attr in oldSession.Attributes)
-					newSession.Attributes[attr.Key] = attr.Value;
-
-				gameSessionKeyMigrated.m_sessionID = newSession.Id;
-				gameSessionKeyMigrated.m_typeID = newSession.TypeID;
-
-				// drop old session
-				QLog.WriteLine(1, $"MigrateSession - Auto-deleted session {oldSession.Id}");
-				GameSessions.SessionList.Remove(oldSession);
-			}
-			else
+			if (oldSession == null)
 			{
 				QLog.WriteLine(1, $"Error : GameSessionService.MigrateSession - no session with id={gameSessionKey.m_sessionID}");
+				return Result(new GameSessionKey());
 			}
 
-			return Result(gameSessionKeyMigrated);
+			// ????
+			// "notification": {
+			// 	"m_pidSource": 539625,
+			// 	"m_uiType": 7001,
+			// 	"m_uiParam1": 31,
+			// 	"m_uiParam2": 30,
+			// 	"m_strParam": "",
+			// 	"m_uiParam3": 1
+			//   }
+
+			var newSession = new GameSessionData();
+			GameSessions.SessionList.Add(newSession);
+
+			newSession.Id = ++GameSessionCounter;
+			newSession.HostPID =  Context.Client.PlayerInfo.PID;
+			newSession.TypeID = oldSession.TypeID;
+			newSession.Participants = oldSession.Participants;
+			newSession.PublicParticipants = oldSession.PublicParticipants;
+
+			foreach (var attr in oldSession.Attributes)
+				newSession.Attributes[attr.Key] = attr.Value;
+
+			var newSessionKey = new GameSessionKey();
+			newSessionKey.m_sessionID = newSession.Id;
+			newSessionKey.m_typeID = newSession.TypeID;
+
+			// move all participants (change session key)
+			foreach (var pid in oldSession.PublicParticipants)
+			{
+				var participantPlayerInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
+
+				if (participantPlayerInfo != null)
+					participantPlayerInfo.GameData().CurrentSession = newSessionKey;
+			}
+
+			foreach (var pid in oldSession.Participants)
+			{
+				var participantPlayerInfo = NetworkPlayers.GetPlayerInfoByPID(pid);
+
+				if (participantPlayerInfo != null)
+					participantPlayerInfo.GameData().CurrentSession = newSessionKey;
+			}
+
+			// drop old session
+			QLog.WriteLine(1, $"MigrateSession - Auto-deleted session {oldSession.Id}");
+			GameSessions.SessionList.Remove(oldSession);
+
+			return Result(newSessionKey);
 		}
 
 
@@ -172,8 +167,8 @@ namespace DSFServices.Services
 		public RMCResult LeaveSession(GameSessionKey gameSessionKey)
 		{
 			// Same as AbandonSession
-			var plInfo = Context.Client.Info;
-			var myPlayerId = plInfo.PID;
+			var playerInfo = Context.Client.PlayerInfo;
+			var myPlayerId = playerInfo.PID;
 			var session = GameSessions.SessionList
 				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
 									 x.TypeID == gameSessionKey.m_typeID);
@@ -201,8 +196,8 @@ namespace DSFServices.Services
 					{
 						var leaveNotification = new NotificationEvent(NotificationEventsType.GameSessionEvent, 4)
 						{
-							m_pidSource = plInfo.PID,
-							m_uiParam1 = plInfo.PID,
+							m_pidSource = playerInfo.PID,
+							m_uiParam1 = playerInfo.PID,
 							m_uiParam2 = session.Id,
 							m_strParam = "",
 							m_uiParam3 = session.TypeID
@@ -212,7 +207,7 @@ namespace DSFServices.Services
 					}
 				}
 
-				GameSessions.UpdateSessionParticipation(plInfo, uint.MaxValue, uint.MaxValue, false);
+				GameSessions.UpdateSessionParticipation(playerInfo, null, false);
 			}
 			else
 			{
@@ -298,9 +293,7 @@ namespace DSFServices.Services
 		[RMCMethod(8)]
 		public RMCResult AddParticipants(GameSessionKey gameSessionKey, IEnumerable<uint> publicParticipantIDs, IEnumerable<uint> privateParticipantIDs)
 		{
-			var session = GameSessions.SessionList
-				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID && 
-									 x.TypeID == gameSessionKey.m_typeID);
+			var session = GameSessions.SessionList.FirstOrDefault(x => x.IsMatchingKey(gameSessionKey));
 
 			if(session != null)
 			{
@@ -311,7 +304,7 @@ namespace DSFServices.Services
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
 					{
-						GameSessions.UpdateSessionParticipation(player, session.Id, session.TypeID, false);
+						GameSessions.UpdateSessionParticipation(player, gameSessionKey, false);
 					}
 				}
 
@@ -322,7 +315,7 @@ namespace DSFServices.Services
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
 					{
-						GameSessions.UpdateSessionParticipation(player, session.Id, session.TypeID, true);
+						GameSessions.UpdateSessionParticipation(player, gameSessionKey, true);
 					}
 				}
 
@@ -341,9 +334,7 @@ namespace DSFServices.Services
 		[RMCMethod(9)]
 		public RMCResult RemoveParticipants(GameSessionKey gameSessionKey, IEnumerable<uint> participantIDs)
 		{
-			var session = GameSessions.SessionList
-				.FirstOrDefault(x => x.Id == gameSessionKey.m_sessionID &&
-									 x.TypeID == gameSessionKey.m_typeID);
+			var session = GameSessions.SessionList.FirstOrDefault(x => x.IsMatchingKey(gameSessionKey));
 
 			if (session != null)
 			{
@@ -364,15 +355,12 @@ namespace DSFServices.Services
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
 					{
-						GameSessions.UpdateSessionParticipation(player, uint.MaxValue, uint.MaxValue, false);
+						GameSessions.UpdateSessionParticipation(player, null, false);
 					}
-					else
+					else if (GameSessions.RemovePlayerFromSession(session, pid))
 					{
-						if (GameSessions.RemovePlayerFromSession(session, pid))
-						{
-							QLog.WriteLine(1, $"RemoveParticipants - Auto-deleted session {session.Id}");
-							GameSessions.SessionList.Remove(session);
-						}
+						QLog.WriteLine(1, $"RemoveParticipants - Auto-deleted session {session.Id}");
+						GameSessions.SessionList.Remove(session);
 					}
 				}
 
@@ -381,15 +369,12 @@ namespace DSFServices.Services
 					var player = NetworkPlayers.GetPlayerInfoByPID(pid);
 					if (player != null)
 					{
-						GameSessions.UpdateSessionParticipation(player, uint.MaxValue, uint.MaxValue, true);
+						GameSessions.UpdateSessionParticipation(player, null, false);
 					}
-					else
+					else if (GameSessions.RemovePlayerFromSession(session, pid))
 					{
-						if (GameSessions.RemovePlayerFromSession(session, pid))
-						{
-							QLog.WriteLine(1, $"RemoveParticipants - Auto-deleted session {session.Id}");
-							GameSessions.SessionList.Remove(session);
-						}
+						QLog.WriteLine(1, $"RemoveParticipants - Auto-deleted session {session.Id}");
+						GameSessions.SessionList.Remove(session);
 					}
 				}
 
@@ -486,7 +471,7 @@ namespace DSFServices.Services
 		[RMCMethod(21)]
 		public RMCResult RegisterURLs(IEnumerable<StationURL> stationURLs)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var myPlayerId = plInfo.PID;
 			var session = GameSessions.SessionList.FirstOrDefault(x => x.HostPID == myPlayerId);
 

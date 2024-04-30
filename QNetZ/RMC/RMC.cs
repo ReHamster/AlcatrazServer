@@ -189,13 +189,13 @@ namespace QNetZ
 
 		private static void WriteLog(QClient client, int priority, Func<string> resolve)
         {
-			var unknwnClientName = client.Info != null ? client.Info.Name : "<unkClient>";
+			var unknwnClientName = client.PlayerInfo != null ? client.PlayerInfo.Name : "<unkClient>";
 			QLog.WriteLine(priority, () => $"[RMC] ({unknwnClientName}) {resolve.Invoke()}"); 
 		}
 
 		private static void WriteLog(QClient client, int priority, string s)
 		{
-			var unknwnClientName = client.Info != null ? client.Info.Name : "<unkClient>";
+			var unknwnClientName = client.PlayerInfo != null ? client.PlayerInfo.Name : "<unkClient>";
 			QLog.WriteLine(priority, $"[RMC] ({unknwnClientName}) {s}");
 		}
 	}

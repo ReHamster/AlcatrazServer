@@ -28,7 +28,7 @@ namespace DSFServices.Services
 		public RMCResult AddFriendByName(string strPlayerName, uint uiDetails, string strMessage)
 		{
 			bool result = false;
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var myUserPid = plInfo.PID;
 
 			using (var db = DBHelper.GetDbContext())
@@ -96,7 +96,7 @@ namespace DSFServices.Services
 		public RMCResult AcceptFriendship(uint uiPlayer)
 		{
 			bool result = false;
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var myUserPid = plInfo.PID;
 
 			using (var db = DBHelper.GetDbContext())
@@ -143,7 +143,7 @@ namespace DSFServices.Services
 		[RMCMethod(6)]
 		public RMCResult DeclineFriendship(uint uiPlayer)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var myUserPid = plInfo.PID;
 
 			// send notification
@@ -181,7 +181,7 @@ namespace DSFServices.Services
 		public RMCResult ClearRelationship(uint uiPlayer)
 		{
 			bool result = false;
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var myUserPid = plInfo.PID;
 
 			using (var db = DBHelper.GetDbContext())
@@ -268,7 +268,7 @@ namespace DSFServices.Services
 
 			var result = new RelationshipsResult();
 
-			var myUserPid = Context.Client.Info.PID;
+			var myUserPid = Context.Client.PlayerInfo.PID;
 			using (var db = DBHelper.GetDbContext())
 			{
 				var relations = db.UserRelationships

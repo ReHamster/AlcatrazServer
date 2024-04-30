@@ -31,7 +31,7 @@ namespace DSFServices.Services
 					{
 						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 0)
 						{
-							m_pidSource = Context.Client.Info.PID,
+							m_pidSource = Context.Client.PlayerInfo.PID,
 							m_uiParam1 = toJoinId,
 							m_uiParam2 = gameType,
 							m_strParam = $"NetZHost:{msgRequest}",
@@ -66,7 +66,7 @@ namespace DSFServices.Services
 			{
 				var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 1)
 				{
-					m_pidSource = Context.Client.Info.PID,
+					m_pidSource = Context.Client.PlayerInfo.PID,
 					m_uiParam1 = toJoinId,
 					m_uiParam2 = gameType,
 					m_strParam = $"NetZHost:{msgRequest}",
@@ -95,7 +95,7 @@ namespace DSFServices.Services
 					{
 						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 2)
 						{
-							m_pidSource = Context.Client.Info.PID,
+							m_pidSource = Context.Client.PlayerInfo.PID,
 							m_uiParam1 = 0,
 							m_uiParam2 = 0,
 							m_strParam = "NotifyPartyToLeaveGame",
@@ -157,7 +157,7 @@ namespace DSFServices.Services
 					{
 						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 4)
 						{
-							m_pidSource = Context.Client.Info.PID,
+							m_pidSource = Context.Client.PlayerInfo.PID,
 							m_uiParam1 = (uint)param1,
 							m_uiParam2 = (uint)param2,
 							m_strParam = "PartyLeaderNetZIsValid",
@@ -206,7 +206,7 @@ namespace DSFServices.Services
 					{
 						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 7)
 						{
-							m_pidSource = Context.Client.Info.PID,
+							m_pidSource = Context.Client.PlayerInfo.PID,
 							m_uiParam1 = fromParty,
 							m_uiParam2 = (uint)nbPlayers,
 							m_strParam = $"MM:{toMatchmaking}|",
@@ -259,7 +259,7 @@ namespace DSFServices.Services
 						NotificationEvent notification;
 						notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 8)
 						{
-							m_pidSource = Context.Client.Info.PID,
+							m_pidSource = Context.Client.PlayerInfo.PID,
 							m_uiParam1 = fromMatchmaking,
 							m_uiParam2 = (uint)approved,
 							m_strParam = "ResponseMatchmaking",
@@ -293,7 +293,7 @@ namespace DSFServices.Services
 					{
 						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 3)
 						{
-							m_pidSource = Context.Client.Info.PID,
+							m_pidSource = Context.Client.PlayerInfo.PID,
 							m_uiParam1 = gid,
 							m_uiParam2 = pid,
 							m_strParam = packedSessions,
@@ -335,7 +335,7 @@ namespace DSFServices.Services
 					{
 						var notification = new NotificationEvent(NotificationEventsType.HermesPartySession, 6)
 						{
-							m_pidSource = Context.Client.Info.PID,
+							m_pidSource = Context.Client.PlayerInfo.PID,
 							m_uiParam1 = pid,
 							m_uiParam2 = gameType,
 							m_strParam = "",
@@ -364,7 +364,7 @@ namespace DSFServices.Services
 				foreach (var participantPid in gathering.Participants)
 				{
 					// don't send back the notification
-					if (participantPid == Context.Client.Info.PID)
+					if (participantPid == Context.Client.PlayerInfo.PID)
 						continue;
 
 					var qclient = Context.Handler.GetQClientByClientPID(participantPid);
@@ -374,7 +374,7 @@ namespace DSFServices.Services
 						NotificationEvent notification;
 						notification = new NotificationEvent(NotificationEventsType.PartyJoinMatchmaking, 0)
 						{
-							m_pidSource = Context.Client.Info.PID,
+							m_pidSource = Context.Client.PlayerInfo.PID,
 							m_uiParam1 = pid,
 							m_uiParam2 = (uint)(joinSuccess ? 1 : 0),
 							m_strParam = "JoinMatchmakingStatus",

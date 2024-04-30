@@ -39,7 +39,7 @@ namespace RDVServices.Services
 					{ "PID", (int)Context.Client.sPID },
 					{ "sid", 1 },
 					{ "stream", 3 },
-					{ "type", 2 }
+					{ "type", 2 }	// Public, not BehindNAT
 				});
 
 			var user = DBHelper.GetUserByName(userName);
@@ -57,7 +57,7 @@ namespace RDVServices.Services
 
 				if (plInfo != null &&
 					!plInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
-					(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
+					plInfo.Client.TimeSinceLastPacket < Constants.ClientTimeoutSeconds)
 				{
 					QLog.WriteLine(1, $"User login request {userName} DENIED - concurrent login!");
 					return Error((int)RMCErrorCode.RendezVous_ConcurrentLoginDenied);
@@ -110,27 +110,27 @@ namespace RDVServices.Services
 					{ "PID", (int)Context.Client.sPID },
 					{ "sid", 1 },
 					{ "stream", 3 },
-					{ "type", 2 }
+					{ "type", 2 }	// Public, not BehindNAT
 				});
 
 			if (oExtraData.data != null)
 			{
 				ErrorCode loginCode = ErrorCode.Core_NoError;
 
-				var plInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
+				var playerInfo = NetworkPlayers.GetPlayerInfoByUsername(userName);
 
-				if(plInfo != null)
+				if(playerInfo != null)
 				{
-					if (plInfo.Client != null &&
-						!plInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
-						(DateTime.UtcNow - plInfo.Client.LastPacketTime).TotalSeconds < Constants.ClientTimeoutSeconds)
+					if (playerInfo.Client != null &&
+						!playerInfo.Client.Endpoint.Equals(Context.Client.Endpoint) &&
+						playerInfo.Client.TimeSinceLastPacket < Constants.ClientTimeoutSeconds)
 					{
 						QLog.WriteLine(1, $"User login request {userName} - concurrent login!");
 						loginCode = ErrorCode.RendezVous_ConcurrentLoginDenied;
 					}
 					else
 					{
-						NetworkPlayers.DropPlayerInfo(plInfo);
+						NetworkPlayers.DropPlayerInfo(playerInfo);
 					}
 				}
 
@@ -184,15 +184,15 @@ namespace RDVServices.Services
 				}
 				else
 				{
-					plInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
+					playerInfo = NetworkPlayers.CreatePlayerInfo(Context.Client);
 
-					plInfo.PID = user.Id;
-					plInfo.AccountId = userName;
-					plInfo.Name = oExtraData.data.username;
+					playerInfo.PID = user.Id;
+					playerInfo.AccountId = userName;
+					playerInfo.Name = oExtraData.data.username;
 
-					var kerberos = new KerberosTicket(plInfo.PID, Context.Client.sPID, Constants.SessionKey, ticket);
+					var kerberos = new KerberosTicket(playerInfo.PID, Context.Client.sPID, Constants.SessionKey, ticket);
 
-					var loginData = new Login(plInfo.PID)
+					var loginData = new Login(playerInfo.PID)
 					{
 						retVal = (uint)loginCode,
 						pConnectionData = new RVConnectionData()

@@ -25,7 +25,7 @@ namespace RDVServices.Services
 
 			var result = new RegisterResult()
 			{
-				pidConnectionID = Context.Client.Info.RVCID,
+				pidConnectionID = Context.Client.PlayerInfo.RVCID,
 				retval = (int)ErrorCode.Core_NoError,
 				urlPublic = rdvConnectionUrl
 			};
@@ -57,7 +57,7 @@ namespace RDVServices.Services
 
 				var result = new RegisterResult()
 				{
-					pidConnectionID = Context.Client.Info.RVCID,
+					pidConnectionID = Context.Client.PlayerInfo.RVCID,
 					retval = (int)ErrorCode.Core_NoError,
 					urlPublic = rdvConnectionUrl
 				};

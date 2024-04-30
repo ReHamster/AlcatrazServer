@@ -16,10 +16,10 @@ namespace DSFServices.Services
 		[RMCMethod(1)]
 		public RMCResult SetPresence(int phraseId, qBuffer argument)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var presence = plInfo.GameData().CurrentPresence;
 
-			//QLog.WriteLine(1, $"Presence set to {phraseId}, {argument.data}");
+			QLog.WriteLine(2, $"Presence set to {phraseId}, {Convert.ToHexString(argument.data)}");
 
 			if(presence == null)
 			{

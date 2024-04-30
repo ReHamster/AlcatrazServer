@@ -17,7 +17,7 @@ namespace DSFServices.Services
 		[RMCMethod(8)]
 		public RMCResult GetNewsHeaders(NewsRecipient recipient, uint offset, uint size)
 		{
-			var plInfo = Context.Client.Info;
+			var plInfo = Context.Client.PlayerInfo;
 			var random = new Random();
 
 			var funNews = new List<string>{

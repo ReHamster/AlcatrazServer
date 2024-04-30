@@ -30,7 +30,7 @@ namespace RDVServices.Services
 						thisClient.Endpoint.Address.ToString(), 
 						new Dictionary<string, int>() {
 							{ "port", thisClient.Endpoint.Port },
-							{ "RVCID", (int)thisClient.Info.RVCID }
+							{ "RVCID", (int)thisClient.PlayerInfo.RVCID }
 						});
 
 					SendRMCCall(qclient, RMCProtocolId.NATTraversalService, 2, thisClientURL);

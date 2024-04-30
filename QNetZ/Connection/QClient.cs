@@ -1,4 +1,6 @@
-﻿using System;
+﻿using QNetZ.DDL;
+using System;
+using System.Collections.Generic;
 using System.Net;
 
 namespace QNetZ
@@ -37,6 +39,14 @@ namespace QNetZ
 		public ushort SeqCounterOut;
 		public uint CallCounterRMC;
 
-		public PlayerInfo Info;      // unique player info instance
+		public PlayerInfo PlayerInfo;      // unique player info instance
+
+		public double TimeSinceLastPacket
+		{
+			get
+			{
+				return (DateTime.UtcNow - LastPacketTime).TotalSeconds;
+			}
+		}
 	}
 }

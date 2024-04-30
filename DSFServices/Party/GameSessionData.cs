@@ -20,53 +20,49 @@ namespace DSFServices
 			session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
 			session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
 
-			if (session.PublicParticipants.Count == 0 && session.Participants.Count == 0)
-			{
-				return true;
-			}
-
-			return false;
+			return (session.TotalParticipantCount == 0);
 		}
 
-		public static void AddPlayerToSession(GameSessionData session, uint principalId, bool isPrivate)
+		public static void UpdateSessionParticipation(PlayerInfo playerInfo, GameSessionKey newSessionKey, bool privateSlot)
 		{
-			if (isPrivate)
-				session.Participants.Add(principalId);
-			else
-				session.PublicParticipants.Add(principalId);
+			// delete player from old sessions
+			var participatingSessions = SessionList.Where(x =>
+				x.Participants.Contains(playerInfo.PID) &&
+				x.PublicParticipants.Contains(playerInfo.PID) &&
+				newSessionKey != null ? !x.IsMatchingKey(newSessionKey) : true
+			);
 
-			session.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)session.PublicParticipants.Count;
-			session.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)session.Participants.Count;
-		}
-
-		public static void UpdateSessionParticipation(PlayerInfo player, uint newSessionId, uint newSessionTypeId, bool isPrivate)
-		{
-			var oldSessionId = player.GameData().CurrentSessionID;
-			var oldSessionTypeId = player.GameData().CurrentSessionTypeID;
-
-			if (oldSessionId == newSessionId)
-				return;
-
-			// set new participation
-			player.GameData().CurrentSessionID = newSessionId;
-			player.GameData().CurrentSessionTypeID = newSessionTypeId;
-
-			var newSession = SessionList.FirstOrDefault(x => x.Id == newSessionId && x.TypeID == newSessionTypeId);
-			if (newSession != null)
+			foreach (var session in participatingSessions)
 			{
-				AddPlayerToSession(newSession, player.PID, isPrivate);
+				session.HostURLs.RemoveAll(x => x.Compare(playerInfo.Url));
+				RemovePlayerFromSession(session, playerInfo.PID);
 			}
 
-			// remove participation from old session
-			var oldSession = SessionList.FirstOrDefault(x => x.Id == oldSessionId && x.TypeID == oldSessionTypeId);
-			if (oldSession != null)
+			if(newSessionKey != null)
 			{
-				if (RemovePlayerFromSession(oldSession, player.PID))
+				var newSession = SessionList.FirstOrDefault(x => x.IsMatchingKey(newSessionKey));
+				if (newSession != null)
 				{
-					QLog.WriteLine(1, $"UpdateSessionParticipation - Auto-deleted session {oldSession.Id}");
-					SessionList.Remove(oldSession);
+					if (privateSlot)
+						newSession.Participants.Add(playerInfo.PID);
+					else
+						newSession.PublicParticipants.Add(playerInfo.PID);
+
+					newSession.Attributes[(uint)GameSessionAttributeType.FilledPublicSlots] = (uint)newSession.PublicParticipants.Count;
+					newSession.Attributes[(uint)GameSessionAttributeType.FilledPrivateSlots] = (uint)newSession.Participants.Count;
 				}
 			}
+
+			// delete all outdated empty sessions
+			SessionList.RemoveAll(gathering => {
+				if (gathering.TotalParticipantCount > 0)
+					return false;
+
+				QLog.WriteLine(1, $"UpdateSessionParticipation: Auto-deleted session {gathering.Id}");
+				return true;
+			});
+
+			playerInfo.GameData().CurrentSession = newSessionKey;
 		}
 	}
 
@@ -80,21 +76,21 @@ namespace DSFServices
 			PublicParticipants = new HashSet<uint>();
 		}
 
-		public uint Id { get; set; }
+		public bool IsMatchingKey(GameSessionKey other)
+		{
+			return Id.Equals(other.m_sessionID) && TypeID.Equals(other.m_typeID);
+		}
 
+		public uint Id { get; set; }
 		public uint TypeID { get; set; }
+
 		public Dictionary<uint, uint> Attributes { get; set; }
 		public uint HostPID { get; set; }
 		public List<StationURL> HostURLs { get; set; }
-		public HashSet<uint> Participants { get; set; }     // ID, Private
-		public HashSet<uint> PublicParticipants { get; set; }     // ID, Public
+		public HashSet<uint> Participants { get; set; }			// ID, Private
+		public HashSet<uint> PublicParticipants { get; set; }   // ID, Public
 
-		public uint[] AllParticipants
-		{
-			get
-			{
-				return Participants.Concat(PublicParticipants).ToArray();
-			}
-		}
+		public int TotalParticipantCount { get => Participants.Count + PublicParticipants.Count; }
+		public uint[] AllParticipants { get => Participants.Concat(PublicParticipants).ToArray(); }
 	}
 }

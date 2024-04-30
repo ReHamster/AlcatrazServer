@@ -10,34 +10,37 @@ namespace DSFServices
 	{
 		public static List<PartySessionGathering> GatheringList = new List<PartySessionGathering>();
 
-		public static void UpdateGatheringParticipation(PlayerInfo player, uint newGatheringId)
+		/// <summary>
+		/// Removes player from all gatherings (except new one) and adds him to new one
+		/// </summary>
+		/// <param name="playerInfo"></param>
+		/// <param name="newGatheringId"></param>
+		public static void UpdateGatheringParticipation(PlayerInfo playerInfo, uint newGatheringId)
 		{
-			var oldGatheringId = player.GameData().CurrentGatheringId;
-
-			if (oldGatheringId == newGatheringId)
-				return;
-
-			// remove participation from old gathering
-			var oldGathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == oldGatheringId);
-			if (oldGathering != null)
+			// remove this participant from all gatherings
+			// except new one and remove station urls associated
+			var oldGatherings = GatheringList.Where(x => x.Participants.Contains(playerInfo.PID) && x.Session.m_idMyself != newGatheringId).ToArray();			
+			foreach (var gathering in oldGatherings)
 			{
-				oldGathering.Participants.Remove(player.PID);
-
-				if (oldGathering.Participants.Count == 0)
-				{
-					QLog.WriteLine(1, $"Auto-deleted gathering {oldGatheringId}");
-					GatheringList.Remove(oldGathering);
-				}
+				gathering.Urls.RemoveAll(x => x.Compare(playerInfo.Url));
+				gathering.Participants.Remove(playerInfo.PID);
 			}
 
-			// set new participation
-			player.GameData().CurrentGatheringId = newGatheringId;
+			// add player to new gathering if he isn't there yet
+			var newGathering = GatheringList.SingleOrDefault(x => x.Session.m_idMyself == newGatheringId);
+			if(newGathering != null && !newGathering.Participants.Contains(playerInfo.PID))
+				newGathering.Participants.Add(playerInfo.PID);
 
-			var newGathering = GatheringList.FirstOrDefault(x => x.Session.m_idMyself == newGatheringId);
-			if (newGathering != null)
-			{
-				newGathering.Participants.Add(player.PID);
-			}
+			// delete all outdated empty gatherings
+			GatheringList.RemoveAll(gathering => {
+				if (gathering.Participants.Count > 0)
+					return false;
+
+				QLog.WriteLine(1, $"Auto-deleted gathering {gathering.Session.m_idMyself}");
+				return true;
+			});
+
+			playerInfo.GameData().CurrentGatheringId = newGatheringId;
 		}
 	}
 
