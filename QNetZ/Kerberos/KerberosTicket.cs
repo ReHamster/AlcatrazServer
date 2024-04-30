@@ -1,9 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace QNetZ
 {
@@ -27,7 +23,7 @@ namespace QNetZ
 			// TODO: decrypt the token
 		}
 
-		public byte[] toBuffer()
+		public byte[] ToBuffer(string deriveKey)
 		{
 			MemoryStream m = new MemoryStream();
 			m.Write(sessionKey, 0, 16);
@@ -38,7 +34,7 @@ namespace QNetZ
 			m.Write(ticket, 0, ticket.Length);
 
 			byte[] buff = m.ToArray();
-			byte[] key = Helper.DeriveKey(userPID);
+			byte[] key = Helper.DeriveKey(userPID, deriveKey);
 			buff = Helper.Encrypt(key, buff);
 
 			byte[] hmac = Helper.MakeHMAC(key, buff);

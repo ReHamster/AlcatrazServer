@@ -293,7 +293,7 @@ namespace QNetZ
 			s[j] = c;
 		}
 
-		public static byte[] DeriveKey(uint pid, string input = "UbiDummyPwd")
+		public static byte[] DeriveKey(uint pid, string input)
 		{
 			uint count = 65000 + (pid % 1024);
 			MD5 md5 = MD5.Create();
