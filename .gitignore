@@ -17,3 +17,4 @@ _RESEARCH/*
 Docker/server/publish/*
 Docker/init-letsencrypt.sh
 data/database.sqlite
+_publish/*
