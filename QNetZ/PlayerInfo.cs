@@ -15,6 +15,9 @@ namespace QNetZ
 
 		public void OnDropped()
 		{
+			if (Client != null)
+				Client.PlayerInfo = null;
+
 			foreach (var ds in DataStore.Values)
 				ds.OnDropped();
 		}

@@ -41,9 +41,6 @@ namespace QNetZ
 		{
 			QLog.WriteLine(1, $"dropping player: {playerInfo.Name}");
 
-			if (playerInfo.Client != null)
-				playerInfo.Client.PlayerInfo = null;
-
 			playerInfo.OnDropped();
 			Players.Remove(playerInfo);
 		}
@@ -51,17 +48,16 @@ namespace QNetZ
 		public static void DropPlayers()
 		{
 			Players.RemoveAll(playerInfo => {
-				if (playerInfo.Client.State != QClient.StateType.Dropped)
-					return false;
+				if(playerInfo.Client != null)
+				{
+					if (playerInfo.Client.State != QClient.StateType.Dropped)
+						return false;
 
-				if (playerInfo.Client.TimeSinceLastPacket < Constants.ClientTimeoutSeconds)
-					return false;
+					if (playerInfo.Client.TimeSinceLastPacket < Constants.ClientTimeoutSeconds)
+						return false;
+				}
 
 				QLog.WriteLine(1, $"Auto-Dropping player: {playerInfo.Name}");
-
-				if (playerInfo.Client != null)
-					playerInfo.Client.PlayerInfo = null;
-
 				playerInfo.OnDropped();
 				return true;
 			});
