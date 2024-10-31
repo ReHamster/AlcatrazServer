@@ -219,7 +219,10 @@ namespace QNetZ
 				QLog.WriteLine(10, "[QPacketReliable] Found cached request");
 			}
 
-			cache.ResponseList.Add(new QPacketState(responsePacket));
+			lock (cache.ResponseList)
+			{
+				cache.ResponseList.Add(new QPacketState(responsePacket));
+			}
 			return true;
 		}
 
