@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -84,6 +86,9 @@ namespace Alcatraz.GameServices
 		{
 			// update database if haven't
 			dbContext.Database.Migrate();
+
+			// if db context was used during migrations, send changes after all migrations done
+			dbContext.SaveChanges();
 
 			// global cors policy
 			app.UseCors(x => x

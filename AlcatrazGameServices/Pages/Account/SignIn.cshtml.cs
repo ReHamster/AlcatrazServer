@@ -41,7 +41,7 @@ namespace Alcatraz.GameServices.Pages.Account
 				return Page();
 			}
 
-			var response = _userService.Authenticate(AuthModel, true);
+			var response = _userService.Authenticate(AuthModel);
 			if (response != null)
 			{
 				var user = _userService.GetById(response.Id);

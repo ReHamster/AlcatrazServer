@@ -143,7 +143,7 @@ namespace RDVServices.Services
 					try
 					{
 						var hashPassword = $"{user.Id}-{user.PlayerNickName}";
-						passwordCheckResult = oExtraData.data.password == user.Password || SecurePasswordHasher.Verify(hashPassword, oExtraData.data.password);
+						passwordCheckResult = SecurePasswordHasher.Verify(hashPassword, oExtraData.data.password);
 					}
 					catch(Exception _)
 					{

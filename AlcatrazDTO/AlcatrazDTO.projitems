@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SecurePasswordHasher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\StringHasher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AlcatrazClientConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AuthenticateRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AuthenticateResponse.cs" />
@@ -19,8 +20,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\OnlineConfigEntry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\UserModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\UserRegisterModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Helpers\" />
   </ItemGroup>
 </Project>

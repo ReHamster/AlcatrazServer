@@ -17,7 +17,7 @@ namespace Alcatraz.GameServices.Services
 {
 	public interface IUserService
 	{
-		AuthenticateResponse Authenticate(AuthenticateRequest model, bool simplePasswordCheck);
+		AuthenticateResponse Authenticate(AuthenticateRequest model);
 		ResultModel Register(UserRegisterModel model);
 		ResultModel Update(UserModel model);
 		ResultModel ChangePassword(uint userId, string newPassword);
@@ -40,7 +40,7 @@ namespace Alcatraz.GameServices.Services
 			_dbContext = dbContext;
 		}
 
-		public AuthenticateResponse Authenticate(AuthenticateRequest model, bool simplePasswordCheck)
+		public AuthenticateResponse Authenticate(AuthenticateRequest model)
 		{
 			var user = _dbContext.Users
 				.AsNoTracking()
@@ -50,18 +50,9 @@ namespace Alcatraz.GameServices.Services
 			if (user == null) 
 				return null;
 
-			if(simplePasswordCheck)
+			if(!SecurePasswordHasher.Verify($"{user.Id}-{model.Password}", user.Password))
 			{
-				if (user.Password != model.Password)
-					return null;
-			}
-			else
-			{
-				var hashPassword = $"{user.Id}-{user.PlayerNickName}";
-				if (!SecurePasswordHasher.Verify(hashPassword, model.Password))
-				{
-					return null;
-				}
+				return null;
 			}
 
 			var userModel = new UserModel
@@ -122,7 +113,7 @@ namespace Alcatraz.GameServices.Services
 			{
 				Username = model.Username,
 				PlayerNickName = model.PlayerNickName,
-				Password = model.Password,
+				Password = "tmp",
 			};
 
 			if(!_dbContext.Users.Any())
@@ -150,6 +141,12 @@ namespace Alcatraz.GameServices.Services
 			catch
 			{
 				return new ResultModel("Unable to add user (internal error)");
+			}
+
+			// update password as user Id is acquired
+			{
+				newUser.Password = SecurePasswordHasher.Hash($"{newUser.Id}-{model.Password}");
+				_dbContext.SaveChanges();
 			}
 
 			return new ResultModel(newUser.Id);
@@ -202,7 +199,7 @@ namespace Alcatraz.GameServices.Services
 
 			try
 			{
-				user.Password = newPassword;
+				user.Password = SecurePasswordHasher.Hash($"{user.Id}-{newPassword}");
 				_dbContext.SaveChanges();
 			}
 			catch
