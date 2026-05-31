@@ -59,17 +59,17 @@ namespace BackendDebugServer
 					// use non-blocking recieve
 					if (CurrentRecvTask != null)
 					{
-						if (CurrentRecvTask.IsCompleted)
-						{
-							var result = CurrentRecvTask.Result;
-							CurrentRecvTask = null;
-							packetHandler.ProcessPacket(result.Buffer, result.RemoteEndPoint);
-						}
-						else if (CurrentRecvTask.IsCanceled || CurrentRecvTask.IsFaulted)
+						if (CurrentRecvTask.IsCanceled || CurrentRecvTask.IsFaulted)
 						{
 							CurrentRecvTask = null;
 						}
-					}
+                        else if (CurrentRecvTask.IsCompleted)
+                        {
+                            var result = CurrentRecvTask.Result;
+                            CurrentRecvTask = null;
+                            packetHandler.ProcessPacket(result.Buffer, result.RemoteEndPoint);
+                        }
+                    }
 
 					if (CurrentRecvTask == null)
 						CurrentRecvTask = listener.ReceiveAsync();
@@ -79,7 +79,8 @@ namespace BackendDebugServer
 				catch (Exception ex)
 				{
 					WriteLog(1, "error - exception occured! " + ex.Message);
-				}
+					CurrentRecvTask = null;
+                }
 			}
 
 			WriteLog(1, "Server stopped");
