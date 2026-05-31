@@ -15,7 +15,7 @@ namespace BackendDebugServer
         public static readonly object _sync = new object();
         public static bool _exit = false;
         private static TcpListener listener;
-        private static ushort listenPort = 80;
+        private static ushort listenPort = 5000;
 
         public static void Start()
         {
