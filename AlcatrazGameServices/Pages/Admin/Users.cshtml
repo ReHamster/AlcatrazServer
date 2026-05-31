@@ -47,8 +47,8 @@
                 <td>
                     @if (user.Id != Model.CurrentUser.Id)
                     {
-                        <a class="btn btn-primary" href="@Url.Action("ResetUserPassword", "Users", new { id = user.Id })">Reset Password</a>
-                        <a class="btn btn-danger" href="@Url.Action("Delete", "Users", new { id = user.Id })">Delete</a>
+                        <a class="btn btn-primary" href="@Url.Action("Users", new { action = "resetPassword", id = user.Id })">Reset Password</a>
+                        <a class="btn btn-danger" href="@Url.Action("Users", new { action = "delete", id = user.Id })">Delete</a>
                     }
                 </td>
             </tr>

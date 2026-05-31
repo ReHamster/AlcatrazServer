@@ -296,15 +296,15 @@ namespace DSFServices.Services
 				// do not show sent pending relationships
 				relations = relations.Where(x => !(x.ByRelationShip == 3 && x.User1Id == myUserPid));
 
-				//var relationsPage = relations.Skip(offset).Take(size).ToList();   // DO NOT apply pagination, it doesn't even work
+				//var relationsPage = relations.OrderBy(x => x.Id).Skip(offset).Take(size).ToList();   // DO NOT apply pagination, it doesn't even work
 
 				// prefer players that currently online
 				// TODO: make a preference in Web UI
-				if(result.uiTotalCount > 16)
-                {
+				if (result.uiTotalCount > 16)
+				{
 					relations = relations.Where(x => onlinePlayerIds.Contains((x.User1Id == myUserPid) ? x.User2Id : x.User1Id));
 					if(relations.Count() == 0)
-                    {
+					{
 						result.lstRelationshipsList = new List<RelationshipData>()
 						{
 							new RelationshipData()

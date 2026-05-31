@@ -53,7 +53,7 @@ namespace Alcatraz.GameServices.Pages.Admin
 			NumRegisteredUsers = _dbContext.Users.Count();
 			NumPages = (usersRequest.Count() / pageSize) + 1;
 
-			var usersPage = usersRequest.Skip((p-1) * pageSize).Take(pageSize).ToArray();
+			var usersPage = usersRequest.OrderBy(x => x.Id).Skip((p-1) * pageSize).Take(pageSize).ToArray();
 
 			UsersOnPage = usersPage.Select(x => new UserModel
 			{
@@ -68,7 +68,7 @@ namespace Alcatraz.GameServices.Pages.Admin
 			return Page();
 		}
 
-		public async Task<IActionResult> OnPost()
+		public async Task<IActionResult> OnPostResetPassword(uint userId)
 		{
 			return Page();
 		}

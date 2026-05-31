@@ -60,7 +60,7 @@ namespace Alcatraz.GameServices.Pages
 			NumPlayersOnline = QNetZ.NetworkPlayers.Players.Count;
 			NumPages = (usersRequest.Count() / pageSize) + 1;
 
-			var usersPage = usersRequest.Skip((p-1) * pageSize).Take(pageSize).ToArray();
+			var usersPage = usersRequest.OrderBy(x => x.Id).Skip((p-1) * pageSize).Take(pageSize).ToArray();
 
 			var selectedStatistics = new string[]
 			{
