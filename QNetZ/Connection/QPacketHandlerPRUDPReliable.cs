@@ -228,12 +228,11 @@ namespace QNetZ
 
 		private void RetrySend(QReliableResponse cache)
 		{
-			QLog.WriteLine(5, "Re-sending reliable packets...");
-
 			int minResendTimes = 0;
 			lock(cache.ResponseList)
-			{
-				foreach (var crp in cache.ResponseList)
+            {
+                QLog.WriteLine(5, $"Retry send {cache.ResponseList.Count} reliable packets...");
+                foreach (var crp in cache.ResponseList)
 				{
 					var data = crp.Packet.toBuffer();
 					UDP.Send(data, data.Length, cache.Endpoint);
@@ -251,8 +250,11 @@ namespace QNetZ
 			lock (CachedResponses)
 			{
 				reliableResend = CachedResponses.Where(x => x.SrcPacket != null && DateTime.UtcNow >= x.ResendTime).ToArray();
-				CachedResponses.RemoveAll(x => x.SrcPacket == null || DateTime.UtcNow >= x.DropTime);
-			}
+				int droppedPackets = CachedResponses.RemoveAll(x => x.SrcPacket == null || DateTime.UtcNow >= x.DropTime);
+
+				if(droppedPackets > 0)
+					QLog.WriteLine(5, $"Dropped {droppedPackets} reliable packets");
+            }
 			foreach (var crp in reliableResend)
 				RetrySend(crp);
 		}
