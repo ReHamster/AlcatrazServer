@@ -29,7 +29,10 @@ namespace DSFServices.Services
 				var path = Path.Combine(QConfiguration.Instance.ServerFilesPath, name);
 
 				if (!File.Exists(path))
+				{
+					QLog.WriteLine(1, $"ERROR: server file {name} not found, game may fail to connect");
 					continue;
+				}
 
 				var fi = new FileInfo(path);
 
@@ -39,6 +42,7 @@ namespace DSFServices.Services
 					m_size = (uint)fi.Length
 				});
 			}
+
 
 			return Result(fileList);
 		}
