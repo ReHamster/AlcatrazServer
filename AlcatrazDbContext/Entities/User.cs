@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace Alcatraz.Context.Entities
 {
@@ -10,6 +11,10 @@ namespace Alcatraz.Context.Entities
 		public string PlayerNickName { get; set; }
 		[JsonIgnore]
 		public string Password { get; set; }
-        public int RewardFlags { get; set; }
-    }
+		public int RewardFlags { get; set; }
+		public DateTime CreatedTime { get; set; }
+		public DateTime LastUpdateTime { get; set; }
+		public DateTime LastPlayTime { get; set; }
+		public bool IsAdmin { get; set; }
+	}
 }

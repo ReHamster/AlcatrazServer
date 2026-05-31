@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 
 namespace Alcatraz.GameServices.Pages.Account
 {
-    public class SignInModel : PageModel
-    {
+	public class SignInModel : PageModel
+	{
 		[BindProperty]
 		public AuthenticateRequest AuthModel { get; set; }
 
@@ -57,7 +57,7 @@ namespace Alcatraz.GameServices.Pages.Account
 				else
 					ErrorMessage = "Username or Password is invalid";
 
-				return RedirectToPage(ReturnUrl ?? "/Account/Manage");
+				return RedirectToPage(ReturnUrl ?? PageConstants.AccountManageUrl);
 			}
 
 			ErrorMessage = "Username or Password is invalid";

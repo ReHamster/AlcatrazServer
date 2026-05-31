@@ -19,7 +19,7 @@ namespace Alcatraz.GameServices.Pages.Account
 
 	[BindProperties(SupportsGet = true)]
 	public class SignUpModel : PageModel
-    {
+	{
 		[BindProperty]
 		public UserRegisterExtModel RegisterModel { get; set; }
 
@@ -29,7 +29,7 @@ namespace Alcatraz.GameServices.Pages.Account
 
 		public SignUpModel(IUserService userService)
 		{
-            _userService = userService;
+			_userService = userService;
 		}
 
 		public void OnGet()
@@ -37,8 +37,8 @@ namespace Alcatraz.GameServices.Pages.Account
 			RegisterModel = new UserRegisterExtModel();
 		}
 
-        public async Task<IActionResult> OnPost()
-        {
+		public async Task<IActionResult> OnPost()
+		{
 			if (!ModelState.IsValid)
 			{
 				ErrorMessage = "Username or Password is invalid";
@@ -52,7 +52,7 @@ namespace Alcatraz.GameServices.Pages.Account
 			}
 
 			var result = _userService.Register(RegisterModel);
-            if(result.Success)
+			if(result.Success)
 			{
 				var user = _userService.GetById(result.Id);
 
@@ -64,13 +64,13 @@ namespace Alcatraz.GameServices.Pages.Account
 
 					await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-					return RedirectToPage("/Account/Manage");
+					return RedirectToPage(PageConstants.AccountManageUrl);
 				}
 			}
 
-            ErrorMessage = result.ErrorMessage;
+			ErrorMessage = result.ErrorMessage;
 
 			return Page();
 		}
-    }
+	}
 }

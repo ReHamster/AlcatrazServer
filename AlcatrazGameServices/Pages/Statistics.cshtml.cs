@@ -1,19 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Alcatraz.Context;
 using Alcatraz.Context.Entities;
 using DSFServices.DDL.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Alcatraz.GameServices.Pages
 {
-    public class StatisticsModel : PageModel
-    {
+	public class StatisticsModel : PageModel
+	{
 		public class PlayerStat
 		{
 			public string PlayerNickname { get; set; }
@@ -49,16 +47,20 @@ namespace Alcatraz.GameServices.Pages
 		}
 
 		public void OnGet(int p = 1, string search = "")
-        {
+		{
 			SearchStats = search;
 			CurPage = p;
 
-			var usersRequest = _dbContext.Users.Where(x => string.IsNullOrWhiteSpace(SearchStats) ? true : x.PlayerNickName.Contains(SearchStats));
+			var usersRequest = _dbContext.Users
+				.Where(x => !x.IsAdmin)
+				.Where(x => string.IsNullOrWhiteSpace(SearchStats) ? true : EF.Functions.Like(x.PlayerNickName, $"%{SearchStats}%"));
 
 			int pageSize = 10;
 			NumRegisteredUsers = _dbContext.Users.Count();
 			NumPlayersOnline = QNetZ.NetworkPlayers.Players.Count;
 			NumPages = (usersRequest.Count() / pageSize) + 1;
+
+			var usersPage = usersRequest.Skip((p-1) * pageSize).Take(pageSize).ToArray();
 
 			var selectedStatistics = new string[]
 			{
@@ -71,8 +73,6 @@ namespace Alcatraz.GameServices.Pages
 			var statXP = statistics.FirstOrDefault(x => x.statName == selectedStatistics[0]);
 			var statMP_LEVEL = statistics.FirstOrDefault(x => x.statName == selectedStatistics[1]);
 			var statOverall_Wins = statistics.FirstOrDefault(x => x.statName == selectedStatistics[2]);
-
-			var usersPage = usersRequest.Skip((p-1) * pageSize).Take(pageSize).ToArray();
 
 			var userIds = usersPage.Select(x => x.Id).ToArray();
 			var statIds = statistics.Select(x => x.statInBoardId).ToArray();
@@ -100,5 +100,5 @@ namespace Alcatraz.GameServices.Pages
 				};
 			});
 		}
-    }
+	}
 }

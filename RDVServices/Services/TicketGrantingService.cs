@@ -189,6 +189,8 @@ namespace RDVServices.Services
 					playerInfo.AccountId = userName;
 					playerInfo.Name = oExtraData.data.username;
 
+					DBHelper.UpdateUserPlayTime(user);
+
 					var kerberos = new KerberosTicket(playerInfo.PID, Context.Client.sPID, Constants.SessionKey, Constants.TicketData);
 
 					var loginData = new Login(playerInfo.PID)

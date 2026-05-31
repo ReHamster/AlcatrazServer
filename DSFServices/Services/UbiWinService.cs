@@ -146,7 +146,7 @@ namespace DSFServices.Services
             {
 				m_completed = true,
 				m_platformCode = platformCode,
-				m_specificKey = ""
+				m_specificKey = "ACTION_KEY",
 			});
 
 			return Result(unlockedAction);
@@ -155,6 +155,7 @@ namespace DSFServices.Services
 		[RMCMethod(9)]
 		public RMCResult SetActionsCompleted(IEnumerable<string> actionCodeList, string cultureName, string platformCode)
 		{
+			UNIMPLEMENTED();
 			var actionList = new List<UplayAction>();
 			return Result(actionList);
 		}

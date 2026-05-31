@@ -1,18 +1,14 @@
 using Alcatraz.Context;
 using Alcatraz.GameServices.Helpers;
 using Alcatraz.GameServices.Services;
-using DSFServices;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using QNetZ;
 
 namespace Alcatraz.GameServices
@@ -32,8 +28,6 @@ namespace Alcatraz.GameServices
 			// configure strongly typed settings object
 			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 			services.Configure<QConfiguration>(Configuration.GetSection("Services"));
-
-			var secOpts = Configuration.GetSection("Services").Get<QConfiguration>();
 
 			services.AddCors();
 			services.AddControllers();
@@ -65,9 +59,9 @@ namespace Alcatraz.GameServices
 					};
 					options.Cookie.Name = "AuthToken";
 				});
-
-			services.AddSwaggerGen();
-
+#if DEBUG
+            services.AddSwaggerGen();
+#endif
 			// register user service
 			services.AddScoped<IUserService, UserService>();
 
@@ -75,7 +69,8 @@ namespace Alcatraz.GameServices
 			services.AddSingleton<IHostedService, BackendServicesServer>();
 			services.AddSingleton<IHostedService, RendezVousServer>();
 
-			services.AddDbContext<MainDbContext>(opt =>
+            var secOpts = Configuration.GetSection("Services").Get<QConfiguration>();
+            services.AddDbContext<MainDbContext>(opt =>
 			{
 				MainDbContext.OnContextBuilding(opt, (DBType)secOpts.DbType, secOpts.DbConnectionString);
 			});
@@ -101,6 +96,7 @@ namespace Alcatraz.GameServices
 				app.UseDeveloperExceptionPage();
 			}
 
+#if DEBUG
 			// Enable middleware to serve generated Swagger as a JSON endpoint.
 			app.UseSwagger();
 
@@ -110,7 +106,7 @@ namespace Alcatraz.GameServices
 			{
 				c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
 			});
-
+#endif
 
 			app.UseRouting();
 

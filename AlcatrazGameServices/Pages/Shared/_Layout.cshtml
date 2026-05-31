@@ -1,4 +1,5 @@
-﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor Accessor
+﻿@using Alcatraz.GameServices.Pages
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor Accessor
 @{
     string ActiveLink = Accessor.HttpContext.Request.Path.Value;
     bool IsLoggedIn = Accessor.HttpContext.User.Identity.IsAuthenticated;
@@ -25,7 +26,11 @@
             <li><a href="@Url.Page("/Index")" class="nav-link px-2 link-secondary @(ActiveLink == "/" ? "active" : "")">Home</a></li>
             <li><a href="@Url.Page("/Statistics")" class="nav-link px-2 link-dark @(ActiveLink == "/Statistics" ? "active" : "")">Statistics</a></li>
             <li><a href="@Url.Page("/PortUsage")" class="nav-link px-2 link-dark @(ActiveLink == "/PortUsage" ? "active" : "")">UDP ports</a></li>
-            <li><a href="@Url.Page("/Account/Manage")" class="nav-link px-2 link-dark @(ActiveLink == "/Account/Manage" ? "active" : "")">Manage account</a></li>
+            <li><a href="@Url.Page("/Account/Manage")" class="nav-link px-2 link-dark @(ActiveLink == PageConstants.AccountManageUrl ? "active" : "")">Manage account</a></li>
+            @if(User.IsInRole("admin"))
+            {
+                <li><a href="@Url.Page("/Admin/Users")" class="nav-link px-2 link-dark @(ActiveLink == "/Admin/Users" ? "active" : "")">USERS</a></li>
+            }
         </ul>
         <div class="col-md-3 text-end">
 

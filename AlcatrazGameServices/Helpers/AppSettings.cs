@@ -9,5 +9,7 @@ namespace Alcatraz.GameServices.Helpers
 	public class AppSettings
 	{
 		public string Secret { get; set; }
+		public string DefaultAdminPassword { get; set; }
+		public string DefaultResetPassword { get; set; }
 	}
 }

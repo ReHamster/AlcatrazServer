@@ -1,0 +1,65 @@
+﻿@page
+@model Alcatraz.GameServices.Pages.Admin.UsersModel
+@{
+}
+
+<h4>ADMIN PANEL - Users</h4>
+
+<div class="row">
+    <div class="col-md-4">Registered users</div>
+    <div class="col-md-4">@Model.NumRegisteredUsers</div>
+</div>
+<br />
+<hr />
+<form class="row g-3" method="get" asp-page-handler="OnSearch">
+    <div class="col-md-4">
+        <input class="form-control" name="search" value="@Model.SearchStats" />
+    </div>
+    <div class="col-md-4">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Nickname</th>
+            <th scope="col">AccountName</th>
+            <th scope="col">ID</th>
+            <th scope="col">Admin</th>
+            <th scope="col">Created Time</th>
+            <th scope="col">Updated Time</th>
+            <th scope="col">Last Play Time</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.UsersOnPage)
+        {
+            <tr>
+                <th scope="row">@user.Username</th>
+                <td>@user.Username</td>
+                <td>@user.Id</td>
+                <td>@(user.IsAdmin ? "Yes" : "No")</td>
+                <td>@(user.CreatedTime.ToShortDateString()) @(user.CreatedTime.ToShortTimeString())</td>
+                <td>@(user.LastUpdateTime.ToShortDateString()) @(user.LastUpdateTime.ToShortTimeString())</td>
+                <td>@(user.LastPlayTime.ToShortDateString()) @(user.LastPlayTime.ToShortTimeString())</td>
+                
+                <td>
+                    @if (user.Id != Model.CurrentUser.Id)
+                    {
+                        <a class="btn btn-primary" href="@Url.Action("ResetUserPassword", "Users", new { id = user.Id })">Reset Password</a>
+                        <a class="btn btn-danger" href="@Url.Action("Delete", "Users", new { id = user.Id })">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        @for (var i = Math.Max(Model.CurPage - 20, 0); i < Math.Min(Model.NumPages, Model.CurPage + 20); i++)
+        {
+            <li class="page-item"><a class="page-link" href="@Url.Page("Users", new { p = i + 1, search = Model.SearchStats })">@(i+1)</a></li>
+        }
+    </ul>
+</nav>
