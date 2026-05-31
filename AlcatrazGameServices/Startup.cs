@@ -59,7 +59,7 @@ namespace Alcatraz.GameServices
 					};
 					options.Cookie.Name = "AuthToken";
 				});
-#if DEBUG
+#if false
             services.AddSwaggerGen();
 #endif
 			// register user service
@@ -96,7 +96,7 @@ namespace Alcatraz.GameServices
 				app.UseDeveloperExceptionPage();
 			}
 
-#if DEBUG
+#if false
 			// Enable middleware to serve generated Swagger as a JSON endpoint.
 			app.UseSwagger();
 
