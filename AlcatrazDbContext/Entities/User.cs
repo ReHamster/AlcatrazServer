@@ -16,5 +16,6 @@ namespace Alcatraz.Context.Entities
 		public DateTime LastUpdateTime { get; set; }
 		public DateTime LastPlayTime { get; set; }
 		public bool IsAdmin { get; set; }
+		public bool IsPasswordReset { get; set; }
 	}
 }

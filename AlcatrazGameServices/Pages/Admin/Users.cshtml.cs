@@ -18,7 +18,7 @@ namespace Alcatraz.GameServices.Pages.Admin
 		public int CurPage { get; set; }
 		public UserModel CurrentUser { get; set; }
 
-		public string SearchStats { get; set; }
+		public string SearchTerm { get; set; }
 
 		public IEnumerable<UserModel> UsersOnPage { get; set; }
 
@@ -34,7 +34,7 @@ namespace Alcatraz.GameServices.Pages.Admin
 
 		public IActionResult OnGet(int p = 1, string search = "")
 		{
-			SearchStats = search;
+			SearchTerm = search;
 			CurPage = p;
 
 			var claims = HttpContext.User.Claims;
@@ -47,7 +47,8 @@ namespace Alcatraz.GameServices.Pages.Admin
 			if (CurrentUser == null)
 				return RedirectToPage(PageConstants.SignInUrl);
 
-			var usersRequest = _dbContext.Users.Where(x => string.IsNullOrWhiteSpace(SearchStats) ? true : EF.Functions.Like(x.PlayerNickName, $"%{SearchStats}%"));
+			var usersRequest = _dbContext.Users
+				.Where(x => string.IsNullOrWhiteSpace(SearchTerm) ? true : EF.Functions.Like(x.PlayerNickName, $"%{SearchTerm}%"));
 
 			int pageSize = 10;
 			NumRegisteredUsers = _dbContext.Users.Count();
@@ -68,9 +69,18 @@ namespace Alcatraz.GameServices.Pages.Admin
 			return Page();
 		}
 
-		public async Task<IActionResult> OnPostResetPassword(uint userId)
+		public async Task<IActionResult> OnPostResetPassword(uint id)
 		{
-			return Page();
+			_userService.ResetPassword(id);
+
+            return RedirectToPage(new { p = CurPage, search = SearchTerm });
 		}
-	}
+
+        public async Task<IActionResult> OnPostDelete(uint id)
+        {
+			_userService.Delete(id);
+
+            return RedirectToPage(new { p = CurPage, search = SearchTerm });
+        }
+    }
 }

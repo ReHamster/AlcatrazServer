@@ -1,5 +1,6 @@
 ﻿@page
 @model Alcatraz.GameServices.Pages.Admin.UsersModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
 }
 
@@ -13,7 +14,7 @@
 <hr />
 <form class="row g-3" method="get" asp-page-handler="OnSearch">
     <div class="col-md-4">
-        <input class="form-control" name="search" value="@Model.SearchStats" />
+        <input class="form-control" name="search" value="@Model.SearchTerm" />
     </div>
     <div class="col-md-4">
         <button type="submit" class="btn btn-primary">Search</button>
@@ -40,15 +41,21 @@
                 <td>@user.Username</td>
                 <td>@user.Id</td>
                 <td>@(user.IsAdmin ? "Yes" : "No")</td>
-                <td>@(user.CreatedTime.ToShortDateString()) @(user.CreatedTime.ToShortTimeString())</td>
-                <td>@(user.LastUpdateTime.ToShortDateString()) @(user.LastUpdateTime.ToShortTimeString())</td>
-                <td>@(user.LastPlayTime.ToShortDateString()) @(user.LastPlayTime.ToShortTimeString())</td>
+                <td>@(user.IsAdmin ? "Yes" : "No") @(user.CreatedTime.ToShortDateString())</td>
+                <td>@(user.CreatedTime.ToShortTimeString()) @(user.LastUpdateTime.ToShortDateString())</td>
+                <td>@(user.LastUpdateTime.ToShortTimeString()) @(user.LastPlayTime.ToShortDateString())</td>
                 
                 <td>
                     @if (user.Id != Model.CurrentUser.Id)
                     {
-                        <a class="btn btn-primary" href="@Url.Action("Users", new { action = "resetPassword", id = user.Id })">Reset Password</a>
-                        <a class="btn btn-danger" href="@Url.Action("Users", new { action = "delete", id = user.Id })">Delete</a>
+                        <form method="post">
+                            <button class="btn btn-primary" type="submit" asp-page-handler="ResetPassword" asp-route-id="@user.Id">
+                                Reset Password
+                            </button>
+                            <button class="btn btn-danger" type="submit" asp-page-handler="Delete" asp-route-id="@user.Id">
+                                Delete
+                            </button>
+                        </form>
                     }
                 </td>
             </tr>
@@ -59,7 +66,7 @@
     <ul class="pagination">
         @for (var i = Math.Max(Model.CurPage - 20, 0); i < Math.Min(Model.NumPages, Model.CurPage + 20); i++)
         {
-            <li class="page-item"><a class="page-link" href="@Url.Page("Users", new { p = i + 1, search = Model.SearchStats })">@(i+1)</a></li>
+            <li class="page-item"><a class="page-link" href="@Url.Page("Users", new { p = i + 1, search = Model.SearchTerm })">@(i+1)</a></li>
         }
     </ul>
 </nav>

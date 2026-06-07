@@ -83,7 +83,8 @@ namespace Alcatraz.GameServices.Services
 					CreatedTime = x.CreatedTime,
 					LastUpdateTime = x.LastUpdateTime,
 					LastPlayTime = x.LastPlayTime,
-					IsAdmin = x.IsAdmin
+					IsAdmin = x.IsAdmin,
+					IsPasswordReset = x.IsPasswordReset
 				}).ToArray();
 		}
 
@@ -99,7 +100,8 @@ namespace Alcatraz.GameServices.Services
 					CreatedTime = x.CreatedTime,
 					LastUpdateTime = x.LastUpdateTime,
 					LastPlayTime = x.LastPlayTime,
-					IsAdmin = x.IsAdmin
+					IsAdmin = x.IsAdmin,
+					IsPasswordReset = x.IsPasswordReset
 				})
 				.FirstOrDefault(x => x.Id == id);
 		}
@@ -141,6 +143,7 @@ namespace Alcatraz.GameServices.Services
 					Password = SecurePasswordHasher.Hash($"1000-{_appSettings.DefaultAdminPassword}"),
 					RewardFlags = 0,
 					IsAdmin = true,
+					IsPasswordReset = false,
 					CreatedTime = DateTime.Now,
 					LastUpdateTime = DateTime.MinValue,
 					LastPlayTime = DateTime.MinValue
@@ -247,6 +250,7 @@ namespace Alcatraz.GameServices.Services
 			{
 				user.LastUpdateTime = DateTime.Now;
 				user.Password = SecurePasswordHasher.Hash($"{user.Id}-{newPassword}");
+				user.IsPasswordReset = false;
 				_dbContext.SaveChanges();
 			}
 			catch
@@ -268,6 +272,7 @@ namespace Alcatraz.GameServices.Services
 			{
 				user.LastUpdateTime = DateTime.Now;
 				user.Password = SecurePasswordHasher.Hash($"{user.Id}-{_appSettings.DefaultResetPassword}");
+				user.IsPasswordReset = true;
 				_dbContext.SaveChanges();
 			}
 			catch

@@ -18,7 +18,7 @@ namespace Alcatraz.Context
 	}
 
 	// TO run migrations:
-	// Add-Migration NAME -Project AlcatrazDbContext -StartupProject AlcatrazGameServices -Context MainDbContext
+	// Add-Migration <NAME> -Project AlcatrazContext -StartupProject AlcatrazGameServices -Context MainDbContext
 
 	public class MainDbContext : DbContext
 	{
